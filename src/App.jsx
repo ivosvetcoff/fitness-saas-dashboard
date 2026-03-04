@@ -34,6 +34,9 @@ export default function App() {
   const [activeRoutine, setActiveRoutine] = useState(null);
   const [routineExercises, setRoutineExercises] = useState([]);
 
+  // Nutrición
+  const [nutritionPlan, setNutritionPlan] = useState(null);
+
   // Loading states
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [deletingStudentId, setDeletingStudentId] = useState(null);
@@ -132,11 +135,23 @@ export default function App() {
         current_day: data.current_day,
         total_days: data.total_days
       });
-      setRoutineExercises(data.exercises || []);
+      // Try to fetch all exercises
+      const allResp = await axios.get(`${API_URL}/routines/${data.routine_id}/exercises`);
+      setRoutineExercises(allResp.data || []);
     } catch (error) {
       console.error("Error al cargar rutina activa:", error);
       setActiveRoutine(null);
       setRoutineExercises([]);
+    }
+  };
+
+  const fetchNutritionPlan = async (studentId) => {
+    try {
+      const response = await axios.get(`${API_URL}/student/${studentId}/nutrition`);
+      setNutritionPlan(response.data);
+    } catch (error) {
+      console.error("Error al cargar nutrición:", error);
+      setNutritionPlan(null);
     }
   };
 
@@ -181,6 +196,7 @@ export default function App() {
     fetchPerformance(student.id);
     fetchPhotos(student.id);
     fetchActiveRoutine(student.id);
+    fetchNutritionPlan(student.id);
     setCurrentView('PerfilAlumno');
   };
 
@@ -596,26 +612,38 @@ export default function App() {
                 </div>
 
                 {activeRoutine ? (
-                  <div>
+                  <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
                     <div style={{ marginBottom: '16px' }}>
                       <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '4px' }}>{activeRoutine.routine_name}</h3>
                       <p style={{ color: '#A1A1AA', fontSize: '0.9rem' }}>
-                        Día actual: <strong style={{ color: '#3B82F6' }}>{activeRoutine.current_day}</strong> de {activeRoutine.total_days}
+                        Día actual del alumno: <strong style={{ color: '#3B82F6' }}>{activeRoutine.current_day}</strong> de {activeRoutine.total_days}
                       </p>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {routineExercises.map((ex, i) => (
-                        <div key={ex.id || i} style={{
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          padding: '10px 14px', backgroundColor: '#27272A', borderRadius: '10px', fontSize: '0.9rem'
-                        }}>
-                          <span style={{ fontWeight: 600 }}>{ex.exercises?.name || 'Ejercicio'}</span>
-                          <span style={{ color: '#71717A', fontSize: '0.8rem' }}>
-                            {ex.sets} sets · {ex.rep_range_min}-{ex.rep_range_max} reps
-                          </span>
+
+                    {/* Agrupamos por día */}
+                    {[1, 2, 3, 4, 5].map(dayNum => {
+                      const exDay = routineExercises.filter(e => e.day_number === dayNum);
+                      if (exDay.length === 0) return null;
+
+                      return (
+                        <div key={dayNum} style={{ marginBottom: '16px' }}>
+                          <h4 style={{ color: '#FAFAFA', fontSize: '1rem', fontWeight: 700, marginBottom: '8px', borderBottom: '1px solid #3F3F46', paddingBottom: '4px' }}>Día {dayNum}</h4>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {exDay.map((ex, i) => (
+                              <div key={ex.id || i} style={{
+                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                padding: '10px 14px', backgroundColor: '#27272A', borderRadius: '10px', fontSize: '0.9rem'
+                              }}>
+                                <span style={{ fontWeight: 600 }}>{ex.exercises?.name || 'Ejercicio'}</span>
+                                <span style={{ color: '#71717A', fontSize: '0.8rem' }}>
+                                  {ex.sets} sets · {ex.rep_range_min}-{ex.rep_range_max} reps
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                      )
+                    })}
                   </div>
                 ) : (
                   <div className="empty-state">
@@ -633,6 +661,53 @@ export default function App() {
                     + Asignar Nueva Rutina
                   </button>
                 </div>
+              </section>
+
+              {/* PLAN NUTRICIONAL */}
+              <section className="card flex-col">
+                <div className="card-header">
+                  <Flame size={20} className="icon-accent" />
+                  <h2>Plan Nutricional</h2>
+                </div>
+                {nutritionPlan ? (
+                  <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
+                    <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '8px' }}>{nutritionPlan.plan_name}</h3>
+                    <p style={{ color: '#10B981', fontWeight: 600, marginBottom: '16px', backgroundColor: 'rgba(16, 185, 129, 0.15)', padding: '6px 12px', borderRadius: '8px', display: 'inline-block' }}>
+                      {nutritionPlan.objectives?.calories} kcal  |  P: {nutritionPlan.objectives?.protein}g  |  C: {nutritionPlan.objectives?.carbs}g
+                    </p>
+
+                    <h4 style={{ color: '#FAFAFA', fontSize: '1rem', fontWeight: 700, marginBottom: '8px', borderBottom: '1px solid #3F3F46', paddingBottom: '4px' }}>Comidas</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                      {(nutritionPlan.meals || []).map(m => (
+                        <div key={m.id} style={{ backgroundColor: '#27272A', padding: '12px', borderRadius: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span style={{ fontWeight: 700, color: '#FAFAFA' }}>{m.emoji} {m.name}</span>
+                            <span style={{ color: '#A1A1AA', fontSize: '0.8rem' }}>{m.time}</span>
+                          </div>
+                          {(m.options && m.options.length > 0) && (
+                            <p style={{ color: '#D4D4D8', fontSize: '0.85rem' }}>{m.options[0].items?.join(', ')}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <h4 style={{ color: '#FAFAFA', fontSize: '1rem', fontWeight: 700, marginBottom: '8px', borderBottom: '1px solid #3F3F46', paddingBottom: '4px' }}>Suplementación</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {(nutritionPlan.supplements || []).map(sup => (
+                        <div key={sup.name} style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#18181B', border: '1px solid #3F3F46', padding: '8px', borderRadius: '8px' }}>
+                          <span style={{ color: '#D4D4D8', fontSize: '0.85rem' }}>{sup.name}</span>
+                          <span style={{ color: '#A1A1AA', fontSize: '0.8rem' }}>{sup.when}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <Flame size={48} className="empty-icon" />
+                    <h3>Sin Plan Nutricional</h3>
+                    <p>No hay registro de nutrición para {selectedStudent.name}.</p>
+                  </div>
+                )}
               </section>
             </div>
 
