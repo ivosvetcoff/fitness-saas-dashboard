@@ -1025,3 +1025,598 @@ button {
   font-family: inherit;
   font-size: 0.95rem;
 }
+
+/* ========================================= */
+/* LOGIN PAGE                                */
+/* ========================================= */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #09090b 0%, #1a1a2e 50%, #09090b 100%);
+  padding: 20px;
+}
+
+.login-card {
+  background: rgba(24, 24, 27, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1);
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.login-brand h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.login-brand p {
+  color: var(--text-secondary);
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.login-footer {
+  text-align: center;
+  color: #3F3F46;
+  font-size: 0.75rem;
+  margin-top: 32px;
+}
+
+/* ========================================= */
+/* STUDENT APP                               */
+/* ========================================= */
+.student-app {
+  min-height: 100vh;
+  background: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.student-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-sidebar);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.student-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.student-topbar-brand {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.student-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.student-xp-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.btn-icon-sm {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.btn-icon-sm:hover {
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.student-nav {
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-sidebar);
+  padding: 8px 0 12px;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  z-index: 100;
+}
+
+.student-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: transparent;
+  border: none;
+  color: #52525B;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 12px;
+  transition: color 0.2s;
+  font-family: inherit;
+}
+
+.student-nav-item.active {
+  color: #6366F1;
+}
+
+.student-content {
+  flex: 1;
+  padding: 20px;
+  padding-bottom: 80px;
+  overflow-y: auto;
+}
+
+/* Student Home */
+.st-greeting h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.st-name {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin-top: 2px;
+}
+
+.st-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #18181b, #27272a);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.st-banner h3 {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.st-banner p {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.st-date {
+  color: #6366F1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 8px;
+  display: block;
+}
+
+.st-stats-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.st-stat {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.st-stat strong {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.st-stat span {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.st-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.st-main-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  color: var(--text-primary);
+}
+
+.st-main-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+}
+
+.st-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.st-card-icon.today {
+  background: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+.st-main-card h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.st-main-card p {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.st-section-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+/* Student Exercise Cards */
+.st-exercise-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.st-exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  cursor: pointer;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.st-exercise-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.st-exercise-header.expanded {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.st-exercise-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.st-exercise-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.st-exercise-left h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.st-exercise-left p {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.st-exercise-body {
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.st-input-row {
+  display: flex;
+  gap: 12px;
+}
+
+.st-input-row .input-group {
+  flex: 1;
+}
+
+.st-rpe-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.st-rpe-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.st-rpe-btn:hover {
+  border-color: #52525B;
+}
+
+.st-rpe-btn.active {
+  transform: scale(1.05);
+}
+
+.st-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.st-suggestion small {
+  color: #F59E0B;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.st-suggestion strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.st-success {
+  text-align: center;
+  padding: 24px;
+}
+
+.st-success h3 {
+  color: #10B981;
+  margin-top: 12px;
+  font-size: 1.2rem;
+}
+
+.st-xp-flash {
+  display: inline-block;
+  color: #F59E0B;
+  font-size: 1.3rem;
+  font-weight: 900;
+  margin-top: 8px;
+  animation: fadeIn 0.4s ease;
+}
+
+/* Student Macros */
+.st-macros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.st-macro {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.st-macro strong {
+  font-size: 1rem;
+  display: block;
+}
+
+.st-macro span {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Student Ranking */
+.st-xp-hero {
+  text-align: center;
+  background: linear-gradient(135deg, #18181b, #27272a);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.st-xp-hero h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 8px 0 4px;
+}
+
+.st-xp-hero span {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.st-ranking-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.st-ranking-row.me {
+  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.st-ranking-row.first {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.st-rank-pos {
+  font-size: 1.2rem;
+  font-weight: 800;
+  min-width: 32px;
+  text-align: center;
+}
+
+.st-rank-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 2px solid var(--border-color);
+}
+
+/* Student Profile */
+.st-profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  border: 2px solid #6366F1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* Spin animation */
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Gap utilities */
+.gap-sm {
+  gap: 0.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
