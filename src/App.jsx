@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LayoutDashboard, Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, Camera, X, Edit3, Loader2, Flame, Trophy, Image as ImageIcon, LogOut, Home, Utensils, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, Zap, Calendar, User, Play } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, Camera, X, Edit3, Loader2, Flame, Trophy, Image as ImageIcon, LogOut, Home, Utensils, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, Zap, Calendar, User, Play, MessageCircle, Send, MoreHorizontal, MessageSquare } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import axios from 'axios';
 import './index.css';
@@ -196,6 +196,73 @@ export default function App() {
   const stFetchRankings = async () => { setStLoadingRankings(true); try { const r = await axios.get(`${API_URL}/rankings`); setStRankings(r.data?.rankings || []); } catch { } finally { setStLoadingRankings(false); } };
   const stFetchNutrition = async () => { setStLoadingNutrition(true); try { const r = await axios.get(`${API_URL}/student/${studentId}/nutrition`); setStNutrition(r.data); } catch { } finally { setStLoadingNutrition(false); } };
 
+  // ===== SOCIAL STATE & FETCHERS =====
+  const [stFeed, setStFeed] = useState([]);
+  const [stLoadingFeed, setStLoadingFeed] = useState(false);
+  const [stSocialProfile, setStSocialProfile] = useState(null);
+  const [stShowNewPostModal, setStShowNewPostModal] = useState(false);
+  const [stNewPostCaption, setStNewPostCaption] = useState('');
+  const [stShowCommentsFor, setStShowCommentsFor] = useState(null);
+  const [stComments, setStComments] = useState([]);
+  const [stNewComment, setStNewComment] = useState('');
+
+  const stFetchFeed = async () => {
+    setStLoadingFeed(true);
+    try {
+      const r = await axios.get(`${API_URL}/feed/${loggedInUser?.id}`);
+      setStFeed(r.data || []);
+    } catch { } finally { setStLoadingFeed(false); }
+  };
+
+  const stFetchProfile = async (targetUserId) => {
+    try {
+      const r = await axios.get(`${API_URL}/users/${targetUserId}/profile`);
+      setStSocialProfile(r.data);
+      const pr = await axios.get(`${API_URL}/users/${targetUserId}/posts?request_user_id=${loggedInUser?.id}`);
+      setStSocialProfile(prev => ({ ...prev, posts: pr.data || [] }));
+    } catch { }
+  };
+
+  const stToggleLike = async (postId) => {
+    try {
+      const r = await axios.post(`${API_URL}/posts/${postId}/toggle-like`, { user_id: loggedInUser.id });
+      const liked = r.data.status === 'liked';
+      const inc = liked ? 1 : -1;
+      setStFeed(prev => prev.map(p => p.id === postId ? { ...p, has_liked: liked, likes_count: p.likes_count + inc } : p));
+      if (stSocialProfile && stSocialProfile.posts) {
+        setStSocialProfile(prev => ({ ...prev, posts: prev.posts.map(p => p.id === postId ? { ...p, has_liked: liked, likes_count: p.likes_count + inc } : p) }));
+      }
+    } catch { }
+  };
+
+  const stSubmitPost = async () => {
+    if (!stNewPostCaption) return;
+    try {
+      await axios.post(`${API_URL}/posts/`, { user_id: loggedInUser.id, caption: stNewPostCaption, image_url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&auto=format&fit=crop' });
+      setStShowNewPostModal(false);
+      setStNewPostCaption('');
+      if (studentScreen === 'community') stFetchFeed();
+    } catch { alert('Error al crear post'); }
+  };
+
+  const stFetchComments = async (postId) => {
+    try {
+      const r = await axios.get(`${API_URL}/posts/${postId}/comments`);
+      setStComments(r.data || []);
+      setStShowCommentsFor(postId);
+    } catch { }
+  };
+
+  const stSubmitComment = async () => {
+    if (!stNewComment || !stShowCommentsFor) return;
+    try {
+      await axios.post(`${API_URL}/posts/${stShowCommentsFor}/comments`, { user_id: loggedInUser.id, content: stNewComment });
+      setStNewComment('');
+      stFetchComments(stShowCommentsFor);
+      setStFeed(prev => prev.map(p => p.id === stShowCommentsFor ? { ...p, comments_count: p.comments_count + 1 } : p));
+    } catch { }
+  };
+
   useEffect(() => {
     if (loggedInUser?.role === 'student') { stFetchExercises(); stFetchPoints(); stFetchNutrition(); }
   }, [loggedInUser]);
@@ -273,8 +340,8 @@ export default function App() {
 
         {/* STUDENT NAV */}
         <div className="student-nav">
-          {[{ key: 'home', icon: Home, label: 'Inicio' }, { key: 'workout', icon: Dumbbell, label: 'Entreno' }, { key: 'nutrition', icon: Utensils, label: 'Nutrición' }, { key: 'ranking', icon: Trophy, label: 'Ranking' }, { key: 'profile', icon: User, label: 'Perfil' }].map(tab => (
-            <button key={tab.key} className={`student-nav-item ${studentScreen === tab.key ? 'active' : ''}`} onClick={() => { setStudentScreen(tab.key); if (tab.key === 'ranking') stFetchRankings(); if (tab.key === 'workout') setStSelectedDay(null); }}>
+          {[{ key: 'home', icon: Home, label: 'Inicio' }, { key: 'workout', icon: Dumbbell, label: 'Entreno' }, { key: 'community', icon: Users, label: 'Feed' }, { key: 'nutrition', icon: Utensils, label: 'Nutrición' }, { key: 'profile', icon: User, label: 'Perfil' }].map(tab => (
+            <button key={tab.key} className={`student-nav-item ${studentScreen === tab.key ? 'active' : ''}`} onClick={() => { setStudentScreen(tab.key); if (tab.key === 'community') stFetchFeed(); if (tab.key === 'workout') setStSelectedDay(null); }}>
               <tab.icon size={20} />
               <span>{tab.label}</span>
             </button>
@@ -486,6 +553,68 @@ export default function App() {
             </div>
           )}
 
+          {/* COMMUNITY (FEED) */}
+          {studentScreen === 'community' && (
+            <div className="view-fade-in">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h2 className="st-section-title" style={{ margin: 0 }}>FitGram</h2>
+                <button className="btn-icon-sm" onClick={() => setStShowNewPostModal(true)} style={{ background: '#6366F1', color: '#fff' }}><Plus size={20} /></button>
+              </div>
+              {stLoadingFeed ? <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 size={32} className="spin-icon" color="#6366F1" /></div> :
+                stFeed.map(post => (
+                  <div key={post.id} className="st-post-card">
+                    <div className="st-post-header" onClick={() => { stFetchProfile(post.user_id); setStudentScreen('socialProfile'); }}>
+                      <img src={post.user_avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" className="st-post-avatar" />
+                      <div><strong style={{ color: '#FAFAFA' }}>{post.username || post.user_name}</strong><br /><small style={{ color: '#A1A1AA' }}>{new Date(post.created_at).toLocaleDateString()}</small></div>
+                    </div>
+                    {post.image_url && <img src={post.image_url} alt="post" className="st-post-image" />}
+                    <div className="st-post-actions">
+                      <button className={`st-post-action-btn ${post.has_liked ? 'liked' : ''}`} onClick={() => stToggleLike(post.id)}>
+                        <Dumbbell size={24} color={post.has_liked ? '#10B981' : '#FAFAFA'} /> <span>{post.likes_count}</span>
+                      </button>
+                      <button className="st-post-action-btn" onClick={() => stFetchComments(post.id)}>
+                        <MessageCircle size={24} color="#FAFAFA" /> <span>{post.comments_count}</span>
+                      </button>
+                      <button className="st-post-action-btn" style={{ marginLeft: 'auto' }}><Send size={24} color="#FAFAFA" /></button>
+                    </div>
+                    {post.caption && (
+                      <div className="st-post-caption">
+                        <strong>{post.username || post.user_name}</strong> {post.caption}
+                      </div>
+                    )}
+                  </div>
+                ))
+              }
+            </div>
+          )}
+
+          {/* SOCIAL PROFILE MODAL/VIEW */}
+          {studentScreen === 'socialProfile' && stSocialProfile && (
+            <div className="view-fade-in">
+              <button className="btn-back" onClick={() => { setStudentScreen('community'); setStSocialProfile(null); }}><ChevronLeft size={20} /> Volver al Feed</button>
+              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <img src={stSocialProfile.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #6366F1' }} />
+                <h2 style={{ marginTop: '12px' }}>{stSocialProfile.name}</h2>
+                <p style={{ color: '#A1A1AA' }}>@{stSocialProfile.username || stSocialProfile.name.toLowerCase().replace(' ', '')}</p>
+                <p style={{ marginTop: '12px', fontSize: '0.9rem' }}>{stSocialProfile.bio || 'Atleta de FitPro.'}</p>
+
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', margin: '20px 0' }}>
+                  <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.posts_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Posts</small></div>
+                  <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.followers_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Seguidores</small></div>
+                  <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.following_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Seguidos</small></div>
+                </div>
+
+                <div className="st-profile-grid">
+                  {stSocialProfile.posts && stSocialProfile.posts.map(p => (
+                    <div key={p.id} className="st-grid-item">
+                      {p.image_url ? <img src={p.image_url} alt="post" /> : <div className="placeholder-grid-item"></div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* PROFILE */}
           {studentScreen === 'profile' && (
             <div className="view-fade-in" style={{ textAlign: 'center' }}>
@@ -516,6 +645,53 @@ export default function App() {
             </div>
           )}
         </div>
+
+        {/* SOCIAL MODALS */}
+        {stShowNewPostModal && (
+          <div className="modal-overlay">
+            <div className="modal" style={{ width: '90%', maxWidth: '400px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3>Nuevo Post</h3>
+                <button className="btn-icon-sm" onClick={() => setStShowNewPostModal(false)}><X size={20} /></button>
+              </div>
+              <div style={{ height: '200px', background: '#27272E', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', color: '#A1A1AA' }}>
+                <Camera size={32} />
+                <span style={{ marginLeft: '12px' }}>Toca para subir foto</span>
+              </div>
+              <textarea className="form-input" style={{ minHeight: '80px', marginBottom: '16px', resize: 'none' }} placeholder="Escribe un pie de foto... #entrenamiento" value={stNewPostCaption} onChange={e => setStNewPostCaption(e.target.value)} />
+              <button className="btn-primary w-full" style={{ background: '#6366F1' }} onClick={stSubmitPost}>Publicar</button>
+            </div>
+          </div>
+        )}
+
+        {stShowCommentsFor && (
+          <div className="modal-overlay" onClick={(e) => { if (e.target.className === 'modal-overlay') setStShowCommentsFor(null); }}>
+            <div className="modal" style={{ width: '100%', maxWidth: '600px', height: '70vh', marginTop: 'auto', marginBottom: 0, borderRadius: '24px 24px 0 0', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #27272E', paddingBottom: '16px', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0, textAlign: 'center', flex: 1 }}>Comentarios</h3>
+                <button className="btn-icon-sm" onClick={() => setStShowCommentsFor(null)}><X size={20} /></button>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {stComments.length === 0 ? <p style={{ textAlign: 'center', color: '#52525B', margin: '40px 0' }}>Sé el primero en comentar.</p> :
+                  stComments.map(c => (
+                    <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
+                      <img src={c.user_avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <div>
+                        <strong>{c.username || c.user_name}</strong> <span style={{ color: '#D4D4D8', fontSize: '0.9rem' }}>{c.content}</span>
+                        <br /><small style={{ color: '#71717A', fontSize: '0.75rem' }}>{new Date(c.created_at).toLocaleDateString()}</small>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+              <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', borderTop: '1px solid #27272E', marginTop: '12px' }}>
+                <input type="text" className="form-input" style={{ flex: 1, borderRadius: '24px' }} placeholder="Escribe un comentario..." value={stNewComment} onChange={e => setStNewComment(e.target.value)} onKeyDown={e => e.key === 'Enter' && stSubmitComment()} />
+                <button className="btn-icon-sm" style={{ background: '#6366F1', color: '#fff' }} onClick={stSubmitComment}><Send size={18} /></button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     );
   }
