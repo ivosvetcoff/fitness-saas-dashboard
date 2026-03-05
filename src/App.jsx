@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import axios from 'axios';
 import './index.css';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'http://192.168.100.8:8000';
 
 // Colores para las líneas del gráfico (hasta 8 ejercicios distintos)
 const CHART_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
@@ -47,6 +47,10 @@ export default function App() {
   // Estados Formulario Rutina
   const [routineName, setRoutineName] = useState('');
   const [days, setDays] = useState([{ id: crypto.randomUUID(), dayNumber: 1, exercises: [] }]);
+
+  // Estados Editor Nutrición
+  const [editingNutrition, setEditingNutrition] = useState(null);
+  const [savingNutrition, setSavingNutrition] = useState(false);
 
   // =========================================================
   // FETCH: Cargar alumnos al montar el componente
@@ -708,6 +712,29 @@ export default function App() {
                     <p>No hay registro de nutrición para {selectedStudent.name}.</p>
                   </div>
                 )}
+
+                <div className="mt-auto">
+                  <button
+                    className="btn-primary w-full massive-btn"
+                    onClick={() => {
+                      // Preparar datos para edición
+                      const base = nutritionPlan || {
+                        plan_name: 'Plan Nutricional',
+                        objectives: { calories: '', protein: '', carbs: '', fats: '' },
+                        meals: [{ id: 1, name: 'Desayuno', time: '09:00', emoji: '🍽', options: [{ title: 'Opción 1', items: [''] }] }],
+                        supplements: [],
+                        water: '2-3 litros por día',
+                        weekend_rule: '',
+                        reminders: [],
+                      };
+                      setEditingNutrition(JSON.parse(JSON.stringify(base)));
+                      setCurrentView('EditarNutricion');
+                    }}
+                  >
+                    <Edit3 size={18} />
+                    <span>{nutritionPlan ? 'Editar Plan Nutricional' : 'Crear Plan Nutricional'}</span>
+                  </button>
+                </div>
               </section>
             </div>
 
@@ -911,6 +938,274 @@ export default function App() {
               <Plus size={20} />
               <span>+ Agregar Nuevo Día</span>
             </button>
+
+          </div>
+        )}
+
+        {/* VISTA 4: EDITOR DE NUTRICIÓN */}
+        {currentView === 'EditarNutricion' && selectedStudent && editingNutrition && (
+          <div className="view-fade-in builder-view">
+            <div className="flex-between mb-6 toolbar-mobile">
+              <button
+                className="btn-back no-margin shrink-0"
+                onClick={() => setCurrentView('PerfilAlumno')}
+              >
+                <ChevronLeft size={20} />
+                Atrás
+              </button>
+              <button
+                className="btn-primary w-full-mobile shrink-0"
+                disabled={savingNutrition}
+                onClick={async () => {
+                  setSavingNutrition(true);
+                  try {
+                    const payload = {
+                      plan_name: editingNutrition.plan_name || 'Plan Nutricional',
+                      objectives: editingNutrition.objectives,
+                      meals: editingNutrition.meals.map(m => ({
+                        name: m.name,
+                        time: m.time || '',
+                        emoji: m.emoji || '🍽',
+                        note: m.note || null,
+                        options: m.options.map(o => ({ title: o.title, items: o.items.filter(i => i.trim()) }))
+                      })),
+                      supplements: (editingNutrition.supplements || []).map(s => ({
+                        name: s.name, dose: s.dose || null, when: s.when || ''
+                      })),
+                      water: editingNutrition.water || '',
+                      weekend_rule: editingNutrition.weekend_rule || '',
+                      reminders: editingNutrition.reminders || [],
+                    };
+                    await axios.put(`${API_URL}/student/${selectedStudent.id}/nutrition`, payload);
+                    alert('✅ Plan nutricional guardado exitosamente');
+                    fetchNutritionPlan(selectedStudent.id);
+                    setCurrentView('PerfilAlumno');
+                  } catch (err) {
+                    alert('❌ Error al guardar: ' + (err.response?.data?.detail || err.message));
+                  } finally {
+                    setSavingNutrition(false);
+                  }
+                }}
+              >
+                <Save size={18} />
+                <span>{savingNutrition ? 'Guardando...' : 'Guardar Plan'}</span>
+              </button>
+            </div>
+
+            <header className="builder-header mb-6">
+              <h1>Nutrición de <span className="text-accent">{selectedStudent.name}</span></h1>
+              <input
+                className="routine-title-input w-full"
+                type="text"
+                placeholder="Nombre del Plan (ej. Recomposición Corporal)"
+                value={editingNutrition.plan_name || ''}
+                onChange={(e) => setEditingNutrition({ ...editingNutrition, plan_name: e.target.value })}
+              />
+            </header>
+
+            {/* MACROS OBJETIVOS */}
+            <div className="card mb-6" style={{ padding: '20px' }}>
+              <h2 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Flame size={20} color="#10B981" /> Objetivos Diarios
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                <div>
+                  <label className="form-label">Calorías</label>
+                  <input className="form-input" placeholder="2200 kcal"
+                    value={editingNutrition.objectives?.calories || ''}
+                    onChange={e => setEditingNutrition({ ...editingNutrition, objectives: { ...editingNutrition.objectives, calories: e.target.value } })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Proteínas</label>
+                  <input className="form-input" placeholder="140g"
+                    value={editingNutrition.objectives?.protein || ''}
+                    onChange={e => setEditingNutrition({ ...editingNutrition, objectives: { ...editingNutrition.objectives, protein: e.target.value } })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Carbohidratos</label>
+                  <input className="form-input" placeholder="230g"
+                    value={editingNutrition.objectives?.carbs || ''}
+                    onChange={e => setEditingNutrition({ ...editingNutrition, objectives: { ...editingNutrition.objectives, carbs: e.target.value } })}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Grasas</label>
+                  <input className="form-input" placeholder="60g"
+                    value={editingNutrition.objectives?.fats || ''}
+                    onChange={e => setEditingNutrition({ ...editingNutrition, objectives: { ...editingNutrition.objectives, fats: e.target.value } })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* COMIDAS */}
+            <div className="days-list">
+              {editingNutrition.meals.map((meal, mealIdx) => (
+                <div key={mealIdx} className="day-container mb-6 card" style={{ padding: '20px', border: '1px solid #27272a' }}>
+                  <div className="flex-between mb-4">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                      <span style={{ fontSize: '28px' }}>{meal.emoji || '🍽'}</span>
+                      <div style={{ flex: 1 }}>
+                        <input className="form-input" style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '4px' }}
+                          placeholder="Nombre de comida (ej. Desayuno)"
+                          value={meal.name}
+                          onChange={e => {
+                            const meals = [...editingNutrition.meals];
+                            meals[mealIdx] = { ...meals[mealIdx], name: e.target.value };
+                            setEditingNutrition({ ...editingNutrition, meals });
+                          }}
+                        />
+                        <input className="form-input" style={{ fontSize: '0.85rem' }}
+                          placeholder="Horario (ej. 09:00)"
+                          value={meal.time || ''}
+                          onChange={e => {
+                            const meals = [...editingNutrition.meals];
+                            meals[mealIdx] = { ...meals[mealIdx], time: e.target.value };
+                            setEditingNutrition({ ...editingNutrition, meals });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <button className="btn-icon-danger" title="Eliminar comida"
+                      onClick={() => {
+                        const meals = editingNutrition.meals.filter((_, i) => i !== mealIdx);
+                        setEditingNutrition({ ...editingNutrition, meals });
+                      }}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+
+                  {/* OPCIONES de la comida */}
+                  {(meal.options || []).map((option, optIdx) => (
+                    <div key={optIdx} style={{ backgroundColor: '#1a1a1e', borderRadius: '12px', padding: '14px', marginBottom: '12px', border: '1px solid #3F3F46' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <input className="form-input" style={{ flex: 1, fontWeight: 600, color: '#10B981', fontSize: '0.9rem' }}
+                          placeholder={`Opción ${optIdx + 1}`}
+                          value={option.title}
+                          onChange={e => {
+                            const meals = [...editingNutrition.meals];
+                            const opts = [...meals[mealIdx].options];
+                            opts[optIdx] = { ...opts[optIdx], title: e.target.value };
+                            meals[mealIdx] = { ...meals[mealIdx], options: opts };
+                            setEditingNutrition({ ...editingNutrition, meals });
+                          }}
+                        />
+                        <button className="btn-icon-danger" style={{ marginLeft: '8px' }} title="Eliminar opción"
+                          onClick={() => {
+                            const meals = [...editingNutrition.meals];
+                            meals[mealIdx] = { ...meals[mealIdx], options: meals[mealIdx].options.filter((_, i) => i !== optIdx) };
+                            setEditingNutrition({ ...editingNutrition, meals });
+                          }}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+
+                      {/* Ítems de la opción */}
+                      {option.items.map((item, itemIdx) => (
+                        <div key={itemIdx} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
+                          <span style={{ color: '#52525B', fontSize: '14px' }}>•</span>
+                          <input className="form-input" style={{ flex: 1, fontSize: '0.85rem' }}
+                            placeholder="Ej: 2 huevos + 2 claras"
+                            value={item}
+                            onChange={e => {
+                              const meals = [...editingNutrition.meals];
+                              const opts = [...meals[mealIdx].options];
+                              const items = [...opts[optIdx].items];
+                              items[itemIdx] = e.target.value;
+                              opts[optIdx] = { ...opts[optIdx], items };
+                              meals[mealIdx] = { ...meals[mealIdx], options: opts };
+                              setEditingNutrition({ ...editingNutrition, meals });
+                            }}
+                          />
+                          <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+                            onClick={() => {
+                              const meals = [...editingNutrition.meals];
+                              const opts = [...meals[mealIdx].options];
+                              opts[optIdx] = { ...opts[optIdx], items: opts[optIdx].items.filter((_, i) => i !== itemIdx) };
+                              meals[mealIdx] = { ...meals[mealIdx], options: opts };
+                              setEditingNutrition({ ...editingNutrition, meals });
+                            }}
+                          >
+                            <X size={14} color="#71717A" />
+                          </button>
+                        </div>
+                      ))}
+                      <button className="btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px', marginTop: '4px' }}
+                        onClick={() => {
+                          const meals = [...editingNutrition.meals];
+                          const opts = [...meals[mealIdx].options];
+                          opts[optIdx] = { ...opts[optIdx], items: [...opts[optIdx].items, ''] };
+                          meals[mealIdx] = { ...meals[mealIdx], options: opts };
+                          setEditingNutrition({ ...editingNutrition, meals });
+                        }}
+                      >
+                        <Plus size={14} /> Agregar alimento
+                      </button>
+                    </div>
+                  ))}
+
+                  <button className="btn-secondary" style={{ width: '100%', padding: '10px' }}
+                    onClick={() => {
+                      const meals = [...editingNutrition.meals];
+                      meals[mealIdx] = { ...meals[mealIdx], options: [...(meals[mealIdx].options || []), { title: `Opción ${(meals[mealIdx].options?.length || 0) + 1}`, items: [''] }] };
+                      setEditingNutrition({ ...editingNutrition, meals });
+                    }}
+                  >
+                    <Plus size={16} /> Agregar Opción
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button className="btn-secondary w-full" style={{ marginTop: '10px', padding: '15px' }}
+              onClick={() => {
+                setEditingNutrition({
+                  ...editingNutrition,
+                  meals: [...editingNutrition.meals, { name: '', time: '', emoji: '🍽', options: [{ title: 'Opción 1', items: [''] }] }]
+                });
+              }}
+            >
+              <Plus size={20} /> Agregar Nueva Comida
+            </button>
+
+            {/* SUPLEMENTOS */}
+            <div className="card" style={{ padding: '20px', marginTop: '24px' }}>
+              <h2 style={{ marginBottom: '16px' }}>💊 Suplementos</h2>
+              {(editingNutrition.supplements || []).map((sup, supIdx) => (
+                <div key={supIdx} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                  <input className="form-input" style={{ flex: 1 }} placeholder="Nombre (ej. Creatina 5g)" value={sup.name}
+                    onChange={e => {
+                      const sups = [...editingNutrition.supplements];
+                      sups[supIdx] = { ...sups[supIdx], name: e.target.value };
+                      setEditingNutrition({ ...editingNutrition, supplements: sups });
+                    }}
+                  />
+                  <input className="form-input" style={{ flex: 1 }} placeholder="Cuándo (ej. Pre-entreno)" value={sup.when}
+                    onChange={e => {
+                      const sups = [...editingNutrition.supplements];
+                      sups[supIdx] = { ...sups[supIdx], when: e.target.value };
+                      setEditingNutrition({ ...editingNutrition, supplements: sups });
+                    }}
+                  />
+                  <button className="btn-icon-danger" onClick={() => {
+                    setEditingNutrition({ ...editingNutrition, supplements: editingNutrition.supplements.filter((_, i) => i !== supIdx) });
+                  }}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+              <button className="btn-secondary" style={{ marginTop: '8px' }}
+                onClick={() => {
+                  setEditingNutrition({ ...editingNutrition, supplements: [...(editingNutrition.supplements || []), { name: '', when: '' }] });
+                }}
+              >
+                <Plus size={16} /> Agregar Suplemento
+              </button>
+            </div>
 
           </div>
         )}
