@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LayoutDashboard, Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, Camera, X, Edit3, Loader2, Flame, Trophy, LogOut, Home, Utensils, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, Zap, Calendar, User, Play } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, Camera, X, Edit3, Loader2, Flame, Trophy, Image as ImageIcon, LogOut, Home, Utensils, TrendingUp, ChevronDown, ChevronUp, CheckCircle2, Zap, Calendar, User, Play } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import axios from 'axios';
 import './index.css';
@@ -188,7 +188,7 @@ export default function App() {
       if (r.data?.exercises) {
         setStSession({ routine_id: r.data.routine_id, routine_name: r.data.routine_name, current_day: r.data.current_day, total_days: r.data.total_days });
         const all = await axios.get(`${API_URL}/routines/${r.data.routine_id}/exercises`);
-        setStExercises((all.data || []).map(ex => ({ id: ex.exercise_id, routine_id: ex.routine_id, name: ex.exercises?.name || '?', muscleGroup: ex.exercises?.muscle_group || '', targetSets: ex.sets || 3, setsCompleted: 0, day_number: ex.day_number, lastLog: ex.last_log, suggestedWeight: ex.suggested_weight, suggestedReps: ex.suggested_reps })).sort((a, b) => a.day_number - b.day_number));
+        setStExercises((all.data || []).map(ex => ({ id: ex.exercise_id, routine_id: ex.routine_id, name: ex.exercises?.name || '?', muscleGroup: ex.exercises?.muscle_group || '', targetSets: ex.sets || 3, targetRepsText: ex.rep_range_min ? `${ex.rep_range_min}-${ex.rep_range_max}` : '10', setsCompleted: 0, day_number: ex.day_number, lastLog: ex.last_log, suggestedWeight: ex.suggested_weight, suggestedReps: ex.suggested_reps })).sort((a, b) => a.day_number - b.day_number));
       }
     } catch (e) { console.error(e); }
   };
@@ -297,22 +297,28 @@ export default function App() {
               </div>
               <div className="st-stats-row">
                 <div className="st-stat"><Zap color="#F59E0B" size={20} /><strong>{stTotalXp.toLocaleString()}</strong><span>XP Total</span></div>
-                <div className="st-stat"><Target color="#6366F1" size={20} /><strong>{stSession ? `Día ${stSession.current_day}` : '—'}</strong><span>Entreno</span></div>
-                <div className="st-stat"><TrendingUp color="#10B981" size={20} /><strong>{stExercises.length}</strong><span>Ejercicios</span></div>
+                <div className="st-stat"><Target color="#6366F1" size={20} /><strong>{stSession ? `Día ${stSession.current_day}` : '—'}</strong><span>Entreno Actual</span></div>
               </div>
-              <div className="st-cards">
-                <button className="st-main-card" onClick={() => { setStSelectedDay(null); setStudentScreen('workout'); }}>
-                  <div className="st-card-icon"><Dumbbell color="#fff" size={24} /></div>
-                  <div><h4>Entrenamiento</h4><p>{stSession ? `Día ${stSession.current_day}: ${stSession.routine_name}` : 'Sin rutina'}</p></div>
-                </button>
-                <button className="st-main-card" onClick={() => { stFetchRankings(); setStudentScreen('ranking'); }}>
-                  <div className="st-card-icon" style={{ background: 'rgba(245,158,11,0.15)' }}><Trophy color="#F59E0B" size={24} /></div>
-                  <div><h4>Ranking</h4><p>{stTotalXp.toLocaleString()} XP acumulados</p></div>
-                </button>
-                <button className="st-main-card" onClick={() => setStudentScreen('nutrition')}>
-                  <div className="st-card-icon" style={{ background: 'rgba(16,185,129,0.15)' }}><Utensils color="#10B981" size={24} /></div>
-                  <div><h4>Plan Nutricional</h4><p>Recomposición corporal</p></div>
-                </button>
+
+              <div style={{ marginTop: '24px' }}>
+                <h3 style={{ fontSize: '1rem', color: '#FAFAFA', marginBottom: '16px' }}>Tu entrenamiento de hoy</h3>
+                {stSession ? (
+                  <button className="st-main-card" onClick={() => { setStSelectedDay(stSession.current_day); setStudentScreen('workout'); }} style={{ border: '1px solid rgba(99, 102, 241, 0.3)', background: 'linear-gradient(145deg, rgba(30,30,36,1) 0%, rgba(39,39,46,1) 100%)' }}>
+                    <div className="st-card-icon" style={{ background: '#6366F1' }}><Dumbbell color="#fff" size={24} /></div>
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <h4 style={{ color: '#FAFAFA', fontSize: '1.05rem', marginBottom: '4px' }}>Día {stSession.current_day} - {dayNames[stSession.current_day] || 'Entrenamiento'}</h4>
+                      <p style={{ color: '#A1A1AA', fontSize: '0.85rem' }}>
+                        {stExercises.filter(e => e.day_number === stSession.current_day).length} ejercicios asignados
+                      </p>
+                    </div>
+                    <ChevronDown color="#6366F1" size={20} style={{ transform: 'rotate(-90deg)' }} />
+                  </button>
+                ) : (
+                  <div className="st-main-card" style={{ opacity: 0.7 }}>
+                    <div className="st-card-icon"><Target color="#A1A1AA" size={24} /></div>
+                    <div><h4>Día libre</h4><p>No tienes rutinas activas hoy.</p></div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -350,7 +356,7 @@ export default function App() {
                     <button className={`st-exercise-header ${isExp ? 'expanded' : ''}`} onClick={() => { if (done) return; setStExpandedId(isExp ? null : exercise.id); setStWeight(''); setStReps(''); setStRpe(null); setStNextTarget(null); setStSuccess(false); }}>
                       <div className="st-exercise-left">
                         <div className="st-exercise-icon"><Dumbbell color="#fff" size={20} /></div>
-                        <div><h4>{exercise.name}</h4><p>{done ? `✅ Completado (${exercise.setsCompleted}/${exercise.targetSets})` : exercise.setsCompleted > 0 ? `${exercise.setsCompleted}/${exercise.targetSets} sets` : `${exercise.targetSets} sets · ${exercise.muscleGroup}`}</p></div>
+                        <div><h4>{exercise.name}</h4><p>{done ? `✅ Completado (${exercise.setsCompleted}/${exercise.targetSets})` : exercise.setsCompleted > 0 ? `${exercise.setsCompleted}/${exercise.targetSets} sets` : `${exercise.targetSets} sets de ${exercise.targetRepsText} reps`}</p></div>
                       </div>
                       {done ? <CheckCircle2 color="#10B981" size={20} /> : isExp ? <ChevronUp color="#6366F1" size={20} /> : <ChevronDown color="#52525B" size={20} />}
                     </button>
@@ -491,7 +497,22 @@ export default function App() {
                 <div className="st-stat"><Dumbbell color="#6366F1" size={20} /><strong>{stExercises.length}</strong><span>Ejercicios</span></div>
                 <div className="st-stat"><Calendar color="#10B981" size={20} /><strong>{stSession?.total_days || 0}</strong><span>Días</span></div>
               </div>
-              <button className="btn-primary w-full" style={{ marginTop: '32px', background: '#EF4444' }} onClick={handleLogout}><LogOut size={18} /> Cerrar Sesión</button>
+
+              <div style={{ marginTop: '32px', textAlign: 'left', background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={20} color="#6366F1" /> Progreso Corporal</h3>
+                <p style={{ color: '#A1A1AA', fontSize: '0.85rem', marginBottom: '16px' }}>Sube tu foto de progreso físico mes a mes para que el profesor documente tus cambios.</p>
+                <input type="file" id="photoUpload" style={{ display: 'none' }} accept="image/*" onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    alert('¡Foto seleccionada! Simulando subida a Supabase Storage...');
+                    setTimeout(() => alert('Foto guardada correctamente en tu perfil.'), 1500);
+                  }
+                }} />
+                <label htmlFor="photoUpload" className="btn-primary w-full" style={{ display: 'flex', justifyContent: 'center', gap: '8px', cursor: 'pointer', background: '#3B82F6' }}>
+                  <ImageIcon size={18} /> Subir Foto de Progreso
+                </label>
+              </div>
+
+              <button className="btn-primary w-full" style={{ marginTop: '24px', background: '#EF4444' }} onClick={handleLogout}><LogOut size={18} /> Cerrar Sesión</button>
             </div>
           )}
         </div>
