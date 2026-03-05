@@ -263,6 +263,32 @@ export default function App() {
     } catch { }
   };
 
+  const [stInbox, setStInbox] = useState([]);
+  const [stChatHistory, setStChatHistory] = useState([]);
+  const [stActiveChatUser, setStActiveChatUser] = useState(null);
+  const [stNewDmText, setStNewDmText] = useState('');
+
+  const stFetchInbox = async () => {
+    try { const r = await axios.get(`${API_URL}/messages/${loggedInUser?.id}`); setStInbox(r.data || []); } catch { }
+  };
+  const stFetchChat = async (otherUser) => {
+    try {
+      const r = await axios.get(`${API_URL}/messages/${loggedInUser?.id}/${otherUser.id}`);
+      setStChatHistory(r.data || []);
+      setStActiveChatUser(otherUser);
+      setStudentScreen('chatWindow');
+    } catch { }
+  };
+  const stSendDm = async () => {
+    if (!stNewDmText || !stActiveChatUser) return;
+    try {
+      const payload = { sender_id: loggedInUser.id, receiver_id: stActiveChatUser.id, content: stNewDmText };
+      const r = await axios.post(`${API_URL}/messages/`, payload);
+      setStChatHistory([...stChatHistory, r.data]);
+      setStNewDmText('');
+    } catch { }
+  };
+
   useEffect(() => {
     if (loggedInUser?.role === 'student') { stFetchExercises(); stFetchPoints(); stFetchNutrition(); }
   }, [loggedInUser]);
@@ -558,7 +584,10 @@ export default function App() {
             <div className="view-fade-in">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2 className="st-section-title" style={{ margin: 0 }}>FitGram</h2>
-                <button className="btn-icon-sm" onClick={() => setStShowNewPostModal(true)} style={{ background: '#6366F1', color: '#fff' }}><Plus size={20} /></button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn-icon-sm" onClick={() => setStShowNewPostModal(true)} style={{ background: '#6366F1', color: '#fff' }}><Plus size={20} /></button>
+                  <button className="btn-icon-sm" onClick={() => { stFetchInbox(); setStudentScreen('inbox'); }} style={{ background: '#27272E', color: '#fff' }}><MessageSquare size={20} /></button>
+                </div>
               </div>
               {stLoadingFeed ? <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 size={32} className="spin-icon" color="#6366F1" /></div> :
                 stFeed.map(post => (
@@ -575,7 +604,7 @@ export default function App() {
                       <button className="st-post-action-btn" onClick={() => stFetchComments(post.id)}>
                         <MessageCircle size={24} color="#FAFAFA" /> <span>{post.comments_count}</span>
                       </button>
-                      <button className="st-post-action-btn" style={{ marginLeft: 'auto' }}><Send size={24} color="#FAFAFA" /></button>
+                      <button className="st-post-action-btn" style={{ marginLeft: 'auto' }} onClick={() => stFetchChat({ id: post.user_id, name: post.user_name || post.username, avatar_url: post.user_avatar })}><Send size={24} color="#FAFAFA" /></button>
                     </div>
                     {post.caption && (
                       <div className="st-post-caption">
@@ -611,6 +640,59 @@ export default function App() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* INBOX (DMs) */}
+          {studentScreen === 'inbox' && (
+            <div className="view-fade-in">
+              <button className="btn-back" onClick={() => setStudentScreen('community')}><ChevronLeft size={20} /> Volver a FitGram</button>
+              <h2 className="st-section-title" style={{ marginTop: '16px' }}>Mensajes Directos</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                {stInbox.length === 0 ? <p style={{ textAlign: 'center', color: '#A1A1AA', padding: '40px 0' }}>No tienes mensajes. Toca el botón de enviar en un post para iniciar una charla.</p> :
+                  stInbox.map(conv => (
+                    <div key={conv.other_user.id} onClick={() => stFetchChat(conv.other_user)} style={{ display: 'flex', gap: '12px', background: 'var(--bg-sidebar)', padding: '16px', borderRadius: '16px', cursor: 'pointer', border: '1px solid var(--border-color)' }}>
+                      <img src={conv.other_user.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <strong style={{ color: '#FAFAFA' }}>{conv.other_user.username || conv.other_user.name}</strong>
+                          <small style={{ color: '#71717A' }}>{new Date(conv.last_message.created_at).toLocaleDateString()}</small>
+                        </div>
+                        <p style={{ color: conv.last_message.sender_id === loggedInUser?.id ? '#A1A1AA' : '#FAFAFA', margin: '4px 0 0 0', fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {conv.last_message.sender_id === loggedInUser?.id ? 'Tú: ' : ''}{conv.last_message.content}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          )}
+
+          {/* CHAT WINDOW */}
+          {studentScreen === 'chatWindow' && stActiveChatUser && (
+            <div className="view-fade-in" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
+                <button className="btn-icon-sm" onClick={() => { setStudentScreen('inbox'); stFetchInbox(); }}><ChevronLeft size={24} color="#FAFAFA" /></button>
+                <img src={stActiveChatUser.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                <h3 style={{ margin: 0 }}>{stActiveChatUser.username || stActiveChatUser.name}</h3>
+              </div>
+
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
+                {stChatHistory.map(msg => {
+                  const isMe = msg.sender_id === loggedInUser?.id;
+                  return (
+                    <div key={msg.id} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', background: isMe ? '#6366F1' : '#27272E', color: '#fff', padding: '12px 16px', borderRadius: isMe ? '16px 16px 0 16px' : '16px 16px 16px 0', maxWidth: '80%' }}>
+                      <p style={{ margin: 0 }}>{msg.content}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', marginTop: 'auto' }}>
+                <input type="text" className="form-input" style={{ flex: 1, borderRadius: '24px' }} placeholder="Escribe un mensaje..." value={stNewDmText} onChange={e => setStNewDmText(e.target.value)} onKeyDown={e => e.key === 'Enter' && stSendDm()} />
+                <button className="btn-icon-sm" style={{ background: '#6366F1', color: '#fff' }} onClick={stSendDm}><Send size={18} /></button>
               </div>
             </div>
           )}
