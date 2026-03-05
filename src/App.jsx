@@ -202,6 +202,7 @@ export default function App() {
   const [stSocialProfile, setStSocialProfile] = useState(null);
   const [stShowNewPostModal, setStShowNewPostModal] = useState(false);
   const [stNewPostCaption, setStNewPostCaption] = useState('');
+  const [stNewPostImage, setStNewPostImage] = useState(null);
   const [stShowCommentsFor, setStShowCommentsFor] = useState(null);
   const [stComments, setStComments] = useState([]);
   const [stNewComment, setStNewComment] = useState('');
@@ -238,10 +239,12 @@ export default function App() {
   const stSubmitPost = async () => {
     if (!stNewPostCaption) return;
     try {
-      await axios.post(`${API_URL}/posts/`, { user_id: loggedInUser.id, caption: stNewPostCaption, image_url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&auto=format&fit=crop' });
+      await axios.post(`${API_URL}/posts/`, { user_id: loggedInUser.id, caption: stNewPostCaption, image_url: stNewPostImage || 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&auto=format&fit=crop' });
       setStShowNewPostModal(false);
       setStNewPostCaption('');
+      setStNewPostImage(null);
       if (studentScreen === 'community') stFetchFeed();
+      if (studentScreen === 'profile') stFetchProfile(loggedInUser.id);
     } catch { alert('Error al crear post'); }
   };
 
@@ -367,8 +370,13 @@ export default function App() {
         {/* STUDENT NAV */}
         <div className="student-nav">
           {[{ key: 'home', icon: Home, label: 'Inicio' }, { key: 'workout', icon: Dumbbell, label: 'Entreno' }, { key: 'community', icon: Users, label: 'Feed' }, { key: 'nutrition', icon: Utensils, label: 'Nutrición' }, { key: 'profile', icon: User, label: 'Perfil' }].map(tab => (
-            <button key={tab.key} className={`student-nav-item ${studentScreen === tab.key ? 'active' : ''}`} onClick={() => { setStudentScreen(tab.key); if (tab.key === 'community') stFetchFeed(); if (tab.key === 'workout') setStSelectedDay(null); }}>
-              <tab.icon size={20} />
+            <button key={tab.key} className={`student-nav-item ${studentScreen === tab.key ? 'active' : ''}`} onClick={() => {
+              setStudentScreen(tab.key);
+              if (tab.key === 'community') stFetchFeed();
+              if (tab.key === 'workout') setStSelectedDay(null);
+              if (tab.key === 'profile') stFetchProfile(loggedInUser.id);
+            }}>
+              <tab.icon size={22} />
               <span>{tab.label}</span>
             </button>
           ))}
@@ -496,7 +504,8 @@ export default function App() {
                               {stLoading ? <Loader2 size={18} className="spin-icon" /> : 'Guardar Serie'}
                             </button>
                           </div>
-                        )}
+                        )
+                        }
                       </div>
                     )}
                   </div>
@@ -517,264 +526,290 @@ export default function App() {
                 </button>
               )}
             </div>
-          )}
+          )
+          }
 
           {/* NUTRITION */}
-          {studentScreen === 'nutrition' && (
-            <div className="view-fade-in">
-              <h2 className="st-section-title">Plan Nutricional</h2>
-              {stNutrition ? (
-                <>
-                  <p style={{ color: '#71717A', marginBottom: '16px' }}>🔥 Objetivo: Recomposición corporal</p>
-                  <div className="st-macros">
-                    <div className="st-macro"><strong>{stNutrition.objectives?.calories}</strong><span>Calorías</span></div>
-                    <div className="st-macro"><strong style={{ color: '#EF4444' }}>{stNutrition.objectives?.protein}</strong><span>Proteínas</span></div>
-                    <div className="st-macro"><strong style={{ color: '#F59E0B' }}>{stNutrition.objectives?.carbs}</strong><span>Carbos</span></div>
-                    <div className="st-macro"><strong style={{ color: '#6366F1' }}>{stNutrition.objectives?.fats}</strong><span>Grasas</span></div>
+          {
+            studentScreen === 'nutrition' && (
+              <div className="view-fade-in">
+                <h2 className="st-section-title">Plan Nutricional</h2>
+                {stNutrition ? (
+                  <>
+                    <p style={{ color: '#71717A', marginBottom: '16px' }}>🔥 Objetivo: Recomposición corporal</p>
+                    <div className="st-macros">
+                      <div className="st-macro"><strong>{stNutrition.objectives?.calories}</strong><span>Calorías</span></div>
+                      <div className="st-macro"><strong style={{ color: '#EF4444' }}>{stNutrition.objectives?.protein}</strong><span>Proteínas</span></div>
+                      <div className="st-macro"><strong style={{ color: '#F59E0B' }}>{stNutrition.objectives?.carbs}</strong><span>Carbos</span></div>
+                      <div className="st-macro"><strong style={{ color: '#6366F1' }}>{stNutrition.objectives?.fats}</strong><span>Grasas</span></div>
+                    </div>
+                    <h3 style={{ color: '#FAFAFA', margin: '20px 0 12px', fontSize: '1.1rem' }}>🍽 Comidas del Día</h3>
+                    {stNutrition.meals?.map(meal => (
+                      <div key={meal.id} className="st-exercise-card">
+                        <button className="st-exercise-header" onClick={() => setStExpandedMeal(stExpandedMeal === meal.id ? null : meal.id)}>
+                          <div className="st-exercise-left"><div className="st-exercise-icon" style={{ background: 'rgba(16,185,129,0.15)' }}><span style={{ fontSize: '18px' }}>{meal.emoji}</span></div><div><h4>{meal.name}</h4><p>{meal.time}</p></div></div>
+                          {stExpandedMeal === meal.id ? <ChevronUp color="#10B981" size={18} /> : <ChevronDown color="#52525B" size={18} />}
+                        </button>
+                        {stExpandedMeal === meal.id && (
+                          <div className="st-exercise-body">
+                            {meal.options?.map((opt, i) => (
+                              <div key={i} style={{ marginBottom: '12px' }}>
+                                <strong style={{ color: '#10B981', fontSize: '13px' }}>{opt.title}</strong>
+                                <ul style={{ color: '#D4D4D8', fontSize: '14px', paddingLeft: '20px', marginTop: '6px' }}>
+                                  {opt.items?.map((item, j) => <li key={j} style={{ marginBottom: '4px' }}>{item}</li>)}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                ) : <div style={{ textAlign: 'center', padding: '40px', color: '#52525B' }}><Loader2 size={32} className="spin-icon" /></div>}
+              </div>
+            )
+          }
+
+          {/* RANKING */}
+          {
+            studentScreen === 'ranking' && (
+              <div className="view-fade-in">
+                <h2 className="st-section-title">🏆 Ranking de Atletas</h2>
+                <div className="st-xp-hero"><Flame color="#F59E0B" size={36} /><h2>{stTotalXp.toLocaleString()}</h2><span>XP TOTALES</span></div>
+                {stLoadingRankings ? <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 size={32} className="spin-icon" color="#6366F1" /></div> :
+                  stRankings.map((r, i) => {
+                    const isMe = r.student_id === studentId;
+                    const emoji = ['', '🥇', '🥈', '🥉'][r.position] || `#${r.position}`;
+                    return (
+                      <div key={r.student_id} className={`st-ranking-row ${isMe ? 'me' : ''} ${r.position === 1 ? 'first' : ''}`}>
+                        <span className="st-rank-pos">{emoji}</span>
+                        <div className="st-rank-avatar" style={isMe ? { borderColor: '#6366F1' } : {}}>{r.name?.charAt(0).toUpperCase()}</div>
+                        <div style={{ flex: 1 }}><strong style={isMe ? { color: '#6366F1' } : {}}>{r.name} {isMe ? '(Vos)' : ''}</strong><br /><small style={{ color: '#71717A' }}>{r.total_sets} series</small></div>
+                        <div style={{ textAlign: 'right' }}><strong style={{ color: r.position === 1 ? '#F59E0B' : '#FAFAFA' }}>{r.total_xp.toLocaleString()}</strong><br /><small style={{ color: '#71717A' }}>XP</small></div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )
+          }
+
+          {/* COMMUNITY (FEED) */}
+          {
+            studentScreen === 'community' && (
+              <div className="view-fade-in">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h2 className="st-section-title" style={{ margin: 0 }}>FitGram</h2>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn-icon-sm" onClick={() => setStShowNewPostModal(true)} style={{ background: '#6366F1', color: '#fff' }}><Plus size={20} /></button>
+                    <button className="btn-icon-sm" onClick={() => { stFetchInbox(); setStudentScreen('inbox'); }} style={{ background: '#27272E', color: '#fff' }}><MessageSquare size={20} /></button>
                   </div>
-                  <h3 style={{ color: '#FAFAFA', margin: '20px 0 12px', fontSize: '1.1rem' }}>🍽 Comidas del Día</h3>
-                  {stNutrition.meals?.map(meal => (
-                    <div key={meal.id} className="st-exercise-card">
-                      <button className="st-exercise-header" onClick={() => setStExpandedMeal(stExpandedMeal === meal.id ? null : meal.id)}>
-                        <div className="st-exercise-left"><div className="st-exercise-icon" style={{ background: 'rgba(16,185,129,0.15)' }}><span style={{ fontSize: '18px' }}>{meal.emoji}</span></div><div><h4>{meal.name}</h4><p>{meal.time}</p></div></div>
-                        {stExpandedMeal === meal.id ? <ChevronUp color="#10B981" size={18} /> : <ChevronDown color="#52525B" size={18} />}
-                      </button>
-                      {stExpandedMeal === meal.id && (
-                        <div className="st-exercise-body">
-                          {meal.options?.map((opt, i) => (
-                            <div key={i} style={{ marginBottom: '12px' }}>
-                              <strong style={{ color: '#10B981', fontSize: '13px' }}>{opt.title}</strong>
-                              <ul style={{ color: '#D4D4D8', fontSize: '14px', paddingLeft: '20px', marginTop: '6px' }}>
-                                {opt.items?.map((item, j) => <li key={j} style={{ marginBottom: '4px' }}>{item}</li>)}
-                              </ul>
-                            </div>
-                          ))}
+                </div>
+                {stLoadingFeed ? <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 size={32} className="spin-icon" color="#6366F1" /></div> :
+                  stFeed.map(post => (
+                    <div key={post.id} className="st-post-card">
+                      <div className="st-post-header" onClick={() => { stFetchProfile(post.user_id); setStudentScreen('socialProfile'); }}>
+                        <img src={post.user_avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" className="st-post-avatar" />
+                        <div><strong style={{ color: '#FAFAFA' }}>{post.username || post.user_name}</strong><br /><small style={{ color: '#A1A1AA' }}>{new Date(post.created_at).toLocaleDateString()}</small></div>
+                      </div>
+                      {post.image_url && <img src={post.image_url} alt="post" className="st-post-image" />}
+                      <div className="st-post-actions">
+                        <button className={`st-post-action-btn ${post.has_liked ? 'liked' : ''}`} onClick={() => stToggleLike(post.id)}>
+                          <Dumbbell size={24} color={post.has_liked ? '#10B981' : '#FAFAFA'} /> <span>{post.likes_count}</span>
+                        </button>
+                        <button className="st-post-action-btn" onClick={() => stFetchComments(post.id)}>
+                          <MessageCircle size={24} color="#FAFAFA" /> <span>{post.comments_count}</span>
+                        </button>
+                        <button className="st-post-action-btn" style={{ marginLeft: 'auto' }} onClick={() => stFetchChat({ id: post.user_id, name: post.user_name || post.username, avatar_url: post.user_avatar })}><Send size={24} color="#FAFAFA" /></button>
+                      </div>
+                      {post.caption && (
+                        <div className="st-post-caption">
+                          <strong>{post.username || post.user_name}</strong> {post.caption}
                         </div>
                       )}
                     </div>
-                  ))}
-                </>
-              ) : <div style={{ textAlign: 'center', padding: '40px', color: '#52525B' }}><Loader2 size={32} className="spin-icon" /></div>}
-            </div>
-          )}
-
-          {/* RANKING */}
-          {studentScreen === 'ranking' && (
-            <div className="view-fade-in">
-              <h2 className="st-section-title">🏆 Ranking de Atletas</h2>
-              <div className="st-xp-hero"><Flame color="#F59E0B" size={36} /><h2>{stTotalXp.toLocaleString()}</h2><span>XP TOTALES</span></div>
-              {stLoadingRankings ? <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 size={32} className="spin-icon" color="#6366F1" /></div> :
-                stRankings.map((r, i) => {
-                  const isMe = r.student_id === studentId;
-                  const emoji = ['', '🥇', '🥈', '🥉'][r.position] || `#${r.position}`;
-                  return (
-                    <div key={r.student_id} className={`st-ranking-row ${isMe ? 'me' : ''} ${r.position === 1 ? 'first' : ''}`}>
-                      <span className="st-rank-pos">{emoji}</span>
-                      <div className="st-rank-avatar" style={isMe ? { borderColor: '#6366F1' } : {}}>{r.name?.charAt(0).toUpperCase()}</div>
-                      <div style={{ flex: 1 }}><strong style={isMe ? { color: '#6366F1' } : {}}>{r.name} {isMe ? '(Vos)' : ''}</strong><br /><small style={{ color: '#71717A' }}>{r.total_sets} series</small></div>
-                      <div style={{ textAlign: 'right' }}><strong style={{ color: r.position === 1 ? '#F59E0B' : '#FAFAFA' }}>{r.total_xp.toLocaleString()}</strong><br /><small style={{ color: '#71717A' }}>XP</small></div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-
-          {/* COMMUNITY (FEED) */}
-          {studentScreen === 'community' && (
-            <div className="view-fade-in">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 className="st-section-title" style={{ margin: 0 }}>FitGram</h2>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button className="btn-icon-sm" onClick={() => setStShowNewPostModal(true)} style={{ background: '#6366F1', color: '#fff' }}><Plus size={20} /></button>
-                  <button className="btn-icon-sm" onClick={() => { stFetchInbox(); setStudentScreen('inbox'); }} style={{ background: '#27272E', color: '#fff' }}><MessageSquare size={20} /></button>
-                </div>
+                  ))
+                }
               </div>
-              {stLoadingFeed ? <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 size={32} className="spin-icon" color="#6366F1" /></div> :
-                stFeed.map(post => (
-                  <div key={post.id} className="st-post-card">
-                    <div className="st-post-header" onClick={() => { stFetchProfile(post.user_id); setStudentScreen('socialProfile'); }}>
-                      <img src={post.user_avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" className="st-post-avatar" />
-                      <div><strong style={{ color: '#FAFAFA' }}>{post.username || post.user_name}</strong><br /><small style={{ color: '#A1A1AA' }}>{new Date(post.created_at).toLocaleDateString()}</small></div>
-                    </div>
-                    {post.image_url && <img src={post.image_url} alt="post" className="st-post-image" />}
-                    <div className="st-post-actions">
-                      <button className={`st-post-action-btn ${post.has_liked ? 'liked' : ''}`} onClick={() => stToggleLike(post.id)}>
-                        <Dumbbell size={24} color={post.has_liked ? '#10B981' : '#FAFAFA'} /> <span>{post.likes_count}</span>
-                      </button>
-                      <button className="st-post-action-btn" onClick={() => stFetchComments(post.id)}>
-                        <MessageCircle size={24} color="#FAFAFA" /> <span>{post.comments_count}</span>
-                      </button>
-                      <button className="st-post-action-btn" style={{ marginLeft: 'auto' }} onClick={() => stFetchChat({ id: post.user_id, name: post.user_name || post.username, avatar_url: post.user_avatar })}><Send size={24} color="#FAFAFA" /></button>
-                    </div>
-                    {post.caption && (
-                      <div className="st-post-caption">
-                        <strong>{post.username || post.user_name}</strong> {post.caption}
-                      </div>
-                    )}
-                  </div>
-                ))
-              }
-            </div>
-          )}
+            )
+          }
 
           {/* SOCIAL PROFILE MODAL/VIEW */}
-          {studentScreen === 'socialProfile' && stSocialProfile && (
-            <div className="view-fade-in">
-              <button className="btn-back" onClick={() => { setStudentScreen('community'); setStSocialProfile(null); }}><ChevronLeft size={20} /> Volver al Feed</button>
-              <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <img src={stSocialProfile.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #6366F1' }} />
-                <h2 style={{ marginTop: '12px' }}>{stSocialProfile.name}</h2>
-                <p style={{ color: '#A1A1AA' }}>@{stSocialProfile.username || stSocialProfile.name.toLowerCase().replace(' ', '')}</p>
-                <p style={{ marginTop: '12px', fontSize: '0.9rem' }}>{stSocialProfile.bio || 'Atleta de FitPro.'}</p>
+          {
+            studentScreen === 'socialProfile' && stSocialProfile && (
+              <div className="view-fade-in">
+                <button className="btn-back" onClick={() => { setStudentScreen('community'); setStSocialProfile(null); }}><ChevronLeft size={20} /> Volver al Feed</button>
+                <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                  <img src={stSocialProfile.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #6366F1' }} />
+                  <h2 style={{ marginTop: '12px' }}>{stSocialProfile.name}</h2>
+                  <p style={{ color: '#A1A1AA' }}>@{stSocialProfile.username || stSocialProfile.name.toLowerCase().replace(' ', '')}</p>
+                  <p style={{ marginTop: '12px', fontSize: '0.9rem' }}>{stSocialProfile.bio || 'Atleta de FitPro.'}</p>
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', margin: '20px 0' }}>
-                  <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.posts_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Posts</small></div>
-                  <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.followers_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Seguidores</small></div>
-                  <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.following_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Seguidos</small></div>
-                </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', margin: '20px 0' }}>
+                    <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.posts_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Posts</small></div>
+                    <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.followers_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Seguidores</small></div>
+                    <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.following_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Seguidos</small></div>
+                  </div>
 
-                <div className="st-profile-grid">
-                  {stSocialProfile.posts && stSocialProfile.posts.map(p => (
-                    <div key={p.id} className="st-grid-item">
-                      {p.image_url ? <img src={p.image_url} alt="post" /> : <div className="placeholder-grid-item"></div>}
-                    </div>
-                  ))}
+                  <div className="st-profile-grid">
+                    {stSocialProfile.posts && stSocialProfile.posts.map(p => (
+                      <div key={p.id} className="st-grid-item">
+                        {p.image_url ? <img src={p.image_url} alt="post" /> : <div className="placeholder-grid-item"></div>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           {/* INBOX (DMs) */}
-          {studentScreen === 'inbox' && (
-            <div className="view-fade-in">
-              <button className="btn-back" onClick={() => setStudentScreen('community')}><ChevronLeft size={20} /> Volver a FitGram</button>
-              <h2 className="st-section-title" style={{ marginTop: '16px' }}>Mensajes Directos</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                {stInbox.length === 0 ? <p style={{ textAlign: 'center', color: '#A1A1AA', padding: '40px 0' }}>No tienes mensajes. Toca el botón de enviar en un post para iniciar una charla.</p> :
-                  stInbox.map(conv => (
-                    <div key={conv.other_user.id} onClick={() => stFetchChat(conv.other_user)} style={{ display: 'flex', gap: '12px', background: 'var(--bg-sidebar)', padding: '16px', borderRadius: '16px', cursor: 'pointer', border: '1px solid var(--border-color)' }}>
-                      <img src={conv.other_user.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <strong style={{ color: '#FAFAFA' }}>{conv.other_user.username || conv.other_user.name}</strong>
-                          <small style={{ color: '#71717A' }}>{new Date(conv.last_message.created_at).toLocaleDateString()}</small>
+          {
+            studentScreen === 'inbox' && (
+              <div className="view-fade-in">
+                <button className="btn-back" onClick={() => setStudentScreen('community')}><ChevronLeft size={20} /> Volver a FitGram</button>
+                <h2 className="st-section-title" style={{ marginTop: '16px' }}>Mensajes Directos</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                  {stInbox.length === 0 ? <p style={{ textAlign: 'center', color: '#A1A1AA', padding: '40px 0' }}>No tienes mensajes. Toca el botón de enviar en un post para iniciar una charla.</p> :
+                    stInbox.map(conv => (
+                      <div key={conv.other_user.id} onClick={() => stFetchChat(conv.other_user)} style={{ display: 'flex', gap: '12px', background: 'var(--bg-sidebar)', padding: '16px', borderRadius: '16px', cursor: 'pointer', border: '1px solid var(--border-color)' }}>
+                        <img src={conv.other_user.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <strong style={{ color: '#FAFAFA' }}>{conv.other_user.username || conv.other_user.name}</strong>
+                            <small style={{ color: '#71717A' }}>{new Date(conv.last_message.created_at).toLocaleDateString()}</small>
+                          </div>
+                          <p style={{ color: conv.last_message.sender_id === loggedInUser?.id ? '#A1A1AA' : '#FAFAFA', margin: '4px 0 0 0', fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {conv.last_message.sender_id === loggedInUser?.id ? 'Tú: ' : ''}{conv.last_message.content}
+                          </p>
                         </div>
-                        <p style={{ color: conv.last_message.sender_id === loggedInUser?.id ? '#A1A1AA' : '#FAFAFA', margin: '4px 0 0 0', fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {conv.last_message.sender_id === loggedInUser?.id ? 'Tú: ' : ''}{conv.last_message.content}
-                        </p>
                       </div>
-                    </div>
-                  ))
-                }
+                    ))
+                  }
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           {/* CHAT WINDOW */}
-          {studentScreen === 'chatWindow' && stActiveChatUser && (
-            <div className="view-fade-in" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
-                <button className="btn-icon-sm" onClick={() => { setStudentScreen('inbox'); stFetchInbox(); }}><ChevronLeft size={24} color="#FAFAFA" /></button>
-                <img src={stActiveChatUser.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
-                <h3 style={{ margin: 0 }}>{stActiveChatUser.username || stActiveChatUser.name}</h3>
-              </div>
+          {
+            studentScreen === 'chatWindow' && stActiveChatUser && (
+              <div className="view-fade-in" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
+                  <button className="btn-icon-sm" onClick={() => { setStudentScreen('inbox'); stFetchInbox(); }}><ChevronLeft size={24} color="#FAFAFA" /></button>
+                  <img src={stActiveChatUser.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <h3 style={{ margin: 0 }}>{stActiveChatUser.username || stActiveChatUser.name}</h3>
+                </div>
 
-              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
-                {stChatHistory.map(msg => {
-                  const isMe = msg.sender_id === loggedInUser?.id;
-                  return (
-                    <div key={msg.id} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', background: isMe ? '#6366F1' : '#27272E', color: '#fff', padding: '12px 16px', borderRadius: isMe ? '16px 16px 0 16px' : '16px 16px 16px 0', maxWidth: '80%' }}>
-                      <p style={{ margin: 0 }}>{msg.content}</p>
-                    </div>
-                  );
-                })}
-              </div>
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
+                  {stChatHistory.map(msg => {
+                    const isMe = msg.sender_id === loggedInUser?.id;
+                    return (
+                      <div key={msg.id} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', background: isMe ? '#6366F1' : '#27272E', color: '#fff', padding: '12px 16px', borderRadius: isMe ? '16px 16px 0 16px' : '16px 16px 16px 0', maxWidth: '80%' }}>
+                        <p style={{ margin: 0 }}>{msg.content}</p>
+                      </div>
+                    );
+                  })}
+                </div>
 
-              <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', marginTop: 'auto' }}>
-                <input type="text" className="form-input" style={{ flex: 1, borderRadius: '24px' }} placeholder="Escribe un mensaje..." value={stNewDmText} onChange={e => setStNewDmText(e.target.value)} onKeyDown={e => e.key === 'Enter' && stSendDm()} />
-                <button className="btn-icon-sm" style={{ background: '#6366F1', color: '#fff' }} onClick={stSendDm}><Send size={18} /></button>
+                <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', marginTop: 'auto' }}>
+                  <input type="text" className="form-input" style={{ flex: 1, borderRadius: '24px' }} placeholder="Escribe un mensaje..." value={stNewDmText} onChange={e => setStNewDmText(e.target.value)} onKeyDown={e => e.key === 'Enter' && stSendDm()} />
+                  <button className="btn-icon-sm" style={{ background: '#6366F1', color: '#fff' }} onClick={stSendDm}><Send size={18} /></button>
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           {/* PROFILE */}
-          {studentScreen === 'profile' && (
-            <div className="view-fade-in" style={{ textAlign: 'center' }}>
-              <div className="st-profile-avatar"><User color="#A1A1AA" size={40} /></div>
-              <h2 style={{ marginTop: '16px' }}>{loggedInUser.name}</h2>
-              <p style={{ color: '#71717A' }}>{stSession?.routine_name || 'Sin rutina activa'}</p>
-              <div className="st-stats-row" style={{ marginTop: '24px' }}>
-                <div className="st-stat"><Flame color="#F59E0B" size={20} /><strong>{stTotalXp.toLocaleString()}</strong><span>XP Total</span></div>
-                <div className="st-stat"><Dumbbell color="#6366F1" size={20} /><strong>{stExercises.length}</strong><span>Ejercicios</span></div>
-                <div className="st-stat"><Calendar color="#10B981" size={20} /><strong>{stSession?.total_days || 0}</strong><span>Días</span></div>
-              </div>
+          {
+            studentScreen === 'profile' && (
+              <div className="view-fade-in" style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h2 className="st-section-title" style={{ margin: 0 }}>Mi Perfil</h2>
+                  <button className="btn-icon-sm" onClick={handleLogout} style={{ color: '#EF4444' }}><LogOut size={20} /></button>
+                </div>
 
-              <div style={{ marginTop: '32px', textAlign: 'left', background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={20} color="#6366F1" /> Progreso Corporal</h3>
-                <p style={{ color: '#A1A1AA', fontSize: '0.85rem', marginBottom: '16px' }}>Sube tu foto de progreso físico mes a mes para que el profesor documente tus cambios.</p>
-                <input type="file" id="photoUpload" style={{ display: 'none' }} accept="image/*" onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    alert('¡Foto seleccionada! Simulando subida a Supabase Storage...');
-                    setTimeout(() => alert('Foto guardada correctamente en tu perfil.'), 1500);
-                  }
-                }} />
-                <label htmlFor="photoUpload" className="btn-primary w-full" style={{ display: 'flex', justifyContent: 'center', gap: '8px', cursor: 'pointer', background: '#3B82F6' }}>
-                  <ImageIcon size={18} /> Subir Foto de Progreso
-                </label>
-              </div>
+                {stSocialProfile ? (
+                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <img src={stSocialProfile.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #6366F1' }} />
+                    <h2 style={{ marginTop: '12px' }}>{stSocialProfile.name}</h2>
+                    <p style={{ color: '#A1A1AA' }}>@{stSocialProfile.username || stSocialProfile.name.toLowerCase().replace(' ', '')}</p>
+                    <p style={{ marginTop: '12px', fontSize: '0.9rem' }}>{stSocialProfile.bio || 'Atleta de FitPro.'}</p>
 
-              <button className="btn-primary w-full" style={{ marginTop: '24px', background: '#EF4444' }} onClick={handleLogout}><LogOut size={18} /> Cerrar Sesión</button>
-            </div>
-          )}
-        </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', margin: '20px 0' }}>
+                      <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.posts_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Posts</small></div>
+                      <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.followers_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Seguidores</small></div>
+                      <div style={{ textAlign: 'center' }}><strong style={{ color: '#FAFAFA', fontSize: '1.2rem' }}>{stSocialProfile.following_count || 0}</strong><br /><small style={{ color: '#A1A1AA' }}>Seguidos</small></div>
+                    </div>
+
+                    <div className="st-profile-grid">
+                      {stSocialProfile.posts && stSocialProfile.posts.map(p => (
+                        <div key={p.id} className="st-grid-item">
+                          {p.image_url ? <img src={p.image_url} alt="post" /> : <div className="placeholder-grid-item"></div>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : <div style={{ padding: '40px' }}><Loader2 className="spin-icon" size={32} /></div>}
+              </div>
+            )
+          }
+        </div >
 
         {/* SOCIAL MODALS */}
-        {stShowNewPostModal && (
-          <div className="modal-overlay">
-            <div className="modal" style={{ width: '90%', maxWidth: '400px', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3>Nuevo Post</h3>
-                <button className="btn-icon-sm" onClick={() => setStShowNewPostModal(false)}><X size={20} /></button>
+        {
+          stShowNewPostModal && (
+            <div className="modal-overlay">
+              <div className="modal" style={{ width: '90%', maxWidth: '400px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3>Nuevo Post</h3>
+                  <button className="btn-icon-sm" onClick={() => setStShowNewPostModal(false)}><X size={20} /></button>
+                </div>
+                <label htmlFor="newPostUpload" style={{ height: '200px', cursor: 'pointer', background: '#27272E', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', color: '#A1A1AA' }}>
+                  {stNewPostImage ? <img src={stNewPostImage} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} /> : <><Camera size={32} /><span style={{ marginLeft: '12px' }}>Toca para subir foto</span></>}
+                </label>
+                <input type="file" id="newPostUpload" style={{ display: 'none' }} accept="image/*" onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const r = new FileReader(); r.onload = () => setStNewPostImage(r.result); r.readAsDataURL(e.target.files[0]);
+                  }
+                }} />
+                <textarea className="form-input" style={{ minHeight: '80px', marginBottom: '16px', resize: 'none' }} placeholder="Escribe un pie de foto... #entrenamiento" value={stNewPostCaption} onChange={e => setStNewPostCaption(e.target.value)} />
+                <button className="btn-primary w-full" style={{ background: '#6366F1' }} onClick={stSubmitPost}>Publicar</button>
               </div>
-              <div style={{ height: '200px', background: '#27272E', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', color: '#A1A1AA' }}>
-                <Camera size={32} />
-                <span style={{ marginLeft: '12px' }}>Toca para subir foto</span>
-              </div>
-              <textarea className="form-input" style={{ minHeight: '80px', marginBottom: '16px', resize: 'none' }} placeholder="Escribe un pie de foto... #entrenamiento" value={stNewPostCaption} onChange={e => setStNewPostCaption(e.target.value)} />
-              <button className="btn-primary w-full" style={{ background: '#6366F1' }} onClick={stSubmitPost}>Publicar</button>
             </div>
-          </div>
-        )}
+          )
+        }
 
-        {stShowCommentsFor && (
-          <div className="modal-overlay" onClick={(e) => { if (e.target.className === 'modal-overlay') setStShowCommentsFor(null); }}>
-            <div className="modal" style={{ width: '100%', maxWidth: '600px', height: '70vh', marginTop: 'auto', marginBottom: 0, borderRadius: '24px 24px 0 0', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #27272E', paddingBottom: '16px', marginBottom: '16px' }}>
-                <h3 style={{ margin: 0, textAlign: 'center', flex: 1 }}>Comentarios</h3>
-                <button className="btn-icon-sm" onClick={() => setStShowCommentsFor(null)}><X size={20} /></button>
-              </div>
-              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {stComments.length === 0 ? <p style={{ textAlign: 'center', color: '#52525B', margin: '40px 0' }}>Sé el primero en comentar.</p> :
-                  stComments.map(c => (
-                    <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
-                      <img src={c.user_avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
-                      <div>
-                        <strong>{c.username || c.user_name}</strong> <span style={{ color: '#D4D4D8', fontSize: '0.9rem' }}>{c.content}</span>
-                        <br /><small style={{ color: '#71717A', fontSize: '0.75rem' }}>{new Date(c.created_at).toLocaleDateString()}</small>
+        {
+          stShowCommentsFor && (
+            <div className="modal-overlay" onClick={(e) => { if (e.target.className === 'modal-overlay') setStShowCommentsFor(null); }}>
+              <div className="modal" style={{ width: '100%', maxWidth: '600px', height: '70vh', marginTop: 'auto', marginBottom: 0, borderRadius: '24px 24px 0 0', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #27272E', paddingBottom: '16px', marginBottom: '16px' }}>
+                  <h3 style={{ margin: 0, textAlign: 'center', flex: 1 }}>Comentarios</h3>
+                  <button className="btn-icon-sm" onClick={() => setStShowCommentsFor(null)}><X size={20} /></button>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {stComments.length === 0 ? <p style={{ textAlign: 'center', color: '#52525B', margin: '40px 0' }}>Sé el primero en comentar.</p> :
+                    stComments.map(c => (
+                      <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
+                        <img src={c.user_avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'} alt="avatar" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div>
+                          <strong>{c.username || c.user_name}</strong> <span style={{ color: '#D4D4D8', fontSize: '0.9rem' }}>{c.content}</span>
+                          <br /><small style={{ color: '#71717A', fontSize: '0.75rem' }}>{new Date(c.created_at).toLocaleDateString()}</small>
+                        </div>
                       </div>
-                    </div>
-                  ))
-                }
-              </div>
-              <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', borderTop: '1px solid #27272E', marginTop: '12px' }}>
-                <input type="text" className="form-input" style={{ flex: 1, borderRadius: '24px' }} placeholder="Escribe un comentario..." value={stNewComment} onChange={e => setStNewComment(e.target.value)} onKeyDown={e => e.key === 'Enter' && stSubmitComment()} />
-                <button className="btn-icon-sm" style={{ background: '#6366F1', color: '#fff' }} onClick={stSubmitComment}><Send size={18} /></button>
+                    ))
+                  }
+                </div>
+                <div style={{ display: 'flex', gap: '8px', paddingTop: '16px', borderTop: '1px solid #27272E', marginTop: '12px' }}>
+                  <input type="text" className="form-input" style={{ flex: 1, borderRadius: '24px' }} placeholder="Escribe un comentario..." value={stNewComment} onChange={e => setStNewComment(e.target.value)} onKeyDown={e => e.key === 'Enter' && stSubmitComment()} />
+                  <button className="btn-icon-sm" style={{ background: '#6366F1', color: '#fff' }} onClick={stSubmitComment}><Send size={18} /></button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
-      </div>
+      </div >
     );
   }
 
