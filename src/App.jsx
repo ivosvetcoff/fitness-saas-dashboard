@@ -32,6 +32,8 @@ export default function App() {
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [deletingStudentId, setDeletingStudentId] = useState(null);
   const [rankingsMap, setRankingsMap] = useState({});
+  const [stagnantAlerts, setStagnantAlerts] = useState({});
+  const [chartFilter, setChartFilter] = useState('all');
   const [routineName, setRoutineName] = useState('');
   const [days, setDays] = useState([{ id: crypto.randomUUID(), dayNumber: 1, exercises: [] }]);
 
@@ -105,8 +107,15 @@ export default function App() {
     } catch (e) { console.error(e); }
   };
 
+  const fetchStagnantAlerts = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/analytics/stagnant-students`);
+      setStagnantAlerts(res.data || {});
+    } catch (e) { console.error(e); }
+  };
+
   useEffect(() => {
-    if (loggedInUser?.role === 'professor') { fetchStudents(); fetchRankings(); }
+    if (loggedInUser?.role === 'professor') { fetchStudents(); fetchRankings(); fetchStagnantAlerts(); }
   }, [loggedInUser, fetchStudents]);
 
   useEffect(() => {
@@ -140,7 +149,7 @@ export default function App() {
 
   const createExercise = (exId) => {
     const ex = exerciseLibrary.find(e => e.id === exId);
-    return { id: crypto.randomUUID(), exerciseId: ex?.id || '', exerciseName: ex?.name || '?', muscleGroup: ex?.muscle_group || '', sets: 3, progressionModel: 'autoregulation', targetRpe: 'rpe8', repMin: 8, repMax: 12 };
+    return { id: crypto.randomUUID(), exerciseId: ex?.id || '', exerciseName: ex?.name || '?', muscleGroup: ex?.muscle_group || '', sets: 3, progressionModel: 'autoregulation', targetRpe: 'rpe8', repMin: 8, repMax: 12, repsArray: ['8-12', '8-12', '8-12'] };
   };
 
   const handleStudentClick = (s) => { setSelectedStudent(s); fetchPerformance(s.id); fetchPhotos(s.id); fetchActiveRoutine(s.id); fetchNutritionPlan(s.id); setCurrentView('PerfilAlumno'); };
@@ -169,12 +178,41 @@ export default function App() {
 
   const buildChartData = () => {
     if (!performanceData?.exercises?.length) return null;
-    const allDates = new Set();
-    performanceData.exercises.forEach(ex => ex.history.forEach(h => { allDates.add(new Date(h.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })); }));
-    return [...allDates].map(date => {
-      const point = { date };
-      performanceData.exercises.forEach(ex => { const e = ex.history.find(h => new Date(h.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) === date); point[ex.exercise_name] = e ? e.e1rm : null; });
+    const allDatesMap = new Map();
+    performanceData.exercises.forEach(ex => ex.history.forEach(h => {
+      const d = new Date(h.date);
+      d.setHours(0, 0, 0, 0);
+      allDatesMap.set(d.getTime(), d);
+    }));
+    const sortedTimestamps = [...allDatesMap.keys()].sort((a, b) => a - b);
+    return sortedTimestamps.map(ts => {
+      const d = allDatesMap.get(ts);
+      const dateStr = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+      const point = { date: dateStr };
+      performanceData.exercises.forEach(ex => {
+        const e = ex.history.find(h => {
+          const hd = new Date(h.date); hd.setHours(0, 0, 0, 0);
+          return hd.getTime() === ts;
+        });
+        point[ex.exercise_name] = e ? e.e1rm : null;
+      });
       return point;
+    });
+  };
+
+  const analyzeProgress = () => {
+    if (!performanceData?.exercises?.length) return [];
+    return performanceData.exercises.map(ex => {
+      let status = 'neutral';
+      if (ex.history && ex.history.length >= 2) {
+        const sortedHistory = [...ex.history].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const first = sortedHistory[0].e1rm;
+        const last = sortedHistory[sortedHistory.length - 1].e1rm;
+        if (last > first) status = 'progressing';
+        else if (last < first) status = 'regressing';
+        else status = 'stagnant';
+      }
+      return { ...ex, status };
     });
   };
 
@@ -870,7 +908,11 @@ export default function App() {
                     <button className="btn-icon-danger" onClick={e => { e.stopPropagation(); handleDeleteStudent(s.id, s.name); }}>{deletingStudentId === s.id ? <Loader2 size={18} className="spin-icon" /> : <Trash2 size={18} />}</button>
                   </div>
                   <div className="student-card-stats">
-                    {s.goal && <div className="stat"><span className="stat-label">Objetivo</span><span className="stat-value">{s.goal}</span></div>}
+                    {stagnantAlerts[s.id] > 0 ? (
+                      <div className="stat"><span className="stat-label">Estado</span><span className="stat-value" style={{ color: '#EF4444', fontSize: '13px' }}><Activity size={12} /> {stagnantAlerts[s.id]} estancados</span></div>
+                    ) : (
+                      s.goal && <div className="stat"><span className="stat-label">Objetivo</span><span className="stat-value">{s.goal}</span></div>
+                    )}
                     {s.weight_kg && <div className="stat"><span className="stat-label">Peso</span><span className="stat-value">{s.weight_kg} kg</span></div>}
                     <div className="stat"><span className="stat-label"><Flame size={12} color="#F59E0B" /> XP</span><span className="stat-value" style={{ color: '#F59E0B' }}>{(rankingsMap[s.id]?.total_xp || 0).toLocaleString()}</span></div>
                   </div>
@@ -890,15 +932,36 @@ export default function App() {
             </header>
             <div className="profile-grid">
               <section className="card">
-                <div className="card-header"><Activity size={20} className="icon-accent" /><h2>Progresión e1RM</h2></div>
+                <div className="card-header" style={{ flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Activity size={20} className="icon-accent" /><h2>Progresión e1RM</h2></div>
+                  <select className="form-input" style={{ marginLeft: 'auto', maxWidth: '220px', padding: '4px 8px' }} value={chartFilter} onChange={e => setChartFilter(e.target.value)}>
+                    <option value="all">Ver Todas las Métricas</option>
+                    <optgroup label="Cargas / e1RM">
+                      {performanceData?.exercises?.map(ex => <option key={ex.exercise_id} value={ex.exercise_id}>{ex.exercise_name}</option>)}
+                    </optgroup>
+                  </select>
+                </div>
                 {performanceData?.exercises?.length > 0 ? (
                   <>
+                    {chartFilter === 'all' && analyzeProgress().filter(ex => ex.status === 'stagnant' || ex.status === 'regressing').length > 0 && (
+                      <div className="progress-alerts" style={{ marginBottom: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {analyzeProgress().filter(ex => ex.status === 'stagnant' || ex.status === 'regressing').map(ex => (
+                          <div key={'alert-' + ex.exercise_id} style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Activity size={14} /> <strong>{ex.exercise_name}</strong> estancado/bajando
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div style={{ width: '100%', height: 280 }}>
                       <ResponsiveContainer><LineChart data={buildChartData()} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#27272a" /><XAxis dataKey="date" stroke="#71717a" fontSize={12} /><YAxis stroke="#71717a" fontSize={12} unit="kg" />
                         <Tooltip contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: 12, color: '#fafafa' }} />
                         <Legend wrapperStyle={{ color: '#a1a1aa', fontSize: 12 }} />
-                        {performanceData.exercises.map((ex, i) => <Line key={ex.exercise_id} type="monotone" dataKey={ex.exercise_name} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} connectNulls />)}
+                        {analyzeProgress().filter(ex => chartFilter === 'all' || chartFilter === ex.exercise_id).map((ex, i) => {
+                          const isWarning = (ex.status === 'stagnant' || ex.status === 'regressing') && chartFilter === 'all';
+                          const strokeColor = isWarning ? '#EF4444' : CHART_COLORS[i % CHART_COLORS.length];
+                          return <Line key={ex.exercise_id} type="monotone" dataKey={ex.exercise_name} stroke={strokeColor} strokeWidth={isWarning ? 3 : 2} dot={{ r: isWarning ? 4 : 3 }} strokeDasharray={isWarning ? "5 5" : ""} connectNulls />;
+                        })}
                       </LineChart></ResponsiveContainer>
                     </div>
                   </>
