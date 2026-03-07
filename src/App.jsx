@@ -332,6 +332,31 @@ export default function App() {
   // ======================================================================
   if (loggedInUser.role === 'student') {
 
+    const subStatus = stStudentData?.subscription_status;
+    const subDays = stStudentData?.days_remaining ?? 0;
+
+    // BLOCKED: suscripción vencida
+    if (stStudentData && subStatus === 'blocked') {
+      return (
+        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+          <Dumbbell size={48} color="#7C3AED" style={{ marginBottom: '16px' }} />
+          <h1 style={{ color: '#FAFAFA', fontSize: '1.5rem', fontWeight: 800 }}>Acceso bloqueado</h1>
+          <p style={{ color: '#A1A1AA', marginTop: '8px', maxWidth: '320px', lineHeight: 1.5 }}>
+            Tu suscripción ha vencido. Realizá el pago para volver a acceder a tu plan de entrenamiento.
+          </p>
+          <a
+            href="http://localhost:3000/elizondo-fitness.html"
+            style={{ marginTop: '24px', background: '#7C3AED', color: '#fff', padding: '14px 32px', borderRadius: '12px', fontWeight: 700, fontSize: '1rem', textDecoration: 'none', display: 'inline-block' }}
+          >
+            Abonar suscripcion
+          </a>
+          <button onClick={handleLogout} style={{ marginTop: '16px', background: 'transparent', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.85rem' }}>
+            Cerrar sesion
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="student-app">
         {/* STUDENT TOP BAR */}
@@ -345,6 +370,18 @@ export default function App() {
             <button className="btn-icon-sm" onClick={handleLogout} title="Cerrar sesión"><LogOut size={18} /></button>
           </div>
         </div>
+
+        {/* GRACE PERIOD BANNER */}
+        {subStatus === 'grace' && (
+          <div style={{ background: '#78350F', borderBottom: '1px solid #D97706', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <span style={{ color: '#FDE68A', fontSize: '0.85rem', fontWeight: 600 }}>
+              Tu suscripcion vence en {subDays === 0 ? 'menos de 1 dia' : `${subDays} dia${subDays !== 1 ? 's' : ''}`}. Renova para no perder el acceso.
+            </span>
+            <a href="http://localhost:3000/elizondo-fitness.html" style={{ background: '#D97706', color: '#fff', padding: '6px 14px', borderRadius: '8px', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              Abonar
+            </a>
+          </div>
+        )}
 
         {/* STUDENT NAV */}
         <div className="student-nav">
@@ -689,13 +726,45 @@ export default function App() {
                 }}><Save size={18} /><span>{savingStudent ? 'Guardando...' : 'Guardar Alumno'}</span></button>
               </div>
             )}
+            {/* SUBSCRIPTION SUMMARY */}
+            {students.length > 0 && (() => {
+              const activos = students.filter(s => s.subscription_status === 'active').length;
+              const grace = students.filter(s => s.subscription_status === 'grace').length;
+              const bloqueados = students.filter(s => s.subscription_status === 'blocked').length;
+              return (
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: '120px', background: '#052E16', border: '1px solid #166534', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#4ADE80' }}>{activos}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#86EFAC', marginTop: '2px' }}>Al dia</div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: '120px', background: '#431407', border: '1px solid #9A3412', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FBBF24' }}>{grace}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#FDE68A', marginTop: '2px' }}>Por vencer</div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: '120px', background: '#1F0000', border: '1px solid #7F1D1D', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#F87171' }}>{bloqueados}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#FCA5A5', marginTop: '2px' }}>Bloqueados</div>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="students-grid">
               {loadingStudents ? <div className="card" style={{ padding: '40px', textAlign: 'center', gridColumn: '1/-1' }}><Loader2 size={48} color="#7C3AED" className="spin-icon" /></div> : students.length === 0 ? <div className="card" style={{ padding: '40px', textAlign: 'center', gridColumn: '1/-1' }}><Users size={48} color="#52525B" /><h3 style={{ color: '#A1A1AA', marginTop: '12px' }}>No hay alumnos</h3></div> : null}
-              {students.map(s => (
+              {students.map(s => {
+                const subColor = s.subscription_status === 'active' ? '#4ADE80' : s.subscription_status === 'grace' ? '#FBBF24' : '#F87171';
+                const subBg = s.subscription_status === 'active' ? '#052E16' : s.subscription_status === 'grace' ? '#431407' : '#1F0000';
+                const subLabel = s.subscription_status === 'active' ? `Al dia · ${s.days_remaining}d` : s.subscription_status === 'grace' ? `Vence en ${s.days_remaining}d` : 'Vencido';
+                return (
                 <div key={s.id} className="card student-card interactive" onClick={() => handleStudentClick(s)}>
                   <div className="student-card-header">
                     <div className="avatar avatar-student" style={{ backgroundColor: '#7C3AED', color: '#fff', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 700 }}>{s.name?.charAt(0).toUpperCase()}</div>
-                    <div style={{ flex: 1 }}><h3 className="student-name">{s.name}</h3><span className="status-badge active">{s.status || 'Activo'}</span></div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 className="student-name">{s.name}</h3>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginTop: '2px' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: subColor, background: subBg, padding: '2px 8px', borderRadius: '6px', border: `1px solid ${subColor}44` }}>{subLabel}</span>
+                      </div>
+                    </div>
                     <button className="btn-icon-danger" onClick={e => { e.stopPropagation(); handleDeleteStudent(s.id, s.name); }}>{deletingStudentId === s.id ? <Loader2 size={18} className="spin-icon" /> : <Trash2 size={18} />}</button>
                   </div>
                   <div className="student-card-stats">
@@ -706,8 +775,22 @@ export default function App() {
                     )}
                     {s.weight_kg && <div className="stat"><span className="stat-label">Peso</span><span className="stat-value">{s.weight_kg} kg</span></div>}
                   </div>
+                  <button
+                    style={{ marginTop: '10px', width: '100%', background: '#7C3AED22', border: '1px solid #7C3AED', color: '#A78BFA', borderRadius: '8px', padding: '7px 0', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                    onClick={async e => {
+                      e.stopPropagation();
+                      if (!window.confirm(`Registrar pago de ${s.name}? Se habilitaran 30 dias desde hoy.`)) return;
+                      try {
+                        await axios.post(`${API_URL}/students/${s.id}/payment`);
+                        fetchStudents();
+                      } catch { alert('Error al registrar pago.'); }
+                    }}
+                  >
+                    Registrar Pago
+                  </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -718,7 +801,31 @@ export default function App() {
             <button className="btn-back" onClick={() => setCurrentView('ListaAlumnos')}><ChevronLeft size={20} /> Volver</button>
             <header className="profile-header">
               <div className="avatar avatar-student" style={{ width: 64, height: 64, backgroundColor: '#7C3AED', color: '#fff', fontSize: '28px', fontWeight: 700, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{selectedStudent.name?.charAt(0).toUpperCase()}</div>
-              <div><h1>{selectedStudent.name}</h1><span className="status-badge active">{selectedStudent.status || 'Activo'}</span></div>
+              <div>
+                <h1>{selectedStudent.name}</h1>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
+                  {(() => {
+                    const sc = selectedStudent.subscription_status;
+                    const color = sc === 'active' ? '#4ADE80' : sc === 'grace' ? '#FBBF24' : '#F87171';
+                    const bg = sc === 'active' ? '#052E16' : sc === 'grace' ? '#431407' : '#1F0000';
+                    const label = sc === 'active' ? `Al dia · ${selectedStudent.days_remaining}d restantes` : sc === 'grace' ? `Vence en ${selectedStudent.days_remaining}d` : 'Suscripcion vencida';
+                    return <span style={{ fontSize: '0.75rem', fontWeight: 700, color, background: bg, padding: '3px 10px', borderRadius: '8px', border: `1px solid ${color}44` }}>{label}</span>;
+                  })()}
+                  <button
+                    style={{ background: '#7C3AED22', border: '1px solid #7C3AED', color: '#A78BFA', borderRadius: '8px', padding: '3px 12px', fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer' }}
+                    onClick={async () => {
+                      if (!window.confirm(`Registrar pago de ${selectedStudent.name}? Se habilitaran 30 dias desde hoy.`)) return;
+                      try {
+                        const r = await axios.post(`${API_URL}/students/${selectedStudent.id}/payment`);
+                        fetchStudents();
+                        setSelectedStudent(r.data);
+                      } catch { alert('Error al registrar pago.'); }
+                    }}
+                  >
+                    Registrar Pago
+                  </button>
+                </div>
+              </div>
             </header>
             <div className="profile-grid">
               <section className="card">
