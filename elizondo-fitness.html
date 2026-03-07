@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agustín Elizondo – Personal Trainer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #7C3AED;
+      --primary-dark: #5B21B6;
+      --accent: #A78BFA;
+      --bg: #060608;
+      --bg-card: #0f0d18;
+      --bg-card2: #13111A;
+      --bg-input: #1a1730;
+      --border: #2a2640;
+      --text: #F5F3FF;
+      --text-muted: #8b8b9e;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ── UTILITIES ── */
+    .container { max-width: 700px; margin: 0 auto; padding: 0 20px; }
+    .section { padding: 88px 0; }
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(124,58,237,0.12); color: var(--accent);
+      border: 1px solid rgba(124,58,237,0.3); border-radius: 999px;
+      padding: 5px 14px; font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px;
+    }
+    .section-title { font-size: clamp(1.6rem,5vw,2.2rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 10px; }
+    .section-sub { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 36px; }
+    .divider { width: 40px; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 999px; margin-bottom: 20px; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      background: linear-gradient(135deg, var(--primary), #6D28D9);
+      color: #fff; border: none; border-radius: 14px;
+      padding: 16px 28px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; width: 100%;
+      box-shadow: 0 8px 32px rgba(124,58,237,0.45);
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .btn-primary::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,58,237,0.55); }
+    .btn-primary:hover::after { opacity: 1; }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 8px 32px rgba(37,211,102,0.4); }
+    .btn-whatsapp:hover { box-shadow: 0 12px 40px rgba(37,211,102,0.5); }
+
+    .btn-outline {
+      background: transparent; border: 1.5px solid rgba(124,58,237,0.5); color: var(--accent);
+      box-shadow: none;
+    }
+    .btn-outline:hover { background: rgba(124,58,237,0.1); box-shadow: 0 4px 20px rgba(124,58,237,0.2); }
+
+    label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select, textarea {
+      width: 100%; padding: 14px 16px; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text); font-family: inherit; font-size: 16px;
+      transition: border-color 0.2s, box-shadow 0.2s; margin-bottom: 14px; outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+    textarea { resize: vertical; min-height: 90px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      transition: background 0.3s, backdrop-filter 0.3s, box-shadow 0.3s;
+      padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    nav.scrolled {
+      background: rgba(6,6,8,0.88); backdrop-filter: blur(16px) saturate(180%);
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .nav-brand { font-weight: 900; font-size: 1rem; letter-spacing: -0.5px; }
+    .nav-brand span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 12px; }
+    .nav-link { font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-link:hover { color: var(--text); }
+    .nav-cta {
+      font-size: 0.82rem; font-weight: 700; color: #fff; text-decoration: none;
+      background: var(--primary); padding: 9px 18px; border-radius: 10px;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .nav-cta:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      padding: 120px 20px 80px; position: relative; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.25) 0%, transparent 70%);
+    }
+    /* Floating orbs */
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(60px);
+      animation: float 8s ease-in-out infinite; pointer-events: none;
+    }
+    .orb-1 { width: 300px; height: 300px; background: rgba(124,58,237,0.18); top: 10%; left: -8%; animation-delay: 0s; }
+    .orb-2 { width: 200px; height: 200px; background: rgba(167,139,250,0.12); top: 60%; right: -5%; animation-delay: -3s; }
+    .orb-3 { width: 160px; height: 160px; background: rgba(109,40,217,0.15); bottom: 15%; left: 20%; animation-delay: -5s; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-28px) scale(1.04); }
+    }
+    /* Floating particles */
+    .particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .particle {
+      position: absolute; width: 2px; height: 2px; background: var(--accent);
+      border-radius: 50%; opacity: 0;
+      animation: particle-rise linear infinite;
+    }
+    @keyframes particle-rise {
+      0% { opacity: 0; transform: translateY(0); }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.2; }
+      100% { opacity: 0; transform: translateY(-100vh); }
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(124,58,237,0.15); color: var(--accent);
+      border: 1px solid rgba(124,58,237,0.35); border-radius: 999px;
+      padding: 7px 18px; font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 28px;
+      animation: slideDown 0.8s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 9vw, 4rem); font-weight: 900;
+      letter-spacing: -2.5px; line-height: 1.05; margin-bottom: 22px;
+      animation: heroTitle 1s cubic-bezier(.22,1,.36,1) 0.1s both;
+    }
+    @keyframes heroTitle { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, #A78BFA 0%, #7C3AED 50%, #C4B5FD 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      background-size: 200% auto;
+      animation: gradient-shift 4s ease infinite;
+    }
+    @keyframes gradient-shift { 0%,100% { background-position: 0% center; } 50% { background-position: 100% center; } }
+
+    .hero p {
+      color: var(--text-muted); font-size: 1.1rem; line-height: 1.7;
+      max-width: 480px; margin: 0 auto 40px;
+      animation: heroTitle 1s cubic-bezier(.22,1,.36,1) 0.2s both;
+    }
+    .hero-btns {
+      display: flex; flex-direction: column; gap: 12px;
+      width: 100%; max-width: 360px;
+      animation: heroTitle 1s cubic-bezier(.22,1,.36,1) 0.3s both;
+    }
+    .hero-stats {
+      display: flex; gap: 32px; margin-top: 56px; justify-content: center;
+      animation: heroTitle 1s cubic-bezier(.22,1,.36,1) 0.4s both;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat strong { display: block; font-size: 1.8rem; font-weight: 900; color: var(--accent); }
+    .hero-stat span { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .hero-scroll-indicator {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--text-muted); font-size: 0.7rem; letter-spacing: 1px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(6px);} }
+    .scroll-line { width: 1px; height: 32px; background: linear-gradient(to bottom, var(--primary), transparent); }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      background: var(--bg-card2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 28px 20px;
+    }
+    .stats-bar-inner { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
+    .stat-item { text-align: center; }
+    .stat-item strong { display: block; font-size: 2rem; font-weight: 900; color: var(--accent); }
+    .stat-item span { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+    /* ── TRANSFORMACIONES ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .before-after {
+      border-radius: 16px; overflow: hidden; aspect-ratio: 3/4;
+      background: linear-gradient(135deg, var(--bg-card), #1a1726);
+      border: 1px solid var(--border); position: relative;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; color: var(--text-muted); font-size: 0.72rem; padding: 12px;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .before-after:hover { transform: scale(1.02); border-color: rgba(124,58,237,0.4); box-shadow: 0 8px 32px rgba(124,58,237,0.15); }
+    .before-after .photo-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.3; }
+    .before-after-label {
+      position: absolute; bottom: 10px; left: 10px;
+      background: rgba(124,58,237,0.85); color: #fff;
+      font-size: 0.62rem; font-weight: 700; padding: 3px 8px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── SOBRE MÍ ── */
+    .about-inner { display: flex; flex-direction: column; gap: 28px; }
+    .about-photo {
+      width: 100%; aspect-ratio: 4/3; border-radius: 20px;
+      background: linear-gradient(135deg, var(--bg-card), #1a1726);
+      border: 1.5px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 0.85rem; gap: 8px;
+    }
+    .about-text h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 14px; }
+    .about-text p { color: var(--text-muted); line-height: 1.75; margin-bottom: 12px; font-size: 0.95rem; }
+    .about-stats { display: flex; gap: 12px; margin-top: 20px; }
+    .about-stat {
+      flex: 1; text-align: center;
+      background: linear-gradient(135deg, var(--bg-card), #1a1726);
+      border: 1px solid var(--border); border-radius: 16px; padding: 16px 8px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .about-stat:hover { border-color: rgba(124,58,237,0.4); transform: translateY(-2px); }
+    .about-stat strong { display: block; font-size: 1.6rem; font-weight: 900; color: var(--accent); }
+    .about-stat span { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+
+    /* ── METODOLOGÍA ── */
+    .method-grid { display: flex; flex-direction: column; gap: 12px; }
+    .method-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px; display: flex; gap: 16px; align-items: flex-start;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+    .method-card:hover { border-color: rgba(124,58,237,0.4); transform: translateX(4px); box-shadow: 0 4px 24px rgba(124,58,237,0.08); }
+    .method-icon { font-size: 1.6rem; flex-shrink: 0; line-height: 1; }
+    .method-card h4 { font-size: 0.95rem; font-weight: 800; margin-bottom: 4px; }
+    .method-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── PLANES ── */
+    .plans-grid { display: flex; flex-direction: column; gap: 16px; }
+    .plan-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 28px; position: relative;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.3); }
+    .plan-card.featured {
+      border-color: rgba(124,58,237,0.6);
+      background: linear-gradient(145deg, #0f0d18, #16102a);
+      box-shadow: 0 0 40px rgba(124,58,237,0.15);
+    }
+    .plan-card.featured:hover { box-shadow: 0 16px 60px rgba(124,58,237,0.3); }
+    .plan-tag {
+      position: absolute; top: -13px; right: 20px;
+      background: linear-gradient(135deg, var(--primary), #6D28D9);
+      color: #fff; font-size: 0.7rem; font-weight: 700;
+      padding: 4px 14px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+    }
+    .plan-card h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+    .plan-card ul { list-style: none; margin: 14px 0 22px; }
+    .plan-card li { color: var(--text-muted); font-size: 0.88rem; padding: 5px 0; display: flex; gap: 10px; align-items: flex-start; }
+    .plan-card li::before { content: "✓"; color: var(--accent); font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+    .plan-price { font-size: 1.7rem; font-weight: 900; color: var(--accent); margin-bottom: 4px; }
+    .plan-price-note { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 18px; }
+
+    /* ── TESTIMONIOS ── */
+    .testimonials-grid { display: flex; flex-direction: column; gap: 16px; }
+    .testimonial-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 22px;
+      transition: border-color 0.25s, transform 0.25s;
+    }
+    .testimonial-card:hover { border-color: rgba(124,58,237,0.3); transform: translateY(-2px); }
+    .testimonial-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .testimonial-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .testimonial-name { font-weight: 700; font-size: 0.95rem; }
+    .testimonial-sub { font-size: 0.72rem; color: var(--accent); font-weight: 600; }
+    .testimonial-text { color: var(--text-muted); line-height: 1.65; font-size: 0.88rem; font-style: italic; }
+    .stars { color: #F59E0B; font-size: 0.85rem; margin-bottom: 8px; letter-spacing: 2px; }
+
+    /* ── CONTACTO ── */
+    .contact-btns { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+    .form-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 28px;
+    }
+    .success-msg {
+      color: #10B981; font-weight: 700; text-align: center; padding: 16px;
+      background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25);
+      border-radius: 12px; display: none; margin-bottom: 16px;
+    }
+
+    /* ── LOGIN SECTION ── */
+    .login-section {
+      border-top: 1px solid var(--border);
+      background: radial-gradient(ellipse at 50% 100%, rgba(124,58,237,0.08) 0%, transparent 70%);
+    }
+    .login-card {
+      background: linear-gradient(145deg, rgba(15,13,24,0.9), rgba(19,17,26,0.9));
+      border: 1px solid rgba(124,58,237,0.25); border-radius: 22px; padding: 36px;
+      max-width: 400px; margin: 0 auto;
+      box-shadow: 0 0 60px rgba(124,58,237,0.08), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .login-card h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+    .login-card > p { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 26px; line-height: 1.5; }
+    .login-error {
+      background: rgba(239,68,68,0.1); color: #EF4444;
+      border: 1px solid rgba(239,68,68,0.25); border-radius: 10px;
+      padding: 10px 14px; font-size: 0.85rem; font-weight: 600;
+      text-align: center; margin-bottom: 12px; display: none;
+    }
+    .login-spinner {
+      width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FLOATING LOGIN BUTTON ── */
+    .float-login-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #7C3AED, #5B21B6);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(124,58,237,0.55), 0 2px 8px rgba(0,0,0,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.2px;
+    }
+    .float-login-btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 14px 40px rgba(124,58,237,0.65), 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .float-login-btn:active { transform: translateY(0) scale(0.98); }
+    .float-login-btn svg { flex-shrink: 0; }
+
+    /* ── LOGIN MODAL ── */
+    .login-modal-overlay {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(6,6,8,0.82);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: flex-end; justify-content: flex-end;
+      padding: 0 24px 100px 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .login-modal-overlay.open {
+      opacity: 1; pointer-events: all;
+    }
+    .login-modal {
+      background: linear-gradient(145deg, #0f0d18, #13111A);
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: 22px;
+      padding: 28px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 60px rgba(124,58,237,0.12);
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.28s cubic-bezier(.22,1,.36,1);
+    }
+    .login-modal-overlay.open .login-modal {
+      transform: translateY(0) scale(1);
+    }
+    .login-modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px;
+    }
+    .login-modal-header h3 { font-size: 1.1rem; font-weight: 800; color: #fff; }
+    .login-modal-close {
+      background: none; border: none; color: #52525B; cursor: pointer;
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s; font-size: 1.3rem; line-height: 1;
+    }
+    .login-modal-close:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .login-modal label {
+      display: block; font-size: 0.78rem; font-weight: 600;
+      color: #A1A1AA; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .login-modal input {
+      width: 100%; background: #1a1730; border: 1px solid #2a2640;
+      border-radius: 12px; padding: 11px 14px; color: #fff; font-size: 0.92rem;
+      outline: none; margin-bottom: 14px; transition: border-color 0.2s;
+    }
+    .login-modal input:focus { border-color: rgba(124,58,237,0.6); }
+    .login-modal .modal-error {
+      background: rgba(239,68,68,0.1); color: #EF4444;
+      border: 1px solid rgba(239,68,68,0.25); border-radius: 10px;
+      padding: 9px 12px; font-size: 0.82rem; font-weight: 600;
+      margin-bottom: 12px; display: none;
+    }
+    .login-modal .btn-modal {
+      width: 100%; background: linear-gradient(135deg, #7C3AED, #6D28D9);
+      color: #fff; border: none; border-radius: 12px;
+      padding: 13px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 6px 24px rgba(124,58,237,0.4);
+    }
+    .login-modal .btn-modal:hover { transform: translateY(-1px); box-shadow: 0 10px 32px rgba(124,58,237,0.5); }
+    .login-modal .btn-modal:disabled { opacity: 0.7; cursor: default; transform: none; }
+    .login-modal-brand {
+      font-size: 0.72rem; color: #52525B; text-align: center; margin-top: 14px;
+    }
+    .login-modal-brand span { color: #7C3AED; font-weight: 700; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 36px 20px;
+      border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem;
+    }
+    footer strong { color: var(--accent); }
+    .footer-links { display: flex; justify-content: center; gap: 20px; margin-top: 12px; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.78rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
+
+    /* ── SECTION BG VARIANTS ── */
+    .bg-alt { background: rgba(124,58,237,0.03); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 480px) {
+      .hero-stats { gap: 20px; }
+      .hero-stat strong { font-size: 1.4rem; }
+      .stats-bar-inner { gap: 24px; }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      nav { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PARTICLES CANVAS -->
+<div class="particles" id="particles"></div>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <div class="nav-brand">AE <span>Personal Training</span></div>
+  <div class="nav-links">
+    <a href="#planes" class="nav-link">Planes</a>
+    <a href="#contacto" class="nav-cta">Empezar →</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;">
+    <span class="hero-tag">📍 Entrenamiento Online · Metodología RPE</span>
+
+    <h1>Agustín Elizondo<br /><span class="gradient-text">Personal Trainer</span></h1>
+
+    <p>Transformá tu cuerpo con ciencia. Entrenamiento individualizado, progresión real y seguimiento permanente para resultados que duran.</p>
+
+    <div class="hero-btns">
+      <a href="#contacto" class="btn-primary" style="font-size:1.05rem;padding:18px 32px;">
+        💪 Quiero mi plan personalizado
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <strong class="counter" data-target="50">0</strong>
+        <span>Alumnos activos</span>
+      </div>
+      <div class="hero-stat">
+        <strong class="counter" data-target="3">0</strong>
+        <span>Años de experiencia</span>
+      </div>
+      <div class="hero-stat">
+        <strong>100%</strong>
+        <span>Online</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-scroll-indicator">
+    <div class="scroll-line"></div>
+    <span>SCROLL</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     STATS BAR
+══════════════════════════════════════ -->
+<div class="stats-bar reveal">
+  <div class="stats-bar-inner container">
+    <div class="stat-item"><strong>RPE</strong><span>Autoregulación</span></div>
+    <div class="stat-item"><strong>e1RM</strong><span>Progresión científica</span></div>
+    <div class="stat-item"><strong>App</strong><span>Seguimiento en tiempo real</span></div>
+    <div class="stat-item"><strong>24hs</strong><span>Respuesta garantizada</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TRANSFORMACIONES
+══════════════════════════════════════ -->
+<section class="section" id="transformaciones">
+  <div class="container">
+    <div class="reveal"><div class="divider"></div></div>
+    <div class="reveal reveal-delay-1"><span class="section-eyebrow">Resultados</span></div>
+    <h2 class="section-title reveal reveal-delay-2">Transformaciones reales</h2>
+    <p class="section-sub reveal reveal-delay-3">Alumnos reales. Progreso documentado semana a semana.</p>
+
+    <div class="grid-3 reveal reveal-delay-4">
+      <!--
+        INSTRUCCIÓN: Reemplazá cada div.before-after con:
+        <div style="position:relative;border-radius:16px;overflow:hidden;aspect-ratio:3/4;">
+          <img src="transform1.jpg" alt="Transformación" style="width:100%;height:100%;object-fit:cover;" />
+          <span class="before-after-label">Alumno 1 · -8kg</span>
+        </div>
+      -->
+      <div class="before-after">
+        <span class="photo-icon">📸</span>
+        <span>Foto antes/<br />después</span>
+        <span class="before-after-label">Alumno 1</span>
+      </div>
+      <div class="before-after">
+        <span class="photo-icon">📸</span>
+        <span>Foto antes/<br />después</span>
+        <span class="before-after-label">Alumno 2</span>
+      </div>
+      <div class="before-after">
+        <span class="photo-icon">📸</span>
+        <span>Foto antes/<br />después</span>
+        <span class="before-after-label">Alumno 3</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SOBRE MÍ
+══════════════════════════════════════ -->
+<section class="section bg-alt" id="sobre-mi">
+  <div class="container">
+    <div class="reveal"><div class="divider"></div></div>
+    <div class="about-inner">
+      <!--
+        INSTRUCCIÓN: Reemplazá el div.about-photo con:
+        <img src="agustin.jpg" alt="Agustín Elizondo" style="width:100%;border-radius:20px;border:1.5px solid var(--border);" />
+      -->
+      <div class="about-photo reveal">
+        <span style="font-size:3rem;">💪</span>
+        <span style="color:var(--text-muted);">agustin.jpg</span>
+      </div>
+      <div class="about-text">
+        <div class="reveal"><div class="divider"></div></div>
+        <h2 class="section-title reveal reveal-delay-1">Sobre mí</h2>
+        <h3 class="reveal reveal-delay-2" style="font-size:1.5rem;font-weight:800;margin-bottom:14px;color:var(--accent);">Agustín Elizondo</h3>
+        <p class="reveal reveal-delay-3">Personal Trainer certificado especializado en metodología de autoregulación por RPE. Combino ciencia del ejercicio con seguimiento individualizado para que cada alumno progrese a su ritmo óptimo y sin riesgo de sobreentrenamiento.</p>
+        <p class="reveal reveal-delay-4" style="color:var(--text-muted);line-height:1.75;font-size:0.95rem;"><!-- COMPLETÁ con tu metodología, certificaciones y experiencia --></p>
+        <div class="about-stats reveal">
+          <div class="about-stat"><strong class="counter" data-target="50">0</strong><span>Alumnos</span></div>
+          <div class="about-stat"><strong class="counter" data-target="3">0</strong><span>Años</span></div>
+          <div class="about-stat"><strong>100%</strong><span>Online</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     METODOLOGÍA
+══════════════════════════════════════ -->
+<section class="section" id="metodologia">
+  <div class="container">
+    <div class="reveal"><div class="divider"></div></div>
+    <div class="reveal reveal-delay-1"><span class="section-eyebrow">Cómo trabajamos</span></div>
+    <h2 class="section-title reveal reveal-delay-2">Metodología basada en ciencia</h2>
+    <p class="section-sub reveal reveal-delay-3">Sin programas genéricos. Todo calculado para vos.</p>
+
+    <div class="method-grid">
+      <div class="method-card reveal reveal-delay-1">
+        <span class="method-icon">🎯</span>
+        <div>
+          <h4>Evaluación inicial completa</h4>
+          <p>Análisis de tu historial, objetivos, disponibilidad y nivel. Todo empieza con entenderte a vos.</p>
+        </div>
+      </div>
+      <div class="method-card reveal reveal-delay-2">
+        <span class="method-icon">📊</span>
+        <div>
+          <h4>Progresión por RPE (Esfuerzo Percibido)</h4>
+          <p>Cargás cada serie en la app, y el sistema calcula automáticamente tu próximo objetivo de peso. Progresión inteligente semana a semana.</p>
+        </div>
+      </div>
+      <div class="method-card reveal reveal-delay-3">
+        <span class="method-icon">🔥</span>
+        <div>
+          <h4>Seguimiento en tiempo real</h4>
+          <p>Ves tu racha de entrenamiento, historial de cargas y próximos objetivos. Siempre sabés a dónde vas.</p>
+        </div>
+      </div>
+      <div class="method-card reveal reveal-delay-4">
+        <span class="method-icon">🥗</span>
+        <div>
+          <h4>Nutrición integrada</h4>
+          <p>Plan de alimentación personalizado con macros y comidas ajustadas a tu meta, todo dentro de la misma plataforma.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     PLANES
+══════════════════════════════════════ -->
+<section class="section bg-alt" id="planes">
+  <div class="container">
+    <div class="reveal"><div class="divider"></div></div>
+    <div class="reveal reveal-delay-1"><span class="section-eyebrow">Invertí en vos</span></div>
+    <h2 class="section-title reveal reveal-delay-2">Planes</h2>
+    <p class="section-sub reveal reveal-delay-3">Elegí el que mejor se adapta a tu objetivo</p>
+
+    <div class="plans-grid">
+      <div class="plan-card reveal reveal-delay-1">
+        <h3>💪 Plan Entrenamiento</h3>
+        <p class="plan-price">Consultá</p>
+        <p class="plan-price-note">precio según objetivo y duración</p>
+        <ul>
+          <li>Rutina 100% personalizada</li>
+          <li>Seguimiento semanal de cargas y progresión</li>
+          <li>Sistema de progresión por RPE + e1RM</li>
+          <li>Acceso a la app de entrenamiento</li>
+          <li>Ajustes y adaptaciones cuando lo necesites</li>
+        </ul>
+        <a href="#contacto" class="btn-primary">Empezar →</a>
+      </div>
+
+      <div class="plan-card featured reveal reveal-delay-2">
+        <span class="plan-tag">⭐ Más elegido</span>
+        <h3>🥗 Plan Nutricional</h3>
+        <p class="plan-price">Consultá</p>
+        <p class="plan-price-note">precio según objetivo</p>
+        <ul>
+          <li>Plan de alimentación personalizado</li>
+          <li>Macros y calorías ajustadas a tu meta</li>
+          <li>Comidas organizadas en la app</li>
+          <li>Seguimiento y ajustes mensuales</li>
+          <li>Sin alimentos prohibidos</li>
+        </ul>
+        <a href="#contacto" class="btn-primary">Empezar →</a>
+      </div>
+
+      <div class="plan-card reveal reveal-delay-3" style="border-color:rgba(245,158,11,0.4);background:linear-gradient(145deg,var(--bg-card),#16120a);">
+        <h3>🔥 Pack Completo</h3>
+        <p class="plan-price" style="color:#F59E0B;">Consultá</p>
+        <p class="plan-price-note">entrenamiento + nutrición</p>
+        <ul>
+          <li>Todo del Plan Entrenamiento</li>
+          <li>Todo del Plan Nutricional</li>
+          <li>Seguimiento combinado semanal</li>
+          <li>Prioridad en respuestas y ajustes</li>
+          <li>La mejor relación valor/resultado</li>
+        </ul>
+        <a href="#contacto" class="btn-primary" style="background:linear-gradient(135deg,#F59E0B,#D97706);box-shadow:0 8px 32px rgba(245,158,11,0.4);">El mejor valor →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     TESTIMONIOS
+══════════════════════════════════════ -->
+<section class="section" id="testimonios">
+  <div class="container">
+    <div class="reveal"><div class="divider"></div></div>
+    <div class="reveal reveal-delay-1"><span class="section-eyebrow">Resultados reales</span></div>
+    <h2 class="section-title reveal reveal-delay-2">Lo que dicen mis alumnos</h2>
+    <p class="section-sub reveal reveal-delay-3">Personas reales. Resultados documentados.</p>
+
+    <div class="testimonials-grid">
+      <!-- INSTRUCCIÓN: Reemplazá con los testimonios reales de tus alumnos -->
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar">J</div>
+          <div>
+            <p class="testimonial-name">Juan P.</p>
+            <p class="testimonial-sub">+12 kg de músculo en 6 meses</p>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"El sistema por RPE cambió todo. Nunca había progresado tan rápido de forma sostenida. Agustín siempre está disponible y sabe ajustar cuando algo no funciona."</p>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#10B981,#059669);">M</div>
+          <div>
+            <p class="testimonial-name">María G.</p>
+            <p class="testimonial-sub">Recomposición corporal exitosa</p>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"Vine con el objetivo de perder grasa sin perder músculo. Con el plan nutricional de Agustín llegué a mi mejor forma física. El seguimiento es increíble."</p>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-3">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706);">C</div>
+          <div>
+            <p class="testimonial-name">Carlos R.</p>
+            <p class="testimonial-sub">Fuerza + Hipertrofia</p>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"La app para registrar series y ver mi progreso es un plus enorme. Ver mis cargas subir semana a semana me mantiene motivado. 100% recomendado."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     CONTACTO
+══════════════════════════════════════ -->
+<section class="section bg-alt" id="contacto">
+  <div class="container">
+    <div class="reveal"><div class="divider"></div></div>
+    <div class="reveal reveal-delay-1"><span class="section-eyebrow">Empezá hoy</span></div>
+    <h2 class="section-title reveal reveal-delay-2">Tu transformación empieza acá</h2>
+    <p class="section-sub reveal reveal-delay-3">Contáme tu objetivo y te diseño un plan personalizado</p>
+
+    <div class="contact-btns reveal reveal-delay-1">
+      <!-- INSTRUCCIÓN: Reemplazá el número con el tuyo real -->
+      <a href="https://wa.me/5491100000000?text=Hola%20Agust%C3%ADn%2C%20vi%20tu%20web%20y%20quiero%20informaci%C3%B3n%20sobre%20tus%20planes"
+         class="btn-primary btn-whatsapp" target="_blank" rel="noopener">
+        📱 Escribime por WhatsApp
+      </a>
+      <!-- INSTRUCCIÓN: Reemplazá con tu email real -->
+      <a href="mailto:agustin@elizondofitness.com?subject=Consulta%20sobre%20planes"
+         class="btn-primary btn-outline">
+        ✉️ Escribir por Email
+      </a>
+    </div>
+
+    <div class="form-card reveal reveal-delay-2">
+      <p id="form-success" class="success-msg">✅ ¡Recibido! Te contacto en menos de 24hs.</p>
+      <h3 style="font-size:1rem;font-weight:800;margin-bottom:4px;">Dejá tus datos</h3>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:20px;">Te contacto en menos de 24hs.</p>
+      <form id="lead-form">
+        <div><label>Nombre *</label><input type="text" id="f-name" placeholder="Tu nombre" required /></div>
+        <div><label>WhatsApp *</label><input type="tel" id="f-phone" placeholder="+54 9 11 0000 0000" required /></div>
+        <div><label>Email</label><input type="email" id="f-email" placeholder="tu@email.com" /></div>
+        <div>
+          <label>¿Qué plan te interesa?</label>
+          <select id="f-plan">
+            <option value="">Seleccioná un plan</option>
+            <option value="entrenamiento">Plan Entrenamiento</option>
+            <option value="nutricion">Plan Nutricional</option>
+            <option value="completo">Pack Completo</option>
+            <option value="consulta">Solo quiero consultar</option>
+          </select>
+        </div>
+        <div><label>Tu objetivo</label><textarea id="f-goal" placeholder="Ej: Quiero ganar músculo, perder grasa, mejorar mi fuerza..."></textarea></div>
+        <button type="submit" class="btn-primary" id="submit-btn">Enviar consulta →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <strong>Agustín Elizondo Personal Training</strong></p>
+  <p style="margin-top:6px;">Entrenamiento con ciencia. Resultados reales.</p>
+  <div class="footer-links">
+    <a href="#transformaciones">Resultados</a>
+    <a href="#planes">Planes</a>
+    <a href="#contacto">Contacto</a>
+  </div>
+</footer>
+
+<!-- FLOATING LOGIN BUTTON -->
+<button class="float-login-btn" onclick="openFloatLogin()">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+  Ingresar
+</button>
+
+<!-- FLOATING LOGIN MODAL -->
+<div class="login-modal-overlay" id="float-login-overlay">
+  <div class="login-modal">
+    <div class="login-modal-header">
+      <h3>🏋️ Acceso alumnos</h3>
+      <button class="login-modal-close" onclick="closeFloatLogin()">×</button>
+    </div>
+    <div id="float-error" class="modal-error"></div>
+    <div>
+      <label>Email</label>
+      <input type="email" id="float-email" placeholder="tu@email.com" autocomplete="email" />
+    </div>
+    <div>
+      <label>Contraseña</label>
+      <input type="password" id="float-pass" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-modal" id="float-login-btn-submit" onclick="handleFloatLogin()">Ingresar →</button>
+    <p class="login-modal-brand">AE Personal Training · <span>Panel del alumno</span></p>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // CONFIGURACIÓN — completá con tus datos reales
+  // ============================================================
+  const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
+  const SUPABASE_ANON_KEY = 'TU_ANON_KEY';
+  const DASHBOARD_URL = 'http://localhost:5174'; // En producción: URL del dashboard desplegado
+  const BACKEND_URL = 'http://localhost:8000';   // En producción: URL del backend en Render
+
+  // ── NAV scroll effect ──
+  const nav = document.getElementById('main-nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 30);
+  }, { passive: true });
+
+  // ── Scroll reveal ──
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // ── Animated counters ──
+  function animateCounter(el, target, duration = 1800) {
+    const start = performance.now();
+    const update = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.round(ease * target) + '+';
+      if (t < 1) requestAnimationFrame(update);
+      else el.textContent = target + '+';
+    };
+    requestAnimationFrame(update);
+  }
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const target = parseInt(e.target.dataset.target);
+        animateCounter(e.target, target);
+        counterObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+
+  // ── Floating particles ──
+  (function createParticles() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.cssText = `
+        left: ${Math.random() * 100}%;
+        bottom: ${Math.random() * 40}%;
+        animation-duration: ${6 + Math.random() * 10}s;
+        animation-delay: ${Math.random() * 8}s;
+        width: ${1 + Math.random() * 2}px;
+        height: ${1 + Math.random() * 2}px;
+        opacity: ${0.2 + Math.random() * 0.5};
+      `;
+      container.appendChild(p);
+    }
+  })();
+
+  // ── Lead form ──
+  document.getElementById('lead-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="login-spinner"></span> Enviando...';
+
+    const payload = {
+      name: document.getElementById('f-name').value,
+      phone: document.getElementById('f-phone').value,
+      email: document.getElementById('f-email').value || null,
+      plan_interest: document.getElementById('f-plan').value || null,
+      goal: document.getElementById('f-goal').value || null,
+    };
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok || res.status === 201) {
+        document.getElementById('lead-form').style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+      } else { throw new Error(); }
+    } catch {
+      alert('Hubo un error. Por favor escribinos por WhatsApp.');
+      btn.disabled = false;
+      btn.textContent = 'Enviar consulta →';
+    }
+  });
+
+
+  // ── Floating login modal ──
+  const floatOverlay = document.getElementById('float-login-overlay');
+  const floatEmail   = document.getElementById('float-email');
+  const floatPass    = document.getElementById('float-pass');
+  const floatErr     = document.getElementById('float-error');
+  const floatBtn     = document.getElementById('float-login-btn-submit');
+
+  function openFloatLogin() {
+    floatOverlay.classList.add('open');
+    setTimeout(() => floatEmail.focus(), 200);
+  }
+  function closeFloatLogin() {
+    floatOverlay.classList.remove('open');
+    floatErr.style.display = 'none';
+    floatEmail.value = '';
+    floatPass.value = '';
+    floatBtn.disabled = false;
+    floatBtn.textContent = 'Ingresar →';
+  }
+
+  // Close on overlay click
+  floatOverlay.addEventListener('click', e => { if (e.target === floatOverlay) closeFloatLogin(); });
+
+  // Enter key
+  floatPass.addEventListener('keydown', e => { if (e.key === 'Enter') handleFloatLogin(); });
+  floatEmail.addEventListener('keydown', e => { if (e.key === 'Enter') floatPass.focus(); });
+
+  async function handleFloatLogin() {
+    const email = floatEmail.value.trim();
+    const password = floatPass.value;
+    floatErr.style.display = 'none';
+    if (!email || !password) {
+      floatErr.textContent = 'Completá email y contraseña';
+      floatErr.style.display = 'block';
+      return;
+    }
+    floatBtn.disabled = true;
+    floatBtn.innerHTML = '<span class="login-spinner"></span> Ingresando...';
+    try {
+      const res = await fetch(`${BACKEND_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (!res.ok) throw new Error();
+      const user = await res.json();
+      localStorage.setItem('fitpro_user', JSON.stringify(user));
+      window.location.href = DASHBOARD_URL;
+    } catch {
+      floatErr.textContent = 'Email o contraseña incorrectos';
+      floatErr.style.display = 'block';
+      floatBtn.disabled = false;
+      floatBtn.textContent = 'Ingresar →';
+    }
+  }
+</script>
+
+</body>
+</html>
