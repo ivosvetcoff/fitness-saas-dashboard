@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Registro — AE Personal Training</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #7C3AED;
+      --accent-light: #A78BFA;
+      --bg: #09090B;
+      --bg-card: #0f0d18;
+      --bg-card2: #13111A;
+      --border: rgba(124,58,237,0.15);
+      --text: #FAFAFA;
+      --text-muted: #A1A1AA;
+      --green: #10B981;
+      --red: #EF4444;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .topbar-logo { font-size: 1.2rem; font-weight: 900; }
+    .topbar-logo span { color: var(--accent-light); }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap { padding: 0 20px; background: var(--bg-card); padding-bottom: 14px; }
+    .progress-steps { display: flex; gap: 6px; }
+    .step-dot {
+      flex: 1; height: 4px; border-radius: 99px;
+      background: rgba(124,58,237,0.2);
+      transition: background 0.3s;
+    }
+    .step-dot.done { background: var(--accent); }
+    .step-dot.active { background: var(--accent-light); }
+
+    /* ── FORM WRAPPER ── */
+    .form-wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .step-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .step-sub {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    /* ── FIELDS ── */
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .field label .req { color: var(--accent-light); margin-left: 2px; }
+
+    .field input,
+    .field select {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .field input:focus,
+    .field select:focus { border-color: var(--accent); }
+    .field input::placeholder { color: #52525B; }
+    .field select option { background: #1a1726; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* password strength */
+    .pw-strength { height: 4px; border-radius: 99px; margin-top: 6px; background: rgba(124,58,237,0.15); transition: background 0.3s; }
+    .pw-strength.weak { background: #EF4444; width: 33%; }
+    .pw-strength.ok { background: #F59E0B; width: 66%; }
+    .pw-strength.strong { background: var(--green); width: 100%; }
+
+    /* selector buttons */
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+    .options-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .opt-btn {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 12px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      line-height: 1.3;
+    }
+    .opt-btn:hover { border-color: rgba(124,58,237,0.4); color: var(--text); }
+    .opt-btn.selected { border-color: var(--accent); background: rgba(124,58,237,0.12); color: var(--accent-light); }
+
+    /* ── BUTTONS ── */
+    .btn-next {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 15px;
+      font-size: 1rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-next:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-next:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-back {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 14px;
+      display: block;
+      text-align: center;
+      width: 100%;
+      padding: 6px;
+    }
+    .btn-back:hover { color: var(--text); }
+
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      color: #FCA5A5;
+      font-size: 0.85rem;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── FOTO UPLOAD ── */
+    .foto-area {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .foto-area:hover { border-color: rgba(124,58,237,0.4); }
+    .foto-area input { display: none; }
+    .foto-preview {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 10px;
+      display: none;
+    }
+    .foto-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .foto-label { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── SUCCESS SCREEN ── */
+    #success-screen {
+      display: none;
+      min-height: 80vh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+    }
+    #success-screen.visible { display: flex; }
+    .success-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+    .success-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 12px; }
+    .success-sub { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; max-width: 320px; }
+    .success-wa {
+      margin-top: 28px;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 28px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">AE <span>Personal Training</span></div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap">
+  <div class="progress-steps" id="progress-steps">
+    <div class="step-dot active" id="dot-0"></div>
+    <div class="step-dot" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="form-wrap" id="form-wrap">
+
+  <!-- ───── PASO 0: Cuenta ───── -->
+  <div class="step active" id="step-0">
+    <h2 class="step-title">Crea tu cuenta</h2>
+    <p class="step-sub">Ingresa tus datos de acceso. Los usaras para entrar a tu panel de entrenamiento.</p>
+
+    <div class="error-msg" id="err-0"></div>
+
+    <div class="field">
+      <label>Nombre y apellido <span class="req">*</span></label>
+      <input id="f-name" type="text" placeholder="Juan Perez" autocomplete="name" />
+    </div>
+    <div class="field">
+      <label>Email <span class="req">*</span></label>
+      <input id="f-email" type="email" placeholder="tu@email.com" autocomplete="email" />
+    </div>
+    <div class="field">
+      <label>Contraseña <span class="req">*</span> (min. 8 caracteres)</label>
+      <input id="f-password" type="password" placeholder="••••••••" autocomplete="new-password" oninput="checkPw(this.value)" />
+      <div class="pw-strength" id="pw-bar"></div>
+    </div>
+    <div class="field">
+      <label>Confirmar contraseña <span class="req">*</span></label>
+      <input id="f-password2" type="password" placeholder="••••••••" autocomplete="new-password" />
+    </div>
+    <div class="field">
+      <label>WhatsApp</label>
+      <input id="f-whatsapp" type="tel" placeholder="+54 9 11 1234-5678" autocomplete="tel" />
+    </div>
+
+    <button class="btn-next" onclick="goStep(1)">Continuar →</button>
+  </div>
+
+  <!-- ───── PASO 1: Datos personales ───── -->
+  <div class="step" id="step-1">
+    <h2 class="step-title">Tus datos fisicos</h2>
+    <p class="step-sub">Esto le permite a Agustin armar tu plan personalizado.</p>
+
+    <div class="error-msg" id="err-1"></div>
+
+    <div class="field">
+      <label>Fecha de nacimiento</label>
+      <input id="f-dob" type="date" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Peso actual (kg)</label>
+        <input id="f-weight" type="number" placeholder="75" min="30" max="300" step="0.5" />
+      </div>
+      <div class="field">
+        <label>Altura (cm)</label>
+        <input id="f-height" type="number" placeholder="175" min="100" max="250" />
+      </div>
+    </div>
+
+    <button class="btn-next" onclick="goStep(2)">Continuar →</button>
+    <button class="btn-back" onclick="goStep(0)">← Volver</button>
+  </div>
+
+  <!-- ───── PASO 2: Objetivo y experiencia ───── -->
+  <div class="step" id="step-2">
+    <h2 class="step-title">Tu objetivo</h2>
+    <p class="step-sub">Selecciona lo que mejor describe tu meta y tu nivel actual.</p>
+
+    <div class="error-msg" id="err-2"></div>
+
+    <div class="field">
+      <label>Objetivo principal <span class="req">*</span></label>
+      <div class="options-grid" id="opts-objetivo">
+        <div class="opt-btn" onclick="select('objetivo',this,'Bajar grasa corporal')">Bajar grasa corporal</div>
+        <div class="opt-btn" onclick="select('objetivo',this,'Ganar musculo')">Ganar musculo</div>
+        <div class="opt-btn" onclick="select('objetivo',this,'Aumentar fuerza')">Aumentar fuerza</div>
+        <div class="opt-btn" onclick="select('objetivo',this,'Mejorar salud general')">Mejorar salud general</div>
+        <div class="opt-btn" onclick="select('objetivo',this,'Definicion muscular')">Definicion muscular</div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:24px">
+      <label>Nivel de experiencia <span class="req">*</span></label>
+      <div class="options-grid cols-3" id="opts-nivel">
+        <div class="opt-btn" onclick="select('nivel',this,'Principiante')">Principiante<br><small style="font-weight:400;opacity:0.7">-1 año</small></div>
+        <div class="opt-btn" onclick="select('nivel',this,'Intermedio')">Intermedio<br><small style="font-weight:400;opacity:0.7">1-3 años</small></div>
+        <div class="opt-btn" onclick="select('nivel',this,'Avanzado')">Avanzado<br><small style="font-weight:400;opacity:0.7">+3 años</small></div>
+      </div>
+    </div>
+
+    <button class="btn-next" onclick="goStep(3)">Continuar →</button>
+    <button class="btn-back" onclick="goStep(1)">← Volver</button>
+  </div>
+
+  <!-- ───── PASO 3: Disponibilidad + foto ───── -->
+  <div class="step" id="step-3">
+    <h2 class="step-title">Tu disponibilidad</h2>
+    <p class="step-sub">Ultimo paso: contanos donde y cuanto entrenas.</p>
+
+    <div class="error-msg" id="err-3"></div>
+
+    <div class="field">
+      <label>Dias disponibles por semana <span class="req">*</span></label>
+      <div class="options-grid cols-3" id="opts-dias" style="grid-template-columns:repeat(5,1fr)">
+        <div class="opt-btn" onclick="select('dias',this,2)">2</div>
+        <div class="opt-btn" onclick="select('dias',this,3)">3</div>
+        <div class="opt-btn" onclick="select('dias',this,4)">4</div>
+        <div class="opt-btn" onclick="select('dias',this,5)">5</div>
+        <div class="opt-btn" onclick="select('dias',this,6)">6</div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:24px">
+      <label>Donde entrenas <span class="req">*</span></label>
+      <div class="options-grid cols-3" id="opts-lugar">
+        <div class="opt-btn" onclick="select('lugar',this,'Gimnasio completo')">Gimnasio completo</div>
+        <div class="opt-btn" onclick="select('lugar',this,'Gimnasio en casa')">Gimnasio en casa</div>
+        <div class="opt-btn" onclick="select('lugar',this,'Sin equipamiento')">Sin equipamiento</div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:24px">
+      <label>Foto de perfil (opcional)</label>
+      <div class="foto-area" onclick="document.getElementById('foto-input').click()">
+        <img class="foto-preview" id="foto-preview" src="" alt="foto" />
+        <div class="foto-icon" id="foto-icon">📷</div>
+        <div class="foto-label">Toca para subir una foto</div>
+        <input type="file" id="foto-input" accept="image/*" onchange="previewFoto(this)" />
+      </div>
+    </div>
+
+    <button class="btn-next" id="btn-submit" onclick="submitRegistro()">Crear mi cuenta 🔥</button>
+    <button class="btn-back" onclick="goStep(2)">← Volver</button>
+  </div>
+
+</div>
+
+<!-- SUCCESS SCREEN -->
+<div id="success-screen">
+  <div class="success-icon">🔥</div>
+  <h2 class="success-title">Registro exitoso!</h2>
+  <p class="success-sub">
+    Agustin esta revisando tu informacion y en breve te asigna tu plan personalizado.
+    Te avisamos por WhatsApp cuando este listo.
+  </p>
+  <a id="success-wa-btn" href="#" class="success-wa" target="_blank" rel="noopener">
+    Escribirle a Agustin
+  </a>
+</div>
+
+<script>
+  const BACKEND_URL = 'http://localhost:8000';
+  const WA_NUMBER  = '5493794293284';
+
+  // ── State ──
+  const sel = { objetivo: null, nivel: null, dias: null, lugar: null };
+
+  function select(key, el, val) {
+    const grid = el.parentElement;
+    grid.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    sel[key] = val;
+  }
+
+  // ── Password strength ──
+  function checkPw(val) {
+    const bar = document.getElementById('pw-bar');
+    bar.className = 'pw-strength';
+    if (!val) return;
+    if (val.length < 6) { bar.classList.add('weak'); return; }
+    const strong = val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val);
+    bar.classList.add(strong ? 'strong' : 'ok');
+  }
+
+  // ── Foto preview ──
+  function previewFoto(input) {
+    if (!input.files?.[0]) return;
+    const url = URL.createObjectURL(input.files[0]);
+    const img = document.getElementById('foto-preview');
+    img.src = url;
+    img.style.display = 'block';
+    document.getElementById('foto-icon').style.display = 'none';
+  }
+
+  // ── Progress dots ──
+  const TOTAL_STEPS = 4;
+  function updateDots(current) {
+    for (let i = 0; i < TOTAL_STEPS; i++) {
+      const d = document.getElementById('dot-' + i);
+      d.className = 'step-dot' + (i < current ? ' done' : i === current ? ' active' : '');
+    }
+  }
+
+  // ── Step navigation ──
+  function goStep(n) {
+    const errEl = document.getElementById('err-' + (n - 1 >= 0 ? n - 1 : 0));
+
+    // Validate before advancing
+    if (n > 0) {
+      const err = validateStep(n - 1);
+      if (err) {
+        const e = document.getElementById('err-' + (n - 1));
+        e.textContent = err;
+        e.classList.add('visible');
+        return;
+      }
+      document.getElementById('err-' + (n - 1))?.classList.remove('visible');
+    }
+
+    document.querySelectorAll('.step').forEach((s, i) => {
+      s.classList.toggle('active', i === n);
+    });
+    updateDots(n);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validateStep(n) {
+    if (n === 0) {
+      const name = document.getElementById('f-name').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      const pw = document.getElementById('f-password').value;
+      const pw2 = document.getElementById('f-password2').value;
+      if (!name) return 'El nombre es obligatorio.';
+      if (!email || !email.includes('@')) return 'Ingresa un email valido.';
+      if (pw.length < 8) return 'La contrasena debe tener al menos 8 caracteres.';
+      if (pw !== pw2) return 'Las contrasenas no coinciden.';
+    }
+    if (n === 1) { /* no required fields */ }
+    if (n === 2) {
+      if (!sel.objetivo) return 'Selecciona tu objetivo principal.';
+      if (!sel.nivel) return 'Selecciona tu nivel de experiencia.';
+    }
+    if (n === 3) {
+      if (!sel.dias) return 'Selecciona cuantos dias entrenas por semana.';
+      if (!sel.lugar) return 'Selecciona donde entrenas.';
+    }
+    return null;
+  }
+
+  // ── Submit ──
+  async function submitRegistro() {
+    const err = validateStep(3);
+    if (err) {
+      const e = document.getElementById('err-3');
+      e.textContent = err;
+      e.classList.add('visible');
+      return;
+    }
+
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = 'Creando cuenta...';
+
+    const body = {
+      name: document.getElementById('f-name').value.trim(),
+      email: document.getElementById('f-email').value.trim().toLowerCase(),
+      password: document.getElementById('f-password').value,
+      whatsapp: document.getElementById('f-whatsapp').value.trim() || null,
+      fecha_nacimiento: document.getElementById('f-dob').value || null,
+      weight_kg: parseFloat(document.getElementById('f-weight').value) || null,
+      height_cm: parseFloat(document.getElementById('f-height').value) || null,
+      objetivo: sel.objetivo,
+      nivel_experiencia: sel.nivel,
+      dias_disponibles: Number(sel.dias) || null,
+      lugar_entrenamiento: sel.lugar,
+    };
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/auth/student-register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Error al registrarse.');
+
+      // Success!
+      document.getElementById('form-wrap').style.display = 'none';
+      document.querySelector('.progress-wrap').style.display = 'none';
+
+      const waText = encodeURIComponent(
+        `Hola Agustín! Me acabo de registrar en la app como "${body.name}". Quiero empezar mi plan cuanto antes!`
+      );
+      document.getElementById('success-wa-btn').href = `https://wa.me/${WA_NUMBER}?text=${waText}`;
+      document.getElementById('success-screen').classList.add('visible');
+
+    } catch (e) {
+      const errEl = document.getElementById('err-3');
+      errEl.textContent = e.message;
+      errEl.classList.add('visible');
+      btn.disabled = false;
+      btn.textContent = 'Crear mi cuenta 🔥';
+    }
+  }
+</script>
+</body>
+</html>
