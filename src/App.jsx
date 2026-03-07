@@ -33,6 +33,9 @@ export default function App() {
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [deletingStudentId, setDeletingStudentId] = useState(null);
   const [stagnantAlerts, setStagnantAlerts] = useState({});
+  const [pendingStudents, setPendingStudents] = useState([]);
+  const [activatingId, setActivatingId] = useState(null);
+  const [rejectingId, setRejectingId] = useState(null);
   const [routineName, setRoutineName] = useState('');
   const [days, setDays] = useState([{ id: crypto.randomUUID(), dayNumber: 1, dayName: '', exercises: [] }]);
 
@@ -100,9 +103,36 @@ export default function App() {
     } catch (e) { console.error(e); }
   };
 
+  const fetchPendingStudents = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/students/pending`);
+      setPendingStudents(res.data || []);
+    } catch (e) { console.error(e); }
+  }, []);
+
+  const handleActivateStudent = async (studentId) => {
+    setActivatingId(studentId);
+    try {
+      await axios.post(`${API_URL}/students/${studentId}/activate`, { professor_id: loggedInUser?.id });
+      await fetchPendingStudents();
+      await fetchStudents();
+    } catch { alert('Error al activar el alumno.'); }
+    finally { setActivatingId(null); }
+  };
+
+  const handleRejectStudent = async (studentId) => {
+    if (!window.confirm('Rechazar este alumno?')) return;
+    setRejectingId(studentId);
+    try {
+      await axios.post(`${API_URL}/students/${studentId}/reject`);
+      await fetchPendingStudents();
+    } catch { alert('Error al rechazar el alumno.'); }
+    finally { setRejectingId(null); }
+  };
+
   useEffect(() => {
-    if (loggedInUser?.role === 'professor') { fetchStudents(); fetchStagnantAlerts(); }
-  }, [loggedInUser, fetchStudents]);
+    if (loggedInUser?.role === 'professor') { fetchStudents(); fetchStagnantAlerts(); fetchPendingStudents(); }
+  }, [loggedInUser, fetchStudents, fetchPendingStudents]);
 
   useEffect(() => {
     if (loggedInUser?.role === 'professor') {
@@ -334,6 +364,33 @@ export default function App() {
 
     const subStatus = stStudentData?.subscription_status;
     const subDays = stStudentData?.days_remaining ?? 0;
+    const studentStatus = stStudentData?.status;
+
+    // PENDIENTE: el alumno se registró pero Agustín todavía no lo activó
+    if (stStudentData && studentStatus === 'PENDIENTE') {
+      return (
+        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '20px', animation: 'spin 3s linear infinite' }}>🔥</div>
+          <h1 style={{ color: '#FAFAFA', fontSize: '1.5rem', fontWeight: 800 }}>Tu plan esta siendo preparado</h1>
+          <p style={{ color: '#A1A1AA', marginTop: '12px', maxWidth: '300px', lineHeight: 1.6, fontSize: '0.95rem' }}>
+            Agustín está revisando tu información y en breve te asigna tu plan personalizado. Te avisamos por WhatsApp cuando esté listo.
+          </p>
+          <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '280px' }}>
+            <a
+              href={`https://wa.me/5493794293284?text=${encodeURIComponent('Hola Agustín! Me registré en la app y estoy esperando que actives mi cuenta. Soy ' + loggedInUser.name)}`}
+              target="_blank" rel="noopener"
+              style={{ background: '#25D366', color: '#fff', padding: '14px 24px', borderRadius: '12px', fontWeight: 700, textDecoration: 'none', fontSize: '0.95rem' }}
+            >
+              Escribirle a Agustín por WA
+            </a>
+            <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.85rem', padding: '6px' }}>
+              Cerrar sesion
+            </button>
+          </div>
+          <style>{`@keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }`}</style>
+        </div>
+      );
+    }
 
     // BLOCKED: suscripción vencida
     if (stStudentData && subStatus === 'blocked') {
@@ -677,7 +734,12 @@ export default function App() {
       <aside className="sidebar">
         <div className="sidebar-brand"><Dumbbell className="brand-icon" /><h2>AE Personal Training</h2></div>
         <nav className="sidebar-nav">
-          <button className={`nav-item ${currentView === 'ListaAlumnos' ? 'active' : ''}`} onClick={() => { setSelectedStudent(null); setCurrentView('ListaAlumnos'); }}><Users size={20} /><span>Mis Alumnos</span></button>
+          <button className={`nav-item ${currentView === 'ListaAlumnos' ? 'active' : ''}`} onClick={() => { setSelectedStudent(null); setCurrentView('ListaAlumnos'); }} style={{ position: 'relative' }}>
+            <Users size={20} /><span>Mis Alumnos</span>
+            {pendingStudents.length > 0 && (
+              <span style={{ position: 'absolute', top: '6px', right: '10px', background: '#EF4444', color: '#fff', fontSize: '0.65rem', fontWeight: 800, borderRadius: '99px', padding: '1px 6px', minWidth: '18px', textAlign: 'center' }}>{pendingStudents.length}</span>
+            )}
+          </button>
           <button className="nav-item"><FileText size={20} /><span>Plantillas</span></button>
           <button className="nav-item"><Dumbbell size={20} /><span>Biblioteca</span></button>
         </nav>
@@ -692,8 +754,11 @@ export default function App() {
 
       {/* BOTTOM NAV (mobile) */}
       <nav className="prof-bottom-nav">
-        <button className={`prof-bottom-nav-item ${currentView === 'ListaAlumnos' ? 'active' : ''}`} onClick={() => { setSelectedStudent(null); setCurrentView('ListaAlumnos'); }}>
+        <button className={`prof-bottom-nav-item ${currentView === 'ListaAlumnos' ? 'active' : ''}`} onClick={() => { setSelectedStudent(null); setCurrentView('ListaAlumnos'); }} style={{ position: 'relative' }}>
           <Users size={22} /><span>Alumnos</span>
+          {pendingStudents.length > 0 && (
+            <span style={{ position: 'absolute', top: '4px', right: 'calc(50% - 18px)', background: '#EF4444', color: '#fff', fontSize: '0.62rem', fontWeight: 800, borderRadius: '99px', padding: '1px 5px', minWidth: '16px', textAlign: 'center' }}>{pendingStudents.length}</span>
+          )}
         </button>
         <button className="prof-bottom-nav-item" onClick={handleLogout} style={{ color: '#EF4444' }}>
           <LogOut size={22} /><span>Salir</span>
@@ -726,6 +791,65 @@ export default function App() {
                 }}><Save size={18} /><span>{savingStudent ? 'Guardando...' : 'Guardar Alumno'}</span></button>
               </div>
             )}
+            {/* PENDING STUDENTS SECTION */}
+            {pendingStudents.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                  <span style={{ background: '#EF4444', color: '#fff', borderRadius: '99px', padding: '2px 10px', fontWeight: 800, fontSize: '0.8rem' }}>{pendingStudents.length} nuevo{pendingStudents.length !== 1 ? 's' : ''}</span>
+                  <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Alumnos Pendientes de Activacion</h2>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {pendingStudents.map(p => (
+                    <div key={p.id} style={{ background: '#0f0d18', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '16px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1a1726', border: '2px solid #EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 800, flexShrink: 0 }}>{p.name?.charAt(0).toUpperCase()}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontWeight: 800, fontSize: '1rem' }}>{p.name}</p>
+                          <p style={{ color: '#A1A1AA', fontSize: '0.82rem', marginTop: '1px' }}>{p.email}</p>
+                        </div>
+                        <span style={{ fontSize: '0.72rem', color: '#FCA5A5', background: '#1F0000', border: '1px solid #7F1D1D', borderRadius: '8px', padding: '3px 8px', fontWeight: 700, flexShrink: 0 }}>PENDIENTE</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '6px', fontSize: '0.8rem' }}>
+                        {p.goal && <div style={{ color: '#A1A1AA' }}><span style={{ color: '#71717A' }}>Objetivo: </span><strong style={{ color: '#FAFAFA' }}>{p.goal}</strong></div>}
+                        {p.nivel_experiencia && <div style={{ color: '#A1A1AA' }}><span style={{ color: '#71717A' }}>Nivel: </span><strong style={{ color: '#FAFAFA' }}>{p.nivel_experiencia}</strong></div>}
+                        {p.dias_disponibles && <div style={{ color: '#A1A1AA' }}><span style={{ color: '#71717A' }}>Dias/sem: </span><strong style={{ color: '#FAFAFA' }}>{p.dias_disponibles}</strong></div>}
+                        {p.lugar_entrenamiento && <div style={{ color: '#A1A1AA' }}><span style={{ color: '#71717A' }}>Lugar: </span><strong style={{ color: '#FAFAFA' }}>{p.lugar_entrenamiento}</strong></div>}
+                        {p.weight_kg && <div style={{ color: '#A1A1AA' }}><span style={{ color: '#71717A' }}>Peso: </span><strong style={{ color: '#FAFAFA' }}>{p.weight_kg} kg</strong></div>}
+                        {p.height_cm && <div style={{ color: '#A1A1AA' }}><span style={{ color: '#71717A' }}>Altura: </span><strong style={{ color: '#FAFAFA' }}>{p.height_cm} cm</strong></div>}
+                        {p.whatsapp && <div style={{ color: '#A1A1AA' }}><span style={{ color: '#71717A' }}>WA: </span><strong style={{ color: '#25D366' }}>{p.whatsapp}</strong></div>}
+                        {p.created_at && <div style={{ color: '#A1A1AA' }}><span style={{ color: '#71717A' }}>Registro: </span><strong style={{ color: '#FAFAFA' }}>{new Date(p.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}</strong></div>}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                        <button
+                          style={{ flex: 2, background: '#052E16', border: '1px solid #166534', color: '#4ADE80', borderRadius: '10px', padding: '9px 0', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+                          disabled={activatingId === p.id}
+                          onClick={() => handleActivateStudent(p.id)}
+                        >
+                          {activatingId === p.id ? 'Activando...' : 'Activar alumno'}
+                        </button>
+                        {p.whatsapp && (
+                          <a
+                            href={`https://wa.me/${p.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${p.name.split(' ')[0]}! Tu cuenta en AE Personal Training ya esta lista. Ingresa en http://localhost:5173`)}`}
+                            target="_blank" rel="noopener"
+                            style={{ flex: 1, background: '#052E16', border: '1px solid #25D366', color: '#25D366', borderRadius: '10px', padding: '9px 0', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            WA
+                          </a>
+                        )}
+                        <button
+                          style={{ flex: 1, background: '#1F0000', border: '1px solid #7F1D1D', color: '#F87171', borderRadius: '10px', padding: '9px 0', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+                          disabled={rejectingId === p.id}
+                          onClick={() => handleRejectStudent(p.id)}
+                        >
+                          {rejectingId === p.id ? '...' : 'Rechazar'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* SUBSCRIPTION SUMMARY */}
             {students.length > 0 && (() => {
               const activos = students.filter(s => s.subscription_status === 'active').length;
