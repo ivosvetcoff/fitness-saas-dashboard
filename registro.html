@@ -840,7 +840,6 @@
     if (n === 3) {
       if (!sel.dias) return 'Selecciona cuantos dias entrenas por semana.';
       if (!sel.lugar) return 'Selecciona donde entrenas.';
-      if (!document.getElementById('foto-input').files[0]) return 'La foto de perfil es obligatoria.';
     }
     if (n === 4) {
       if (sel.lesion === null) return 'Indicá si tenés o tuviste alguna lesión.';
@@ -859,15 +858,6 @@
     if (err) {
       const e = document.getElementById('err-7');
       e.textContent = err;
-      e.classList.add('visible');
-      return;
-    }
-
-    // Doble verificación: foto obligatoria
-    const fotoGuard = document.getElementById('foto-input').files[0];
-    if (!fotoGuard) {
-      const e = document.getElementById('err-6');
-      e.textContent = 'La foto de perfil es obligatoria. Volvé al paso anterior y subí una foto.';
       e.classList.add('visible');
       return;
     }
@@ -914,15 +904,18 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Error al registrarse.');
 
-      // Upload profile photo (obligatoria)
+      // Upload profile photo (opcional — no bloquea el registro si falla)
       const fotoFile = document.getElementById('foto-input').files[0];
-      const formData = new FormData();
-      formData.append('file', fotoFile);
-      const fotoRes = await fetch(`${BACKEND_URL}/student/${data.student_id}/profile-photo`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (!fotoRes.ok) throw new Error('Error al subir la foto. Intentá de nuevo.');
+      if (fotoFile) {
+        try {
+          const formData = new FormData();
+          formData.append('file', fotoFile);
+          await fetch(`${BACKEND_URL}/student/${data.student_id}/profile-photo`, {
+            method: 'POST',
+            body: formData,
+          });
+        } catch (_) { /* foto falla silenciosamente, el registro igual avanza */ }
+      }
 
       // Success!
       document.getElementById('form-wrap').style.display = 'none';
@@ -953,7 +946,12 @@
 
     } catch (e) {
       const errEl = document.getElementById('err-7');
-      errEl.textContent = e.message;
+      const msg = e.message || '';
+      if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('usuario')) {
+        errEl.textContent = 'Ese email ya está registrado. Si ya te registraste antes, ingresá desde la página principal.';
+      } else {
+        errEl.textContent = msg || 'Ocurrió un error. Intentá de nuevo.';
+      }
       errEl.classList.add('visible');
       btn.disabled = false;
       btn.textContent = 'Crear mi cuenta 🔥';
