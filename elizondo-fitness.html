@@ -1322,8 +1322,8 @@
     };
     payOverlay.classList.add('open');
   }
-  function closePayModal() { payOverlay.classList.remove('open'); }
-  payOverlay.addEventListener('click', e => { if (e.target === payOverlay) closePayModal(); });
+  function closePayModal() { payOverlay?.classList.remove('open'); }
+  payOverlay?.addEventListener('click', e => { if (e.target === payOverlay) closePayModal(); });
 
   function copyPay(btn, text) {
     navigator.clipboard.writeText(text).then(() => {
@@ -1334,35 +1334,26 @@
   }
 
   // ── Floating login modal ──
-  const floatOverlay = document.getElementById('float-login-overlay');
-  const floatEmail   = document.getElementById('float-email');
-  const floatPass    = document.getElementById('float-pass');
-  const floatErr     = document.getElementById('float-error');
-  const floatBtn     = document.getElementById('float-login-btn-submit');
-
   function openFloatLogin() {
-    floatOverlay.classList.add('open');
-    setTimeout(() => floatEmail.focus(), 200);
+    var ov = document.getElementById('float-login-overlay');
+    if (ov) { ov.classList.add('open'); setTimeout(() => document.getElementById('float-email').focus(), 200); }
   }
   function closeFloatLogin() {
-    floatOverlay.classList.remove('open');
-    floatErr.style.display = 'none';
-    floatEmail.value = '';
-    floatPass.value = '';
-    floatBtn.disabled = false;
-    floatBtn.textContent = 'Ingresar →';
+    var ov = document.getElementById('float-login-overlay');
+    var err = document.getElementById('float-error');
+    var btn = document.getElementById('float-login-btn-submit');
+    if (!ov) return;
+    ov.classList.remove('open');
+    if (err) err.style.display = 'none';
+    document.getElementById('float-email').value = '';
+    document.getElementById('float-pass').value = '';
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
   }
-
-  // Close on overlay click
-  floatOverlay.addEventListener('click', e => { if (e.target === floatOverlay) closeFloatLogin(); });
-
-  // Enter key
-  floatPass.addEventListener('keydown', e => { if (e.key === 'Enter') handleFloatLogin(); });
-  floatEmail.addEventListener('keydown', e => { if (e.key === 'Enter') floatPass.focus(); });
-
   async function handleFloatLogin() {
-    const email = floatEmail.value.trim();
-    const password = floatPass.value;
+    var email = document.getElementById('float-email').value.trim();
+    var password = document.getElementById('float-pass').value;
+    var floatErr = document.getElementById('float-error');
+    var floatBtn = document.getElementById('float-login-btn-submit');
     floatErr.style.display = 'none';
     if (!email || !password) {
       floatErr.textContent = 'Completá email y contraseña';
@@ -1372,7 +1363,7 @@
     floatBtn.disabled = true;
     floatBtn.innerHTML = '<span class="login-spinner"></span> Ingresando...';
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/login`, {
+      const res = await fetch(BACKEND_URL + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -1388,6 +1379,16 @@
       floatBtn.textContent = 'Ingresar →';
     }
   }
+
+  // Wire up login modal events after DOM is ready
+  (function() {
+    var ov = document.getElementById('float-login-overlay');
+    var pass = document.getElementById('float-pass');
+    var email = document.getElementById('float-email');
+    if (ov) ov.addEventListener('click', function(e) { if (e.target === ov) closeFloatLogin(); });
+    if (pass) pass.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleFloatLogin(); });
+    if (email) email.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('float-pass').focus(); });
+  })();
 </script>
 
 </body>
