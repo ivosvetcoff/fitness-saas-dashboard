@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Check, CheckCircle2 } from 'lucide-react';
 
-const RPE_OPTS = [
-  { value: 7, emoji: '😌', label: 'Fácil' },
-  { value: 9, emoji: '💪', label: 'Exigente' },
-  { value: 10, emoji: '🥵', label: 'Al fallo' },
+const RIR_OPTS = [
+  { value: 3, emoji: '😌', label: 'Fácil' },
+  { value: 1, emoji: '💪', label: 'Exigente' },
+  { value: 0, emoji: '🥵', label: 'Al fallo' },
 ];
 
 /**
@@ -14,17 +14,17 @@ const RPE_OPTS = [
  *   sets        {number}   Cantidad de series
  *   repsRange   {string}   Ej: "8-12"
  *   repsPerSet  {string[]} Opcional: ["20","15","10","8"] — objetivo por serie
- *   rpeTarget   {number}   RPE objetivo, ej: 8
- *   onSave      {fn}       Recibe array de { set_number, actual_weight, actual_reps, actual_rpe }
+ *   rirTarget   {number}   RIR objetivo, ej: 2  (0=fallo, 1=exigente, 2=moderado, 3=fácil)
+ *   onSave      {fn}       Recibe array de { set_number, actual_weight, actual_reps, actual_rir }
  *   onCancel    {fn}       Opcional: volver atrás
  */
-export default function SeriesInput({ name, sets, repsRange, repsPerSet, rpeTarget, onSave, onCancel }) {
+export default function SeriesInput({ name, sets, repsRange, repsPerSet, rirTarget, onSave, onCancel }) {
   const [rows, setRows] = useState(
     Array.from({ length: sets }, (_, i) => ({
       id: i + 1,
       peso: '',
       reps: '',
-      rpe: '',
+      rir: '',
       done: false,
     }))
   );
@@ -35,7 +35,7 @@ export default function SeriesInput({ name, sets, repsRange, repsPerSet, rpeTarg
 
   const toggleDone = (id) => {
     const row = rows.find(r => r.id === id);
-    if (!row.done && (!row.peso || !row.reps || !row.rpe)) return; // needs data
+    if (!row.done && (!row.peso || !row.reps || row.rir === '')) return; // needs data
     setRows(r => r.map(row => (row.id === id ? { ...row, done: !row.done } : row)));
   };
 
@@ -47,7 +47,7 @@ export default function SeriesInput({ name, sets, repsRange, repsPerSet, rpeTarg
       set_number: r.id,
       actual_weight: parseFloat(r.peso),
       actual_reps: parseInt(r.reps),
-      actual_rpe: parseFloat(r.rpe),
+      actual_rir: parseFloat(r.rir),
     }));
     setSaving(true);
     await onSave(completed);
@@ -58,7 +58,7 @@ export default function SeriesInput({ name, sets, repsRange, repsPerSet, rpeTarg
     <div className="si-wrapper">
       <div className="si-header">
         <h4 className="si-name">{name}</h4>
-        <span className="si-badge">{RPE_OPTS.find(o => o.value === rpeTarget)?.emoji ?? '💪'} RPE {rpeTarget} · {repsPerSet ? repsPerSet.join('-') : repsRange} reps</span>
+        <span className="si-badge">{RIR_OPTS.find(o => o.value === rirTarget)?.emoji ?? '💪'} RIR {rirTarget} · {repsPerSet ? repsPerSet.join('-') : repsRange} reps</span>
       </div>
 
       <div className="si-col-labels">
@@ -116,14 +116,14 @@ export default function SeriesInput({ name, sets, repsRange, repsPerSet, rpeTarg
               </button>
             </div>
 
-            {/* Fila inferior: selector de esfuerzo */}
+            {/* Fila inferior: selector de esfuerzo (RIR) */}
             <div style={{ display: 'flex', gap: '8px', paddingLeft: '36px' }}>
-              {RPE_OPTS.map(opt => (
+              {RIR_OPTS.map(opt => (
                 <button
                   key={opt.value}
                   type="button"
                   disabled={row.done}
-                  onClick={() => update(row.id, 'rpe', String(opt.value))}
+                  onClick={() => update(row.id, 'rir', String(opt.value))}
                   style={{
                     flex: 1,
                     display: 'flex',
@@ -132,8 +132,8 @@ export default function SeriesInput({ name, sets, repsRange, repsPerSet, rpeTarg
                     gap: '2px',
                     fontSize: '1.5rem',
                     lineHeight: 1,
-                    background: row.rpe === String(opt.value) ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.03)',
-                    border: row.rpe === String(opt.value) ? '2px solid #7C3AED' : '2px solid transparent',
+                    background: row.rir === String(opt.value) ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.03)',
+                    border: row.rir === String(opt.value) ? '2px solid #7C3AED' : '2px solid transparent',
                     borderRadius: '10px',
                     padding: '6px 4px',
                     cursor: row.done ? 'default' : 'pointer',
@@ -142,7 +142,7 @@ export default function SeriesInput({ name, sets, repsRange, repsPerSet, rpeTarg
                   }}
                 >
                   {opt.emoji}
-                  <span style={{ fontSize: '0.6rem', color: row.rpe === String(opt.value) ? '#A78BFA' : '#71717A', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.6rem', color: row.rir === String(opt.value) ? '#A78BFA' : '#71717A', fontWeight: 600 }}>
                     {opt.label}
                   </span>
                 </button>

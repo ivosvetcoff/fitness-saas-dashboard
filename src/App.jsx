@@ -13,7 +13,7 @@ const PAGO = {
   precio: '$50.000',
   alias: 'IMPERA.SURCOS.FOCA',
   cbu: '3840200500000018952467',
-  titular: 'Agustín Lopez',
+  titular: 'Agustin Lopez',
   banco: 'Wilobank',
   waNro: '5493794293284',
 };
@@ -72,6 +72,12 @@ export default function App() {
   const [stPhotos, setStPhotos] = useState([]);
   const [stPhotosLoading, setStPhotosLoading] = useState(false);
   const [stPhotoUploading, setStPhotoUploading] = useState(false);
+  const [stMetrics, setStMetrics] = useState([]);
+  const [stMetricsLoading, setStMetricsLoading] = useState(false);
+  const [stMetricForm, setStMetricForm] = useState({ fecha: '', peso: '', masa_muscular: '', masa_grasa: '', cintura: '', cadera: '' });
+  const [stMetricSaving, setStMetricSaving] = useState(false);
+  const [stActivePhotoMonth, setStActivePhotoMonth] = useState(null);
+  const [stPhotoTipo, setStPhotoTipo] = useState('frente');
 
   // ===== LOGIN =====
   const handleLogin = async () => {
@@ -194,7 +200,7 @@ export default function App() {
 
   const createExercise = (exId) => {
     const ex = exerciseLibrary.find(e => e.id === exId);
-    return { id: crypto.randomUUID(), exerciseId: ex?.id || '', exerciseName: ex?.name || '?', muscleGroup: ex?.muscle_group || '', sets: 3, progressionModel: 'autoregulation', targetRpe: 'rpe8', repMin: 8, repMax: 12, repsPerSet: '' };
+    return { id: crypto.randomUUID(), exerciseId: ex?.id || '', exerciseName: ex?.name || '?', muscleGroup: ex?.muscle_group || '', sets: 3, progressionModel: 'autoregulation', targetRir: 'rir2', repMin: 8, repMax: 12, repsPerSet: '' };
   };
 
   const handleStudentClick = (s) => { setSelectedStudent(s); fetchPerformance(s.id); fetchPhotos(s.id); fetchActiveRoutine(s.id); fetchNutritionPlan(s.id); setCurrentView('PerfilAlumno'); setShowAllExercises(false); setSelectedExerciseChart(null); setSelectedPlanDay(null); };
@@ -213,7 +219,7 @@ export default function App() {
       const rid = rr.data.id;
       for (const day of days) {
         for (const ex of day.exercises) {
-          let rpe = 8; if (ex.targetRpe === 'rpe7') rpe = 7; if (ex.targetRpe === 'rpe9') rpe = 9; if (ex.targetRpe === 'rpe10') rpe = 10;
+          let rir = 2; if (ex.targetRir === 'rir3') rir = 3; if (ex.targetRir === 'rir1') rir = 1; if (ex.targetRir === 'rir0') rir = 0;
           // Detect repsPerSet format: "20,15,10,8" or "20-15-10-8"
           const rpsRaw = (ex.repsPerSet || '').trim();
           const rpsNorm = rpsRaw.replace(/-/g, ',');
@@ -227,7 +233,7 @@ export default function App() {
             progression_model: ex.progressionModel,
             rep_range_min: hasRps ? null : Number(ex.repMin),
             rep_range_max: hasRps ? null : Number(ex.repMax),
-            target_rpe: rpe,
+            target_rir: rir,
             reps_per_set: hasRps ? rpsNorm : null,
           });
         }
@@ -293,7 +299,7 @@ export default function App() {
             targetSets: ex.sets || 3,
             targetRepsText: repsPerSet ? repsPerSet.join('-') : (ex.rep_range_min ? `${ex.rep_range_min}-${ex.rep_range_max}` : '10'),
             repsPerSet,
-            targetRpe: ex.target_rpe || 8,
+            targetRir: ex.target_rir ?? 2,
             setsCompleted: 0,
             day_number: ex.day_number,
             day_name: ex.day_name || null,
@@ -333,6 +339,13 @@ export default function App() {
     finally { setStPhotosLoading(false); }
   };
 
+  const stFetchMetrics = async () => {
+    if (!studentId) return;
+    setStMetricsLoading(true);
+    try { const r = await axios.get(`${API_URL}/student/${studentId}/metrics`); setStMetrics(r.data || []); } catch { }
+    finally { setStMetricsLoading(false); }
+  };
+
   const stUpdateProfile = async () => {
     setStProfileSaving(true);
     try {
@@ -357,22 +370,40 @@ export default function App() {
     try {
       const form = new FormData();
       form.append('file', file);
+      form.append('tipo', stPhotoTipo);
       await axios.post(`${API_URL}/student/${studentId}/photos`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
       await stFetchPhotos();
     } catch { alert('Error al subir la foto. Verificá que el bucket esté configurado en Supabase.'); }
     finally { setStPhotoUploading(false); e.target.value = ''; }
   };
 
+  const stSaveMetric = async () => {
+    setStMetricSaving(true);
+    try {
+      const payload = {};
+      if (stMetricForm.fecha) payload.fecha = stMetricForm.fecha;
+      if (stMetricForm.peso !== '') payload.peso = parseFloat(stMetricForm.peso) || null;
+      if (stMetricForm.masa_muscular !== '') payload.masa_muscular = parseFloat(stMetricForm.masa_muscular) || null;
+      if (stMetricForm.masa_grasa !== '') payload.masa_grasa = parseFloat(stMetricForm.masa_grasa) || null;
+      if (stMetricForm.cintura !== '') payload.cintura = parseFloat(stMetricForm.cintura) || null;
+      if (stMetricForm.cadera !== '') payload.cadera = parseFloat(stMetricForm.cadera) || null;
+      await axios.post(`${API_URL}/student/${studentId}/metrics`, payload);
+      await stFetchMetrics();
+      setStMetricForm({ fecha: '', peso: '', masa_muscular: '', masa_grasa: '', cintura: '', cadera: '' });
+    } catch { alert('Error al guardar las métricas.'); }
+    finally { setStMetricSaving(false); }
+  };
+
   useEffect(() => {
-    if (loggedInUser?.role === 'student') { stFetchExercises(); stFetchNutrition(); stFetchStreak(); stFetchStudentData(); stFetchPhotos(); }
+    if (loggedInUser?.role === 'student') { stFetchExercises(); stFetchNutrition(); stFetchStreak(); stFetchStudentData(); stFetchPhotos(); stFetchMetrics(); }
   }, [loggedInUser]);
 
-  // setsData: [{ set_number, actual_weight, actual_reps, actual_rpe }]
+  // setsData: [{ set_number, actual_weight, actual_reps, actual_rir }]
   const stHandleSave = async (exerciseId, setsData) => {
     setStLoading(true);
     try {
       for (const s of setsData) {
-        const payload = { workout_id: stSession?.routine_id || 'unknown', exercise_id: exerciseId, set_number: s.set_number, actual_weight: s.actual_weight, actual_reps: s.actual_reps, actual_rpe: s.actual_rpe };
+        const payload = { workout_id: stSession?.routine_id || 'unknown', exercise_id: exerciseId, set_number: s.set_number, actual_weight: s.actual_weight, actual_reps: s.actual_reps, actual_rir: s.actual_rir };
         const r = await axios.post(`${API_URL}/logs/`, payload);
         if (r.data?.next_target) setStNextTarget(r.data.next_target);
       }
@@ -443,22 +474,22 @@ export default function App() {
     const subDays = stStudentData?.days_remaining ?? 0;
     const studentStatus = stStudentData?.status;
 
-    // PENDIENTE: el alumno se registró pero Agustín todavía no lo activó
+    // PENDIENTE: el alumno se registró pero Agustin todavía no lo activó
     if (stStudentData && studentStatus === 'PENDIENTE') {
       return (
         <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
           <div style={{ fontSize: '4rem', marginBottom: '20px', animation: 'spin 3s linear infinite' }}>🔥</div>
           <h1 style={{ color: '#FAFAFA', fontSize: '1.5rem', fontWeight: 800 }}>Tu plan esta siendo preparado</h1>
           <p style={{ color: '#A1A1AA', marginTop: '12px', maxWidth: '300px', lineHeight: 1.6, fontSize: '0.95rem' }}>
-            Agustín está revisando tu información y en breve te asigna tu plan personalizado. Te avisamos por WhatsApp cuando esté listo.
+            Agustin está revisando tu información y en breve te asigna tu plan personalizado. Te avisamos por WhatsApp cuando esté listo.
           </p>
           <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '280px' }}>
             <a
-              href={`https://wa.me/5493794293284?text=${encodeURIComponent('Hola Agustín! Me registré en la app y estoy esperando que actives mi cuenta. Soy ' + loggedInUser.name)}`}
+              href={`https://wa.me/5493794293284?text=${encodeURIComponent('Hola Agustin! Me registré en la app y estoy esperando que actives mi cuenta. Soy ' + loggedInUser.name)}`}
               target="_blank" rel="noopener"
               style={{ background: '#25D366', color: '#fff', padding: '14px 24px', borderRadius: '12px', fontWeight: 700, textDecoration: 'none', fontSize: '0.95rem' }}
             >
-              Escribirle a Agustín por WA
+              Escribirle a Agustin por WA
             </a>
             <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.85rem', padding: '6px' }}>
               Cerrar sesion
@@ -472,7 +503,7 @@ export default function App() {
     // BLOCKED: suscripción vencida
     if (stStudentData && subStatus === 'blocked') {
       const waMsg = encodeURIComponent(
-        `Hola Agustín! Soy ${loggedInUser.name}. Te mando el comprobante del pago de mi cuota (${PAGO.precio}). 🏋️`
+        `Hola Agustin! Soy ${loggedInUser.name}. Te mando el comprobante del pago de mi cuota (${PAGO.precio}). 🏋️`
       );
       const copy = (txt) => navigator.clipboard.writeText(txt);
       return (
@@ -540,6 +571,11 @@ export default function App() {
           </div>
           <div className="student-topbar-right">
             <div className="student-streak-badge"><Flame size={14} color="#F59E0B" /> {stStreak.streak} días</div>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', background: '#27272A', border: '2px solid #7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 800, color: '#A78BFA', flexShrink: 0, cursor: 'pointer' }} onClick={() => setStudentScreen('profile')}>
+              {stStudentData?.foto_perfil_url
+                ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                : loggedInUser?.name?.charAt(0)?.toUpperCase()}
+            </div>
             <button className="btn-icon-sm" onClick={handleLogout} title="Cerrar sesión"><LogOut size={18} /></button>
           </div>
         </div>
@@ -568,6 +604,14 @@ export default function App() {
               <span>{tab.label}</span>
             </button>
           ))}
+          <button className={`student-nav-item ${studentScreen === 'fotos' ? 'active' : ''}`} onClick={() => setStudentScreen('fotos')}>
+            <span style={{ fontSize: '22px', lineHeight: 1 }}>📷</span>
+            <span>Mis Fotos</span>
+          </button>
+          <button className={`student-nav-item ${studentScreen === 'metricas' ? 'active' : ''}`} onClick={() => setStudentScreen('metricas')}>
+            <span style={{ fontSize: '22px', lineHeight: 1 }}>📊</span>
+            <span>Mis Métricas</span>
+          </button>
         </div>
 
         {/* STUDENT CONTENT */}
@@ -673,7 +717,7 @@ export default function App() {
                             <div style={{ display: 'flex', gap: '16px' }}>
                               <div><span style={{ color: '#A1A1AA', fontSize: '0.8rem' }}>Peso:</span> <strong style={{ color: '#FAFAFA' }}>{exercise.lastLog.actual_weight} kg</strong></div>
                               <div><span style={{ color: '#A1A1AA', fontSize: '0.8rem' }}>Reps:</span> <strong style={{ color: '#FAFAFA' }}>{exercise.lastLog.actual_reps}</strong></div>
-                              <div><span style={{ color: '#A1A1AA', fontSize: '0.8rem' }}>RPE:</span> <strong style={{ color: exercise.lastLog.actual_rpe >= 9 ? '#EF4444' : exercise.lastLog.actual_rpe <= 7 ? '#10B981' : '#F59E0B' }}>{exercise.lastLog.actual_rpe}</strong></div>
+                              <div><span style={{ color: '#A1A1AA', fontSize: '0.8rem' }}>RIR:</span> <strong style={{ color: exercise.lastLog.actual_rir <= 1 ? '#EF4444' : exercise.lastLog.actual_rir >= 3 ? '#10B981' : '#F59E0B' }}>{exercise.lastLog.actual_rir}</strong></div>
                             </div>
                           </div>
                         )}
@@ -693,7 +737,7 @@ export default function App() {
                             sets={exercise.targetSets}
                             repsRange={exercise.targetRepsText}
                             repsPerSet={exercise.repsPerSet}
-                            rpeTarget={exercise.targetRpe}
+                            rirTarget={exercise.targetRir}
                             onSave={(setsData) => stHandleSave(exercise.id, setsData)}
                             onCancel={() => setStExpandedId(null)}
                           />
@@ -812,7 +856,9 @@ export default function App() {
               {/* Avatar + nombre */}
               <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                 <div className="st-profile-avatar">
-                  <span style={{ fontSize: '2rem', fontWeight: 800 }}>{loggedInUser.name?.charAt(0).toUpperCase()}</span>
+                  {stStudentData?.foto_perfil_url
+                    ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                    : <span style={{ fontSize: '2rem', fontWeight: 800 }}>{loggedInUser.name?.charAt(0).toUpperCase()}</span>}
                 </div>
                 <h2 style={{ marginTop: '14px', fontSize: '1.4rem' }}>{loggedInUser.name}</h2>
                 <p style={{ color: '#A1A1AA', marginTop: '4px' }}>{loggedInUser.email}</p>
@@ -900,7 +946,7 @@ export default function App() {
                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
                   </label>
                 </div>
-                <p style={{ fontSize: '0.78rem', color: '#52525B', marginBottom: '14px' }}>Documentá tu progreso mes a mes. Agustín puede ver tus fotos para hacer ajustes en tu plan.</p>
+                <p style={{ fontSize: '0.78rem', color: '#52525B', marginBottom: '14px' }}>Documentá tu progreso mes a mes. Agustin puede ver tus fotos para hacer ajustes en tu plan.</p>
                 {stPhotosLoading
                   ? <div style={{ textAlign: 'center', padding: '20px' }}><Loader2 size={24} className="spin-icon" color="#7C3AED" /></div>
                   : stPhotos.length === 0
@@ -919,6 +965,98 @@ export default function App() {
                     </div>
                 }
               </div>
+            </div>
+          )}
+
+          {studentScreen === 'fotos' && (
+            <div style={{ padding: '20px 16px', maxWidth: '480px', margin: '0 auto' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '4px' }}>📷 Mis Fotos de Progreso</h3>
+              <p style={{ fontSize: '0.82rem', color: '#71717A', marginBottom: '20px' }}>Subí fotos mensuales para documentar tu transformación.</p>
+
+              <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
+                <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Subir foto del mes</p>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                  {['frente', 'perfil', 'espalda'].map(t => (
+                    <button key={t} onClick={() => setStPhotoTipo(t)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: stPhotoTipo === t ? '2px solid #7C3AED' : '2px solid #3F3F46', background: stPhotoTipo === t ? 'rgba(124,58,237,0.15)' : 'transparent', color: stPhotoTipo === t ? '#A78BFA' : '#71717A', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', textTransform: 'capitalize' }}>{t}</button>
+                  ))}
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#7C3AED', color: '#fff', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: 'pointer', opacity: stPhotoUploading ? 0.6 : 1 }}>
+                  {stPhotoUploading ? 'Subiendo...' : `📷 Subir foto (${stPhotoTipo})`}
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
+                </label>
+              </div>
+
+              {stPhotosLoading ? (
+                <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
+              ) : stPhotos.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📷</div>
+                  <p style={{ fontSize: '0.88rem' }}>Todavía no subiste ninguna foto.</p>
+                </div>
+              ) : (
+                stPhotos.map(month => (
+                  <div key={month.fecha} style={{ marginBottom: '20px' }}>
+                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{month.fecha}</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                      {['frente', 'perfil', 'espalda'].map(tipo => (
+                        <div key={tipo} style={{ aspectRatio: '3/4', borderRadius: '10px', overflow: 'hidden', background: '#18181B', border: '1px solid #3F3F46', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {month[tipo] ? (
+                            <img src={month[tipo]} alt={tipo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <span style={{ fontSize: '1.5rem', opacity: 0.3 }}>📷</span>
+                          )}
+                          <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.6rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>{tipo}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {studentScreen === 'metricas' && (
+            <div style={{ padding: '20px 16px', maxWidth: '480px', margin: '0 auto' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '4px' }}>📊 Mis Métricas</h3>
+              <p style={{ fontSize: '0.82rem', color: '#71717A', marginBottom: '20px' }}>Registrá tus medidas mensuales para ver tu evolución.</p>
+
+              <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '24px' }}>
+                <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Registrar nueva medición</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Fecha</label><input type="date" value={stMetricForm.fecha} onChange={e => setStMetricForm(f => ({...f, fecha: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Peso (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="75.5" value={stMetricForm.peso} onChange={e => setStMetricForm(f => ({...f, peso: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa muscular (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="35.0" value={stMetricForm.masa_muscular} onChange={e => setStMetricForm(f => ({...f, masa_muscular: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa grasa (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="20.0" value={stMetricForm.masa_grasa} onChange={e => setStMetricForm(f => ({...f, masa_grasa: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cintura (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="80" value={stMetricForm.cintura} onChange={e => setStMetricForm(f => ({...f, cintura: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cadera (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="95" value={stMetricForm.cadera} onChange={e => setStMetricForm(f => ({...f, cadera: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                </div>
+                <button onClick={stSaveMetric} disabled={stMetricSaving} style={{ width: '100%', background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: stMetricSaving ? 'default' : 'pointer', opacity: stMetricSaving ? 0.7 : 1 }}>{stMetricSaving ? 'Guardando...' : '💾 Guardar métricas'}</button>
+              </div>
+
+              {stMetricsLoading ? (
+                <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
+              ) : stMetrics.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📊</div>
+                  <p style={{ fontSize: '0.88rem' }}>Todavía no registraste métricas.</p>
+                </div>
+              ) : (
+                <div>
+                  <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Historial</p>
+                  {[...stMetrics].reverse().map((m, i) => (
+                    <div key={m.id || i} style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
+                      <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px' }}>{m.fecha}</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                        {m.peso != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff' }}>{m.peso}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Peso kg</div></div>}
+                        {m.masa_muscular != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#10B981' }}>{m.masa_muscular}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Músculo kg</div></div>}
+                        {m.masa_grasa != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#F59E0B' }}>{m.masa_grasa}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Grasa kg</div></div>}
+                        {m.cintura != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#A78BFA' }}>{m.cintura}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cintura cm</div></div>}
+                        {m.cadera != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#EC4899' }}>{m.cadera}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cadera cm</div></div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1309,7 +1447,7 @@ export default function App() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                                   <div>
                                     <p style={{ fontWeight: 700, fontSize: '0.9rem', color: '#FAFAFA' }}>{e.exercises?.name}</p>
-                                    <p style={{ fontSize: '0.75rem', color: '#71717A', marginTop: '3px' }}>{sets} series · {repsLabel} · RPE {e.target_rpe}</p>
+                                    <p style={{ fontSize: '0.75rem', color: '#71717A', marginTop: '3px' }}>{sets} series · {repsLabel} · RIR {e.target_rir}</p>
                                   </div>
                                   {lastPerf && (
                                     <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: '8px' }}>
@@ -1419,7 +1557,7 @@ export default function App() {
                           </div>
                         )}
                       </div>
-                      <div className="input-group"><label>RPE</label><select value={ex.targetRpe} onChange={e => handleExerciseChange(day.id, ex.id, 'targetRpe', e.target.value)}><option value="rpe7">RPE 7</option><option value="rpe8">RPE 8</option><option value="rpe9">RPE 9</option><option value="rpe10">RPE 10</option></select></div>
+                      <div className="input-group"><label>RIR</label><select value={ex.targetRir} onChange={e => handleExerciseChange(day.id, ex.id, 'targetRir', e.target.value)}><option value="rir3">RIR 3 — Fácil</option><option value="rir2">RIR 2 — Moderado</option><option value="rir1">RIR 1 — Exigente</option><option value="rir0">RIR 0 — Al fallo</option></select></div>
                     </div>
                   </div>
                 ))}

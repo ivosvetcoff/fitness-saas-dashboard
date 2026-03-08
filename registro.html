@@ -380,7 +380,7 @@
     </div>
 
     <div class="field" style="margin-top:24px">
-      <label>Foto de perfil (opcional)</label>
+      <label>Foto de perfil *</label>
       <div class="foto-area" onclick="document.getElementById('foto-input').click()">
         <img class="foto-preview" id="foto-preview" src="" alt="foto" />
         <div class="foto-icon" id="foto-icon">📷</div>
@@ -493,6 +493,7 @@
     if (n === 3) {
       if (!sel.dias) return 'Selecciona cuantos dias entrenas por semana.';
       if (!sel.lugar) return 'Selecciona donde entrenas.';
+      if (!document.getElementById('foto-input').files[0]) return 'La foto de perfil es obligatoria.';
     }
     return null;
   }
@@ -534,12 +535,23 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Error al registrarse.');
 
+      // Upload profile photo
+      const fotoFile = document.getElementById('foto-input').files[0];
+      if (fotoFile && data.student_id) {
+        const formData = new FormData();
+        formData.append('file', fotoFile);
+        await fetch(`${BACKEND_URL}/student/${data.student_id}/profile-photo`, {
+          method: 'POST',
+          body: formData,
+        });
+      }
+
       // Success!
       document.getElementById('form-wrap').style.display = 'none';
       document.querySelector('.progress-wrap').style.display = 'none';
 
       const waText = encodeURIComponent(
-        `Hola Agustín! Me acabo de registrar en la app como "${body.name}". Quiero empezar mi plan cuanto antes!`
+        `Hola Agustin! Me acabo de registrar en la app como "${body.name}". Quiero empezar mi plan cuanto antes!`
       );
       document.getElementById('success-wa-btn').href = `https://wa.me/${WA_NUMBER}?text=${waText}`;
       document.getElementById('success-screen').classList.add('visible');
