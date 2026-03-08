@@ -140,10 +140,12 @@ export default function App() {
 
   const fetchPendingStudents = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/students/pending`);
+      const professorId = loggedInUser?.id;
+      const url = professorId ? `${API_URL}/students/pending?professor_id=${professorId}` : `${API_URL}/students/pending`;
+      const res = await axios.get(url);
       setPendingStudents(res.data || []);
     } catch (e) { console.error(e); }
-  }, []);
+  }, [loggedInUser]);
 
   const handleActivateStudent = async (studentId) => {
     setActivatingId(studentId);
@@ -1085,7 +1087,7 @@ export default function App() {
         <div className="sidebar-footer">
           <div className="user-profile">
             <div className="avatar avatar-prof" style={{ backgroundColor: '#7C3AED', color: '#fff', borderRadius: '10px' }}>{loggedInUser.name?.charAt(0).toUpperCase()}</div>
-            <div><p className="user-name">{loggedInUser.name}</p><p className="user-role">Profesor · AE</p></div>
+            <div><p className="user-name">{loggedInUser.name}</p><p className="user-role">Profesor</p></div>
           </div>
           <button className="btn-back" style={{ marginTop: '12px' }} onClick={handleLogout}><LogOut size={16} /> Cerrar Sesión</button>
         </div>
@@ -1109,7 +1111,7 @@ export default function App() {
         {currentView === 'ListaAlumnos' && (
           <div className="view-fade-in">
             <header className="main-header flex-between">
-              <div><h1>Mis Alumnos</h1><p className="subtitle">Gestiona el progreso y asigna rutinas</p></div>
+              <div><h1>Panel de {loggedInUser?.name?.split(' ')[0]}</h1><p className="subtitle">Gestiona el progreso y asigna rutinas</p></div>
               <button className="btn-primary" onClick={() => setShowNewStudentForm(true)}><UserPlus size={18} /><span>Nuevo Alumno</span></button>
             </header>
             {showNewStudentForm && (
@@ -1126,7 +1128,7 @@ export default function App() {
                 </div>
                 <button className="btn-primary" style={{ marginTop: '20px', width: '100%' }} disabled={!newStudent.name || savingStudent} onClick={async () => {
                   setSavingStudent(true);
-                  try { await axios.post(`${API_URL}/students/`, { name: newStudent.name, email: newStudent.email || null, age: newStudent.age ? Number(newStudent.age) : null, weight_kg: newStudent.weight_kg ? Number(newStudent.weight_kg) : null, height_cm: newStudent.height_cm ? Number(newStudent.height_cm) : null, goal: newStudent.goal }); fetchStudents(); setNewStudent({ name: '', email: '', age: '', weight_kg: '', height_cm: '', goal: 'Hipertrofia' }); setShowNewStudentForm(false); } catch (e) { alert('Error: ' + e.message); } finally { setSavingStudent(false); }
+                  try { await axios.post(`${API_URL}/students/`, { name: newStudent.name, email: newStudent.email || null, age: newStudent.age ? Number(newStudent.age) : null, weight_kg: newStudent.weight_kg ? Number(newStudent.weight_kg) : null, height_cm: newStudent.height_cm ? Number(newStudent.height_cm) : null, goal: newStudent.goal, professor_id: loggedInUser?.id || null }); fetchStudents(); setNewStudent({ name: '', email: '', age: '', weight_kg: '', height_cm: '', goal: 'Hipertrofia' }); setShowNewStudentForm(false); } catch (e) { alert('Error: ' + e.message); } finally { setSavingStudent(false); }
                 }}><Save size={18} /><span>{savingStudent ? 'Guardando...' : 'Guardar Alumno'}</span></button>
               </div>
             )}
