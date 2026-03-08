@@ -71,6 +71,24 @@ export default function App() {
   const [stExpandedMeal, setStExpandedMeal] = useState(null);
   const [stIsFinishing, setStIsFinishing] = useState(false);
 
+  // ===== PROFESSOR NUTRITION FORM =====
+  const EMPTY_NUTRITION = { ayuno: '', desayuno: '', media_manana: '', almuerzo: '', merienda: '', pre_entrenamiento: '', post_entrenamiento: '', cena: '', antes_de_dormir: '', suplementacion: '' };
+  const MEAL_META = [
+    { key: 'ayuno',              name: 'Ayuno intermitente',  emoji: '🌅', placeholder: 'Ej: Tomar solo agua o café negro hasta las 12hs' },
+    { key: 'desayuno',           name: 'Desayuno',            emoji: '🌄', placeholder: 'Ej: 2 huevos revueltos + 1 tostada integral + café' },
+    { key: 'media_manana',       name: 'Media mañana',        emoji: '🍎', placeholder: 'Ej: 1 fruta + 10 almendras' },
+    { key: 'almuerzo',           name: 'Almuerzo',            emoji: '🍽️', placeholder: 'Ej: 150g pollo a la plancha + arroz integral + ensalada' },
+    { key: 'merienda',           name: 'Merienda',            emoji: '☕', placeholder: 'Ej: Yogur griego + granola' },
+    { key: 'pre_entrenamiento',  name: 'Pre-entrenamiento',   emoji: '⚡', placeholder: 'Ej: 1 banana + 1 cuchara de mantequilla de maní' },
+    { key: 'post_entrenamiento', name: 'Post-entrenamiento',  emoji: '💪', placeholder: 'Ej: Proteína whey con agua o leche descremada' },
+    { key: 'cena',               name: 'Cena',                emoji: '🌙', placeholder: 'Ej: 200g pescado + verduras al vapor' },
+    { key: 'antes_de_dormir',    name: 'Antes de dormir',     emoji: '😴', placeholder: 'Ej: Caseína o yogur griego' },
+    { key: 'suplementacion',     name: 'Suplementación',      emoji: '💊', placeholder: 'Ej: Creatina 5g post-entrenamiento / Vitamina D 1 comprimido con almuerzo' },
+  ];
+  const [profNutritionForm, setProfNutritionForm] = useState(EMPTY_NUTRITION);
+  const [profNutritionSaving, setProfNutritionSaving] = useState(false);
+  const [profNutritionSaved, setProfNutritionSaved] = useState(false);
+
   // ===== STUDENT PROFILE EDITING =====
   const [stProfileEditing, setStProfileEditing] = useState(false);
   const [stProfileForm, setStProfileForm] = useState({});
@@ -203,7 +221,25 @@ export default function App() {
       setRoutineExercises(all.data || []);
     } catch { setActiveRoutine(null); setRoutineExercises([]); }
   };
-  const fetchNutritionPlan = async (sid) => { try { const r = await axios.get(`${API_URL}/student/${sid}/nutrition`); setNutritionPlan(r.data); } catch { setNutritionPlan(null); } };
+  const fetchNutritionPlan = async (sid) => {
+    try {
+      const r = await axios.get(`${API_URL}/nutrition/${sid}`);
+      setNutritionPlan(r.data);
+      const raw = r.data?.raw || {};
+      setProfNutritionForm({
+        ayuno:              raw.ayuno || '',
+        desayuno:           raw.desayuno || '',
+        media_manana:       raw.media_manana || '',
+        almuerzo:           raw.almuerzo || '',
+        merienda:           raw.merienda || '',
+        pre_entrenamiento:  raw.pre_entrenamiento || '',
+        post_entrenamiento: raw.post_entrenamiento || '',
+        cena:               raw.cena || '',
+        antes_de_dormir:    raw.antes_de_dormir || '',
+        suplementacion:     raw.suplementacion || '',
+      });
+    } catch { setNutritionPlan(null); }
+  };
 
   const handleDeleteStudent = async (sid, name) => {
     if (!confirm(`¿Eliminar a "${name}"?`)) return;
@@ -327,7 +363,7 @@ export default function App() {
     } catch (e) { console.error(e); }
   };
   const stFetchRankings = async () => { setStLoadingRankings(true); try { const r = await axios.get(`${API_URL}/rankings`); setStRankings(r.data?.rankings || []); } catch { } finally { setStLoadingRankings(false); } };
-  const stFetchNutrition = async () => { setStLoadingNutrition(true); try { const r = await axios.get(`${API_URL}/student/${studentId}/nutrition`); setStNutrition(r.data); } catch { } finally { setStLoadingNutrition(false); } };
+  const stFetchNutrition = async () => { setStLoadingNutrition(true); try { const r = await axios.get(`${API_URL}/nutrition/${studentId}`); setStNutrition(r.data); } catch { } finally { setStLoadingNutrition(false); } };
 
   // ===== STUDENT DATA =====
   const [stStudentData, setStStudentData] = useState(null);
@@ -837,52 +873,34 @@ export default function App() {
           {
             studentScreen === 'nutrition' && (
               <div className="view-fade-in">
-                <h2 className="st-section-title">Plan Nutricional</h2>
-                {stNutrition ? (
-                  <>
-                    <p style={{ color: '#71717A', marginBottom: '16px' }}>🔥 Objetivo: Recomposición corporal</p>
-                    <div className="st-macros">
-                      <div className="st-macro"><strong>{stNutrition.objectives?.calories}</strong><span>Calorías</span></div>
-                      <div className="st-macro"><strong style={{ color: '#EF4444' }}>{stNutrition.objectives?.protein}</strong><span>Proteínas</span></div>
-                      <div className="st-macro"><strong style={{ color: '#F59E0B' }}>{stNutrition.objectives?.carbs}</strong><span>Carbos</span></div>
-                      <div className="st-macro"><strong style={{ color: '#7C3AED' }}>{stNutrition.objectives?.fats}</strong><span>Grasas</span></div>
-                    </div>
-                    <h3 style={{ color: '#FAFAFA', margin: '20px 0 12px', fontSize: '1.1rem' }}>🍽 Comidas del Día</h3>
-                    {stNutrition.meals?.map(meal => {
-                      const isSupp = meal.type === 'supplement';
+                <h2 className="st-section-title">Mi Nutrición</h2>
+                {stLoadingNutrition ? (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#52525B' }}><Loader2 size={32} className="spin-icon" /></div>
+                ) : stNutrition?.meals?.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {stNutrition.meals.map(meal => {
+                      const isSupp = meal.is_supplement;
                       const accentColor = isSupp ? '#A78BFA' : '#10B981';
-                      const iconBg = isSupp ? 'rgba(124,58,237,0.15)' : 'rgba(16,185,129,0.15)';
+                      const iconBg = isSupp ? 'rgba(124,58,237,0.15)' : 'rgba(16,185,129,0.1)';
+                      const borderColor = isSupp ? 'rgba(124,58,237,0.3)' : 'rgba(16,185,129,0.2)';
                       return (
-                        <div key={meal.id} className="st-exercise-card" style={isSupp ? { border: '1px solid rgba(124,58,237,0.3)' } : {}}>
-                          <button className="st-exercise-header" onClick={() => setStExpandedMeal(stExpandedMeal === meal.id ? null : meal.id)}>
-                            <div className="st-exercise-left">
-                              <div className="st-exercise-icon" style={{ background: iconBg }}>
-                                <span style={{ fontSize: '18px' }}>{meal.emoji}</span>
-                              </div>
-                              <div>
-                                <h4 style={isSupp ? { color: '#A78BFA' } : {}}>{meal.name}{meal.optional ? ' (opcional)' : ''}</h4>
-                                <p>{meal.time}</p>
-                              </div>
-                            </div>
-                            {stExpandedMeal === meal.id ? <ChevronUp color={accentColor} size={18} /> : <ChevronDown color="#52525B" size={18} />}
-                          </button>
-                          {stExpandedMeal === meal.id && (
-                            <div className="st-exercise-body">
-                              {meal.options?.map((opt, i) => (
-                                <div key={i} style={{ marginBottom: '12px' }}>
-                                  <strong style={{ color: accentColor, fontSize: '13px' }}>{opt.title}</strong>
-                                  <ul style={{ color: '#D4D4D8', fontSize: '14px', paddingLeft: '20px', marginTop: '6px' }}>
-                                    {opt.items?.map((item, j) => <li key={j} style={{ marginBottom: '4px' }}>{item}</li>)}
-                                  </ul>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                        <div key={meal.key} style={{ background: '#0D0B14', border: `1px solid ${borderColor}`, borderRadius: '14px', padding: '14px 16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>{meal.emoji}</div>
+                            <strong style={{ fontSize: '0.92rem', color: accentColor }}>{meal.name}</strong>
+                          </div>
+                          <p style={{ color: '#D4D4D8', fontSize: '0.88rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', paddingLeft: '46px' }}>{meal.text}</p>
                         </div>
                       );
                     })}
-                  </>
-                ) : <div style={{ textAlign: 'center', padding: '40px', color: '#52525B' }}><Loader2 size={32} className="spin-icon" /></div>}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '48px 20px', color: '#52525B' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🥗</div>
+                    <p style={{ fontWeight: 700, color: '#A1A1AA', marginBottom: '6px' }}>Tu profesor aún no cargó tu plan nutricional.</p>
+                    <p style={{ fontSize: '0.85rem' }}>Consultale a Agustin o Oriana 💬</p>
+                  </div>
+                )}
               </div>
             )
           }
@@ -1752,13 +1770,58 @@ export default function App() {
               </section>
               <section className="card flex-col">
                 <div className="card-header"><Flame size={20} className="icon-accent" /><h2>Plan Nutricional</h2></div>
-                {nutritionPlan ? (
-                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>{nutritionPlan.plan_name}</h3>
-                    <p style={{ color: '#10B981', fontWeight: 600, marginBottom: '12px', background: 'rgba(16,185,129,0.15)', padding: '6px 12px', borderRadius: '8px', display: 'inline-block', fontSize: '0.85rem' }}>{nutritionPlan.objectives?.calories} | P: {nutritionPlan.objectives?.protein} | C: {nutritionPlan.objectives?.carbs}</p>
-                    {(nutritionPlan.meals || []).map(m => <div key={m.id} style={{ backgroundColor: '#27272A', padding: '10px', borderRadius: '8px', marginBottom: '6px' }}><div style={{ display: 'flex', justifyContent: 'space-between' }}><strong style={{ fontSize: '0.9rem' }}>{m.emoji} {m.name}</strong><span style={{ color: '#A1A1AA', fontSize: '0.8rem' }}>{m.time}</span></div>{m.options?.[0] && <p style={{ color: '#D4D4D8', fontSize: '0.8rem', marginTop: '4px' }}>{m.options[0].items?.join(', ')}</p>}</div>)}
-                  </div>
-                ) : <div className="empty-state"><Flame size={48} className="empty-icon" /><h3>Sin plan</h3></div>}
+                <p style={{ color: '#71717A', fontSize: '0.82rem', marginBottom: '16px' }}>Completá las comidas del alumno. Los campos vacíos no se muestran al alumno.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '520px', overflowY: 'auto', paddingRight: '4px' }}>
+                  {MEAL_META.map(meta => {
+                    const val = profNutritionForm[meta.key] || '';
+                    const filled = val.trim().length > 0;
+                    return (
+                      <div key={meta.key} style={{ background: '#0D0B14', border: `1.5px solid ${filled ? 'rgba(16,185,129,0.4)' : '#2a2640'}`, borderRadius: '12px', padding: '12px 14px', transition: 'border-color 0.2s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '1.1rem' }}>{meta.emoji}</span>
+                          <strong style={{ fontSize: '0.88rem', color: '#FAFAFA' }}>{meta.name}</strong>
+                          <span style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: filled ? '#10B981' : '#3F3F46', flexShrink: 0 }} />
+                        </div>
+                        <textarea
+                          rows={2}
+                          placeholder={meta.placeholder}
+                          value={val}
+                          onChange={e => setProfNutritionForm(f => ({ ...f, [meta.key]: e.target.value }))}
+                          style={{ width: '100%', background: 'transparent', border: 'none', color: '#D4D4D8', fontSize: '0.85rem', resize: 'vertical', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, padding: 0 }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '14px' }}>
+                  <button
+                    className="btn-secondary"
+                    style={{ flex: 1, fontSize: '0.82rem' }}
+                    onClick={() => { setProfNutritionForm(EMPTY_NUTRITION); setProfNutritionSaved(false); }}
+                  >
+                    Limpiar todo
+                  </button>
+                  <button
+                    className="btn-primary"
+                    style={{ flex: 2 }}
+                    disabled={profNutritionSaving}
+                    onClick={async () => {
+                      setProfNutritionSaving(true);
+                      try {
+                        await axios.post(`${API_URL}/nutrition/${selectedStudent.id}`, {
+                          ...profNutritionForm,
+                          professor_id: loggedInUser?.id || null,
+                        });
+                        setProfNutritionSaved(true);
+                        setTimeout(() => setProfNutritionSaved(false), 3000);
+                        fetchNutritionPlan(selectedStudent.id);
+                      } catch { alert('Error al guardar el plan nutricional.'); }
+                      finally { setProfNutritionSaving(false); }
+                    }}
+                  >
+                    {profNutritionSaving ? 'Guardando...' : profNutritionSaved ? '✓ Plan guardado' : 'Guardar Plan Nutricional'}
+                  </button>
+                </div>
               </section>
             </div>
           </div>
