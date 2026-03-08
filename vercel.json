@@ -1,12 +1,9 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "routes": [
-    { "src": "/", "dest": "/elizondo-fitness.html" },
-    { "src": "/elizondo-fitness.html", "dest": "/elizondo-fitness.html" },
-    { "src": "/registro.html", "dest": "/registro.html" },
-    { "src": "/app", "dest": "/index.html" },
-    { "src": "/app/(.*)", "dest": "/index.html" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/", "destination": "/elizondo-fitness.html" },
+    { "source": "/app", "destination": "/index.html" },
+    { "source": "/app/(.*)", "destination": "/index.html" }
   ]
 }
