@@ -1272,7 +1272,7 @@
     </div>
     <button class="btn-modal" id="float-login-btn-submit" onclick="handleFloatLogin()">Ingresar →</button>
     <p style="text-align:center;font-size:0.82rem;color:#71717A;margin-top:14px">
-      ¿No tenes cuenta? <a href="http://localhost:3000/registro.html" style="color:#A78BFA;font-weight:700;text-decoration:none">Registrate aqui</a>
+      ¿No tenes cuenta? <a href="/registro.html" style="color:#A78BFA;font-weight:700;text-decoration:none">Registrate aqui</a>
     </p>
     <p class="login-modal-brand">AE Personal Training · <span>Panel del alumno</span></p>
   </div>
@@ -1284,8 +1284,8 @@
   // ============================================================
   const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
   const SUPABASE_ANON_KEY = 'TU_ANON_KEY';
-  const DASHBOARD_URL = 'http://localhost:5174'; // En producción: URL del dashboard desplegado
-  const BACKEND_URL = 'http://localhost:8000';   // En producción: URL del backend en Render
+  const DASHBOARD_URL = window.location.origin;
+  const BACKEND_URL = 'https://REEMPLAZAR-CON-TU-URL.onrender.com';
 
   // ── NAV scroll effect ──
   const nav = document.getElementById('main-nav');

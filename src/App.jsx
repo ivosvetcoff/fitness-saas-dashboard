@@ -121,7 +121,7 @@ export default function App() {
   const handleLogout = () => {
     setLoggedInUser(null);
     localStorage.removeItem('fitpro_user');
-    window.location.href = 'http://localhost:3000/elizondo-fitness.html';
+    window.location.href = '/elizondo-fitness.html';
   };
 
   // Check stored session or URL auth param
@@ -656,7 +656,7 @@ export default function App() {
             <span style={{ color: '#FDE68A', fontSize: '0.85rem', fontWeight: 600 }}>
               Tu suscripcion vence en {subDays === 0 ? 'menos de 1 dia' : `${subDays} dia${subDays !== 1 ? 's' : ''}`}. Renova para no perder el acceso.
             </span>
-            <a href="http://localhost:3000/elizondo-fitness.html" style={{ background: '#D97706', color: '#fff', padding: '6px 14px', borderRadius: '8px', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            <a href="/elizondo-fitness.html" style={{ background: '#D97706', color: '#fff', padding: '6px 14px', borderRadius: '8px', fontWeight: 700, fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
               Abonar
             </a>
           </div>
@@ -1440,7 +1440,7 @@ export default function App() {
                         </button>
                         {p.whatsapp && (
                           <a
-                            href={`https://wa.me/${p.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${p.name.split(' ')[0]}! Tu cuenta en AE Personal Training ya esta lista. Ingresa en http://localhost:5173`)}`}
+                            href={`https://wa.me/${p.whatsapp.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${p.name.split(' ')[0]}! Tu cuenta en AE Personal Training ya esta lista. Ingresa en ${window.location.origin}`)}`}
                             target="_blank" rel="noopener"
                             style={{ flex: 1, background: '#052E16', border: '1px solid #25D366', color: '#25D366', borderRadius: '10px', padding: '9px 0', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           >
