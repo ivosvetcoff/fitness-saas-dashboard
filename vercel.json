@@ -1,8 +1,10 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/", "destination": "/elizondo-fitness.html", "permanent": false }
+  ],
   "rewrites": [
-    { "source": "/", "destination": "/elizondo-fitness.html" },
     { "source": "/app", "destination": "/index.html" },
     { "source": "/app/(.*)", "destination": "/index.html" }
   ]
