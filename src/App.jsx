@@ -321,11 +321,11 @@ export default function App() {
   const [stStudentDataLoading, setStStudentDataLoading] = useState(false);
 
   // ===== STREAK STATE =====
-  const [stStreak, setStStreak] = useState({ streak: 0, at_risk: false, last_training_date: null, longest_streak: 0 });
+  const [stStreak, setStStreak] = useState({ streak: 0, at_risk: false, last_training_date: null, longest_streak: 0, milestone_100: false });
 
   const stFetchStreak = async () => {
     if (!studentId) return;
-    try { const r = await axios.get(`${API_URL}/students/${studentId}/streak`); setStStreak(r.data); } catch { }
+    try { const r = await axios.get(`${API_URL}/students/${studentId}/streak`); setStStreak(r.data || { streak: 0, at_risk: false, last_training_date: null, longest_streak: 0, milestone_100: false }); } catch { }
   };
 
   const stFetchStudentData = async () => {
@@ -630,6 +630,13 @@ export default function App() {
                 <div><h3>No hay excusas.</h3><p>Solo resultados.</p><span className="st-date">{today.charAt(0).toUpperCase() + today.slice(1)}</span></div>
                 <Flame color="#F59E0B" size={40} />
               </div>
+              {stStreak.milestone_100 && (
+                <div style={{ background: 'linear-gradient(135deg, rgba(234,179,8,0.15), rgba(124,58,237,0.15))', border: '1px solid rgba(234,179,8,0.4)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '6px' }}>🏆</div>
+                  <strong style={{ color: '#FBBF24', fontSize: '1rem', display: 'block' }}>¡100 días seguidos!</strong>
+                  <p style={{ color: '#D4D4D8', fontSize: '0.85rem', marginTop: '6px' }}>Ganaste un <strong style={{ color: '#4ADE80' }}>25% de descuento</strong> para tu próximo mes.<br />Mostráselo a Agustin 🎉</p>
+                </div>
+              )}
               <div className="st-stats-row">
                 <div className={`st-stat ${stStreak.at_risk ? 'at-risk' : ''}`}>
                   <Flame color="#F59E0B" size={20} />
@@ -783,26 +790,39 @@ export default function App() {
                       <div className="st-macro"><strong style={{ color: '#7C3AED' }}>{stNutrition.objectives?.fats}</strong><span>Grasas</span></div>
                     </div>
                     <h3 style={{ color: '#FAFAFA', margin: '20px 0 12px', fontSize: '1.1rem' }}>🍽 Comidas del Día</h3>
-                    {stNutrition.meals?.map(meal => (
-                      <div key={meal.id} className="st-exercise-card">
-                        <button className="st-exercise-header" onClick={() => setStExpandedMeal(stExpandedMeal === meal.id ? null : meal.id)}>
-                          <div className="st-exercise-left"><div className="st-exercise-icon" style={{ background: 'rgba(16,185,129,0.15)' }}><span style={{ fontSize: '18px' }}>{meal.emoji}</span></div><div><h4>{meal.name}</h4><p>{meal.time}</p></div></div>
-                          {stExpandedMeal === meal.id ? <ChevronUp color="#10B981" size={18} /> : <ChevronDown color="#52525B" size={18} />}
-                        </button>
-                        {stExpandedMeal === meal.id && (
-                          <div className="st-exercise-body">
-                            {meal.options?.map((opt, i) => (
-                              <div key={i} style={{ marginBottom: '12px' }}>
-                                <strong style={{ color: '#10B981', fontSize: '13px' }}>{opt.title}</strong>
-                                <ul style={{ color: '#D4D4D8', fontSize: '14px', paddingLeft: '20px', marginTop: '6px' }}>
-                                  {opt.items?.map((item, j) => <li key={j} style={{ marginBottom: '4px' }}>{item}</li>)}
-                                </ul>
+                    {stNutrition.meals?.map(meal => {
+                      const isSupp = meal.type === 'supplement';
+                      const accentColor = isSupp ? '#A78BFA' : '#10B981';
+                      const iconBg = isSupp ? 'rgba(124,58,237,0.15)' : 'rgba(16,185,129,0.15)';
+                      return (
+                        <div key={meal.id} className="st-exercise-card" style={isSupp ? { border: '1px solid rgba(124,58,237,0.3)' } : {}}>
+                          <button className="st-exercise-header" onClick={() => setStExpandedMeal(stExpandedMeal === meal.id ? null : meal.id)}>
+                            <div className="st-exercise-left">
+                              <div className="st-exercise-icon" style={{ background: iconBg }}>
+                                <span style={{ fontSize: '18px' }}>{meal.emoji}</span>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                              <div>
+                                <h4 style={isSupp ? { color: '#A78BFA' } : {}}>{meal.name}{meal.optional ? ' (opcional)' : ''}</h4>
+                                <p>{meal.time}</p>
+                              </div>
+                            </div>
+                            {stExpandedMeal === meal.id ? <ChevronUp color={accentColor} size={18} /> : <ChevronDown color="#52525B" size={18} />}
+                          </button>
+                          {stExpandedMeal === meal.id && (
+                            <div className="st-exercise-body">
+                              {meal.options?.map((opt, i) => (
+                                <div key={i} style={{ marginBottom: '12px' }}>
+                                  <strong style={{ color: accentColor, fontSize: '13px' }}>{opt.title}</strong>
+                                  <ul style={{ color: '#D4D4D8', fontSize: '14px', paddingLeft: '20px', marginTop: '6px' }}>
+                                    {opt.items?.map((item, j) => <li key={j} style={{ marginBottom: '4px' }}>{item}</li>)}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </>
                 ) : <div style={{ textAlign: 'center', padding: '40px', color: '#52525B' }}><Loader2 size={32} className="spin-icon" /></div>}
               </div>
@@ -816,9 +836,15 @@ export default function App() {
 
               {/* Streak hero */}
               <div className="streak-hero">
-                <span style={{ fontSize: '2.5rem' }}>🔥</span>
+                <span style={{ fontSize: '2.5rem' }}>{stStreak.milestone_100 ? '🏆' : '🔥'}</span>
                 <span className="streak-hero-num">{stStreak.streak}</span>
                 <span className="streak-hero-label">días seguidos entrenando</span>
+                {stStreak.milestone_100 && (
+                  <div style={{ background: 'rgba(234,179,8,0.15)', border: '1px solid rgba(234,179,8,0.4)', borderRadius: '12px', padding: '12px 20px', marginTop: '12px', textAlign: 'center' }}>
+                    <strong style={{ color: '#FBBF24', fontSize: '0.95rem' }}>🏆 ¡Hito de {stStreak.streak} días!</strong>
+                    <p style={{ color: '#D4D4D8', fontSize: '0.82rem', marginTop: '4px' }}>Ganaste un 25% de descuento para tu próximo mes. Mostráselo a Agustin.</p>
+                  </div>
+                )}
                 {stStreak.at_risk && <p style={{ color: '#EF4444', marginTop: '10px', fontSize: '0.88rem', fontWeight: 700, background: 'rgba(239,68,68,0.1)', padding: '8px 16px', borderRadius: '10px' }}>⚠️ ¡Entrená hoy para no perder tu racha!</p>}
                 {stStreak.longest_streak > 0 && <p style={{ color: '#A1A1AA', marginTop: '10px', fontSize: '0.82rem' }}>Mejor racha histórica: <strong style={{ color: '#A78BFA' }}>{stStreak.longest_streak} días</strong></p>}
               </div>
@@ -873,9 +899,10 @@ export default function App() {
 
               {/* Streak */}
               <div className="streak-hero" style={{ marginBottom: '24px' }}>
-                <span style={{ fontSize: '2rem' }}>🔥</span>
+                <span style={{ fontSize: '2rem' }}>{stStreak.milestone_100 ? '🏆' : '🔥'}</span>
                 <span className="streak-hero-num">{stStreak.streak}</span>
                 <span className="streak-hero-label">días de racha</span>
+                {stStreak.milestone_100 && <span style={{ display: 'inline-block', marginTop: '8px', background: 'rgba(234,179,8,0.15)', color: '#FBBF24', border: '1px solid rgba(234,179,8,0.4)', borderRadius: '999px', padding: '4px 14px', fontSize: '0.82rem', fontWeight: 800 }}>🏆 100 días · 25% de descuento</span>}
                 {stStreak.at_risk && <p style={{ color: '#EF4444', marginTop: '8px', fontSize: '0.85rem', fontWeight: 600 }}>⚠️ ¡Entrená hoy para no perder tu racha!</p>}
                 {stStreak.longest_streak > 0 && <p style={{ color: '#A1A1AA', marginTop: '8px', fontSize: '0.8rem' }}>Mejor racha: {stStreak.longest_streak} días</p>}
               </div>
@@ -1228,6 +1255,7 @@ export default function App() {
                       <h3 className="student-name">{s.name}</h3>
                       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginTop: '2px' }}>
                         <span style={{ fontSize: '0.7rem', fontWeight: 700, color: subColor, background: subBg, padding: '2px 8px', borderRadius: '6px', border: `1px solid ${subColor}44` }}>{subLabel}</span>
+                        {s.discount_available && <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#FBBF24', background: 'rgba(234,179,8,0.15)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(234,179,8,0.4)' }}>🏆 Descuento 25%</span>}
                       </div>
                     </div>
                     <button className="btn-icon-danger" onClick={e => { e.stopPropagation(); handleDeleteStudent(s.id, s.name); }}>{deletingStudentId === s.id ? <Loader2 size={18} className="spin-icon" /> : <Trash2 size={18} />}</button>
@@ -1289,6 +1317,21 @@ export default function App() {
                   >
                     Registrar Pago
                   </button>
+                  {selectedStudent.discount_available && (
+                    <button
+                      style={{ background: 'rgba(234,179,8,0.15)', border: '1px solid rgba(234,179,8,0.5)', color: '#FBBF24', borderRadius: '8px', padding: '3px 12px', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
+                      onClick={async () => {
+                        if (!window.confirm(`Marcar descuento del 25% de ${selectedStudent.name} como aplicado?`)) return;
+                        try {
+                          await axios.post(`${API_URL}/students/${selectedStudent.id}/discount/apply`);
+                          fetchStudents();
+                          setSelectedStudent({ ...selectedStudent, discount_available: false });
+                        } catch { alert('Error al aplicar descuento.'); }
+                      }}
+                    >
+                      🏆 Descuento 25% · Aplicar
+                    </button>
+                  )}
                 </div>
               </div>
             </header>
