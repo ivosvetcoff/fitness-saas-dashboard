@@ -44,6 +44,8 @@
     }
     .topbar-logo { font-size: 1.2rem; font-weight: 900; }
     .topbar-logo span { color: var(--accent-light); }
+    .topbar-back { background: none; border: none; color: #71717A; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 8px; margin-left: auto; }
+    .topbar-back:hover { color: #A78BFA; background: rgba(124,58,237,0.1); }
 
     /* ── PROGRESS BAR ── */
     .progress-wrap { padding: 0 20px; background: var(--bg-card); padding-bottom: 14px; }
@@ -243,6 +245,9 @@
 <!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-logo">AE <span>Personal Training</span></div>
+  <button class="topbar-back" onclick="window.location.href='http://localhost:3000/elizondo-fitness.html'">
+    ← Salir
+  </button>
 </div>
 
 <!-- PROGRESS BAR -->

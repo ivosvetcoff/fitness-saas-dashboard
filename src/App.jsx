@@ -8,6 +8,16 @@ import './index.css';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const CHART_COLORS = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#A78BFA', '#EC4899', '#14B8A6', '#F97316'];
 
+// ── Datos de pago — editar acá si cambia el precio o los datos bancarios ──
+const PAGO = {
+  precio: '$50.000',
+  alias: 'IMPERA.SURCOS.FOCA',
+  cbu: '3840200500000018952467',
+  titular: 'Agustín Lopez',
+  banco: 'Wilobank',
+  waNro: '5493794293284',
+};
+
 export default function App() {
   // ===== AUTH STATE =====
   const [loggedInUser, setLoggedInUser] = useState(null);
@@ -55,6 +65,14 @@ export default function App() {
   const [stExpandedMeal, setStExpandedMeal] = useState(null);
   const [stIsFinishing, setStIsFinishing] = useState(false);
 
+  // ===== STUDENT PROFILE EDITING =====
+  const [stProfileEditing, setStProfileEditing] = useState(false);
+  const [stProfileForm, setStProfileForm] = useState({});
+  const [stProfileSaving, setStProfileSaving] = useState(false);
+  const [stPhotos, setStPhotos] = useState([]);
+  const [stPhotosLoading, setStPhotosLoading] = useState(false);
+  const [stPhotoUploading, setStPhotoUploading] = useState(false);
+
   // ===== LOGIN =====
   const handleLogin = async () => {
     setLoginLoading(true);
@@ -76,8 +94,19 @@ export default function App() {
     window.location.href = 'http://localhost:3000/elizondo-fitness.html';
   };
 
-  // Check stored session
+  // Check stored session or URL auth param
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authParam = params.get('auth');
+    if (authParam) {
+      try {
+        const user = JSON.parse(decodeURIComponent(escape(atob(authParam))));
+        localStorage.setItem('fitpro_user', JSON.stringify(user));
+        setLoggedInUser(user);
+        window.history.replaceState({}, '', window.location.pathname);
+        return;
+      } catch { }
+    }
     const stored = localStorage.getItem('fitpro_user');
     if (stored) {
       try { setLoggedInUser(JSON.parse(stored)); } catch { localStorage.removeItem('fitpro_user'); }
@@ -281,6 +310,7 @@ export default function App() {
 
   // ===== STUDENT DATA =====
   const [stStudentData, setStStudentData] = useState(null);
+  const [stStudentDataLoading, setStStudentDataLoading] = useState(false);
 
   // ===== STREAK STATE =====
   const [stStreak, setStStreak] = useState({ streak: 0, at_risk: false, last_training_date: null, longest_streak: 0 });
@@ -292,11 +322,49 @@ export default function App() {
 
   const stFetchStudentData = async () => {
     if (!studentId) return;
-    try { const r = await axios.get(`${API_URL}/students/${studentId}`); setStStudentData(r.data); } catch { }
+    setStStudentDataLoading(true);
+    try { const r = await axios.get(`${API_URL}/students/${studentId}`); setStStudentData(r.data); } catch { } finally { setStStudentDataLoading(false); }
+  };
+
+  const stFetchPhotos = async () => {
+    if (!studentId) return;
+    setStPhotosLoading(true);
+    try { const r = await axios.get(`${API_URL}/student/${studentId}/photos`); setStPhotos(r.data || []); } catch { }
+    finally { setStPhotosLoading(false); }
+  };
+
+  const stUpdateProfile = async () => {
+    setStProfileSaving(true);
+    try {
+      const payload = {};
+      if (stProfileForm.weight_kg !== '') payload.weight_kg = parseFloat(stProfileForm.weight_kg) || null;
+      if (stProfileForm.height_cm !== '') payload.height_cm = parseFloat(stProfileForm.height_cm) || null;
+      if (stProfileForm.whatsapp !== '') payload.whatsapp = stProfileForm.whatsapp || null;
+      if (stProfileForm.nivel_experiencia) payload.nivel_experiencia = stProfileForm.nivel_experiencia;
+      if (stProfileForm.dias_disponibles !== '') payload.dias_disponibles = parseInt(stProfileForm.dias_disponibles) || null;
+      if (stProfileForm.lugar_entrenamiento) payload.lugar_entrenamiento = stProfileForm.lugar_entrenamiento;
+      await axios.patch(`${API_URL}/students/${studentId}/profile`, payload);
+      await stFetchStudentData();
+      setStProfileEditing(false);
+    } catch { alert('Error al guardar los datos.'); }
+    finally { setStProfileSaving(false); }
+  };
+
+  const stUploadPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setStPhotoUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      await axios.post(`${API_URL}/student/${studentId}/photos`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await stFetchPhotos();
+    } catch { alert('Error al subir la foto. Verificá que el bucket esté configurado en Supabase.'); }
+    finally { setStPhotoUploading(false); e.target.value = ''; }
   };
 
   useEffect(() => {
-    if (loggedInUser?.role === 'student') { stFetchExercises(); stFetchNutrition(); stFetchStreak(); stFetchStudentData(); }
+    if (loggedInUser?.role === 'student') { stFetchExercises(); stFetchNutrition(); stFetchStreak(); stFetchStudentData(); stFetchPhotos(); }
   }, [loggedInUser]);
 
   // setsData: [{ set_number, actual_weight, actual_reps, actual_rpe }]
@@ -351,7 +419,7 @@ export default function App() {
               {loginLoading ? <Loader2 size={20} className="spin-icon" /> : <><LogOut size={18} /> <span>Ingresar</span></>}
             </button>
           </div>
-          <p className="login-footer">Team Pato Coaching © 2026</p>
+          <p className="login-footer">Agustin Elizondo Team © 2026</p>
         </div>
       </div>
     );
@@ -361,6 +429,15 @@ export default function App() {
   // RENDER: STUDENT VIEW
   // ======================================================================
   if (loggedInUser.role === 'student') {
+
+    // Esperar datos de suscripción antes de mostrar cualquier pantalla
+    if (stStudentDataLoading || (!stStudentData && studentId)) {
+      return (
+        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Loader2 size={40} color="#7C3AED" className="spin-icon" />
+        </div>
+      );
+    }
 
     const subStatus = stStudentData?.subscription_status;
     const subDays = stStudentData?.days_remaining ?? 0;
@@ -394,21 +471,60 @@ export default function App() {
 
     // BLOCKED: suscripción vencida
     if (stStudentData && subStatus === 'blocked') {
+      const waMsg = encodeURIComponent(
+        `Hola Agustín! Soy ${loggedInUser.name}. Te mando el comprobante del pago de mi cuota (${PAGO.precio}). 🏋️`
+      );
+      const copy = (txt) => navigator.clipboard.writeText(txt);
       return (
-        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
-          <Dumbbell size={48} color="#7C3AED" style={{ marginBottom: '16px' }} />
-          <h1 style={{ color: '#FAFAFA', fontSize: '1.5rem', fontWeight: 800 }}>Acceso bloqueado</h1>
-          <p style={{ color: '#A1A1AA', marginTop: '8px', maxWidth: '320px', lineHeight: 1.5 }}>
-            Tu suscripción ha vencido. Realizá el pago para volver a acceder a tu plan de entrenamiento.
+        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', textAlign: 'center' }}>
+          <Dumbbell size={44} color="#7C3AED" style={{ marginBottom: '14px' }} />
+          <h1 style={{ color: '#FAFAFA', fontSize: '1.4rem', fontWeight: 800, marginBottom: '6px' }}>Renovar suscripción</h1>
+          <p style={{ color: '#A1A1AA', fontSize: '0.88rem', maxWidth: '300px', lineHeight: 1.5, marginBottom: '20px' }}>
+            Tu acceso está bloqueado. Realizá la transferencia y enviá el comprobante por WhatsApp.
           </p>
+
+          {/* Monto */}
+          <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '18px 24px', width: '100%', maxWidth: '320px', marginBottom: '12px' }}>
+            <div style={{ color: '#71717A', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Cuota mensual</div>
+            <div style={{ color: '#A78BFA', fontSize: '2rem', fontWeight: 900 }}>{PAGO.precio}</div>
+          </div>
+
+          {/* Datos bancarios */}
+          <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px 20px', width: '100%', maxWidth: '320px', marginBottom: '20px', textAlign: 'left' }}>
+            <div style={{ color: '#71717A', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Datos de transferencia</div>
+
+            {[
+              { label: 'Alias', value: PAGO.alias },
+              { label: 'CBU', value: PAGO.cbu },
+              { label: 'Titular', value: PAGO.titular },
+              { label: 'Banco', value: PAGO.banco },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <div>
+                  <div style={{ color: '#71717A', fontSize: '0.7rem' }}>{label}</div>
+                  <div style={{ color: '#FAFAFA', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'monospace', marginTop: '1px' }}>{value}</div>
+                </div>
+                <button
+                  onClick={() => copy(value)}
+                  style={{ background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#A78BFA', fontSize: '0.72rem', padding: '5px 10px', cursor: 'pointer', fontWeight: 600, flexShrink: 0, marginLeft: '8px' }}
+                >
+                  Copiar
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Botón WA */}
           <a
-            href="http://localhost:3000/elizondo-fitness.html"
-            style={{ marginTop: '24px', background: '#7C3AED', color: '#fff', padding: '14px 32px', borderRadius: '12px', fontWeight: 700, fontSize: '1rem', textDecoration: 'none', display: 'inline-block' }}
+            href={`https://wa.me/${PAGO.waNro}?text=${waMsg}`}
+            target="_blank" rel="noopener"
+            style={{ background: '#25D366', color: '#fff', padding: '14px 28px', borderRadius: '12px', fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '320px', justifyContent: 'center', marginBottom: '12px' }}
           >
-            Abonar suscripcion
+            💬 Enviar comprobante por WhatsApp
           </a>
-          <button onClick={handleLogout} style={{ marginTop: '16px', background: 'transparent', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.85rem' }}>
-            Cerrar sesion
+
+          <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.82rem', marginTop: '4px' }}>
+            Cerrar sesión
           </button>
         </div>
       );
@@ -686,37 +802,122 @@ export default function App() {
 
           {/* PROFILE */}
           {studentScreen === 'profile' && (
-            <div className="view-fade-in" style={{ textAlign: 'center' }}>
+            <div className="view-fade-in">
+              {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2 className="st-section-title" style={{ margin: 0 }}>Mi Perfil</h2>
                 <button className="btn-icon-sm" onClick={handleLogout} style={{ color: '#EF4444' }}><LogOut size={20} /></button>
               </div>
-              <div className="st-profile-avatar">
-                <span style={{ fontSize: '2rem', fontWeight: 800 }}>{loggedInUser.name?.charAt(0).toUpperCase()}</span>
+
+              {/* Avatar + nombre */}
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <div className="st-profile-avatar">
+                  <span style={{ fontSize: '2rem', fontWeight: 800 }}>{loggedInUser.name?.charAt(0).toUpperCase()}</span>
+                </div>
+                <h2 style={{ marginTop: '14px', fontSize: '1.4rem' }}>{loggedInUser.name}</h2>
+                <p style={{ color: '#A1A1AA', marginTop: '4px' }}>{loggedInUser.email}</p>
+                {stStudentData?.goal && (
+                  <span style={{ display: 'inline-block', marginTop: '8px', background: 'rgba(124,58,237,0.15)', color: '#A78BFA', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '999px', padding: '4px 14px', fontSize: '0.82rem', fontWeight: 700 }}>
+                    🎯 {stStudentData.goal}
+                  </span>
+                )}
               </div>
-              <h2 style={{ marginTop: '14px', fontSize: '1.4rem' }}>{loggedInUser.name}</h2>
-              <p style={{ color: '#A1A1AA', marginTop: '4px' }}>{loggedInUser.email}</p>
-              {stStudentData?.goal && (
-                <span style={{ display: 'inline-block', marginTop: '8px', background: 'rgba(124,58,237,0.15)', color: '#A78BFA', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '999px', padding: '4px 14px', fontSize: '0.82rem', fontWeight: 700 }}>
-                  🎯 {stStudentData.goal}
-                </span>
-              )}
-              <div className="streak-hero" style={{ marginTop: '20px' }}>
+
+              {/* Streak */}
+              <div className="streak-hero" style={{ marginBottom: '24px' }}>
                 <span style={{ fontSize: '2rem' }}>🔥</span>
                 <span className="streak-hero-num">{stStreak.streak}</span>
                 <span className="streak-hero-label">días de racha</span>
                 {stStreak.at_risk && <p style={{ color: '#EF4444', marginTop: '8px', fontSize: '0.85rem', fontWeight: 600 }}>⚠️ ¡Entrená hoy para no perder tu racha!</p>}
                 {stStreak.longest_streak > 0 && <p style={{ color: '#A1A1AA', marginTop: '8px', fontSize: '0.8rem' }}>Mejor racha: {stStreak.longest_streak} días</p>}
               </div>
-              {stStudentData && (
-                <div className="st-stats-row" style={{ marginTop: '16px' }}>
-                  {stStudentData.age && <div className="st-stat"><User color="#7C3AED" size={20} /><strong>{stStudentData.age} años</strong><span>Edad</span></div>}
-                  {stStudentData.weight_kg && <div className="st-stat"><Activity color="#10B981" size={20} /><strong>{stStudentData.weight_kg} kg</strong><span>Peso</span></div>}
-                  {stStudentData.height_cm && <div className="st-stat"><TrendingUp color="#F59E0B" size={20} /><strong>{stStudentData.height_cm} cm</strong><span>Altura</span></div>}
+
+              {/* ── MIS DATOS ── */}
+              {!stProfileEditing ? (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Mis datos</h3>
+                    <button
+                      onClick={() => { setStProfileForm({ weight_kg: stStudentData?.weight_kg ?? '', height_cm: stStudentData?.height_cm ?? '', whatsapp: stStudentData?.whatsapp ?? '', nivel_experiencia: stStudentData?.nivel_experiencia ?? '', dias_disponibles: stStudentData?.dias_disponibles ?? '', lugar_entrenamiento: stStudentData?.lugar_entrenamiento ?? '' }); setStProfileEditing(true); }}
+                      style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#A78BFA', borderRadius: '8px', padding: '5px 14px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
+                      Editar
+                    </button>
+                  </div>
+                  <div className="st-stats-row">
+                    {stStudentData?.weight_kg && <div className="st-stat"><Activity color="#10B981" size={20} /><strong>{stStudentData.weight_kg} kg</strong><span>Peso</span></div>}
+                    {stStudentData?.height_cm && <div className="st-stat"><TrendingUp color="#F59E0B" size={20} /><strong>{stStudentData.height_cm} cm</strong><span>Altura</span></div>}
+                    {stStudentData?.dias_disponibles && <div className="st-stat"><Target color="#7C3AED" size={20} /><strong>{stStudentData.dias_disponibles}</strong><span>Días/sem</span></div>}
+                  </div>
+                  {[{ label: 'Nivel', val: stStudentData?.nivel_experiencia }, { label: 'Entrena en', val: stStudentData?.lugar_entrenamiento }, { label: 'WhatsApp', val: stStudentData?.whatsapp }].filter(r => r.val).map(r => (
+                    <div key={r.label} style={{ marginTop: '8px', background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.12)', borderRadius: '12px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#71717A', fontSize: '0.85rem' }}>{r.label}</span>
+                      <span style={{ color: '#FAFAFA', fontWeight: 700, fontSize: '0.85rem' }}>{r.val}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Actualizar datos</h3>
+                    <button onClick={() => setStProfileEditing(false)} style={{ background: 'none', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.85rem' }}>Cancelar</button>
+                  </div>
+                  {[{ label: 'Peso actual (kg)', key: 'weight_kg', type: 'number', ph: 'Ej: 75' }, { label: 'Altura (cm)', key: 'height_cm', type: 'number', ph: 'Ej: 175' }, { label: 'WhatsApp', key: 'whatsapp', type: 'tel', ph: '+54 9 11 0000 0000' }, { label: 'Días disponibles por semana', key: 'dias_disponibles', type: 'number', ph: '3' }].map(f => (
+                    <div key={f.key} style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{f.label}</label>
+                      <input type={f.type} placeholder={f.ph} value={stProfileForm[f.key]} onChange={e => setStProfileForm(p => ({ ...p, [f.key]: e.target.value }))} style={{ width: '100%', background: '#1a1730', border: '1px solid #2a2640', borderRadius: '12px', padding: '12px 14px', color: '#fff', fontSize: '0.92rem', outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                  ))}
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nivel de experiencia</label>
+                    <select value={stProfileForm.nivel_experiencia} onChange={e => setStProfileForm(p => ({ ...p, nivel_experiencia: e.target.value }))} style={{ width: '100%', background: '#1a1730', border: '1px solid #2a2640', borderRadius: '12px', padding: '12px 14px', color: stProfileForm.nivel_experiencia ? '#fff' : '#52525B', fontSize: '0.92rem', outline: 'none' }}>
+                      <option value="">Seleccionar</option>
+                      <option value="Principiante">Principiante</option>
+                      <option value="Intermedio">Intermedio</option>
+                      <option value="Avanzado">Avanzado</option>
+                    </select>
+                  </div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Lugar de entrenamiento</label>
+                    <select value={stProfileForm.lugar_entrenamiento} onChange={e => setStProfileForm(p => ({ ...p, lugar_entrenamiento: e.target.value }))} style={{ width: '100%', background: '#1a1730', border: '1px solid #2a2640', borderRadius: '12px', padding: '12px 14px', color: stProfileForm.lugar_entrenamiento ? '#fff' : '#52525B', fontSize: '0.92rem', outline: 'none' }}>
+                      <option value="">Seleccionar</option>
+                      <option value="Gimnasio completo">Gimnasio completo</option>
+                      <option value="Gimnasio en casa">Gimnasio en casa</option>
+                      <option value="Sin equipamiento">Sin equipamiento</option>
+                    </select>
+                  </div>
+                  <button className="btn-primary w-full" disabled={stProfileSaving} onClick={stUpdateProfile}>
+                    {stProfileSaving ? <Loader2 size={18} className="spin-icon" /> : <><Save size={16} /> Guardar cambios</>}
+                  </button>
                 </div>
               )}
-              <div className="st-stats-row" style={{ marginTop: '12px' }}>
-                <div className="st-stat"><Target color="#7C3AED" size={20} /><strong>{stSession ? `Día ${stSession.current_day}` : '—'}</strong><span>Entreno actual</span></div>
+
+              {/* ── FOTO DEL MES ── */}
+              <div style={{ marginTop: '32px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>📸 Foto del mes</h3>
+                  <label style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: stPhotoUploading ? '#52525B' : '#A78BFA', borderRadius: '8px', padding: '5px 14px', fontSize: '0.8rem', fontWeight: 700, cursor: stPhotoUploading ? 'default' : 'pointer' }}>
+                    {stPhotoUploading ? <><Loader2 size={12} className="spin-icon" /> Subiendo...</> : '+ Subir foto'}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
+                  </label>
+                </div>
+                <p style={{ fontSize: '0.78rem', color: '#52525B', marginBottom: '14px' }}>Documentá tu progreso mes a mes. Agustín puede ver tus fotos para hacer ajustes en tu plan.</p>
+                {stPhotosLoading
+                  ? <div style={{ textAlign: 'center', padding: '20px' }}><Loader2 size={24} className="spin-icon" color="#7C3AED" /></div>
+                  : stPhotos.length === 0
+                  ? <div style={{ textAlign: 'center', padding: '28px', border: '1px dashed rgba(124,58,237,0.25)', borderRadius: '16px', color: '#52525B', fontSize: '0.85rem' }}>
+                      Aún no subiste ninguna foto.<br />Tu primera foto es el punto de partida. 💪
+                    </div>
+                  : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                      {stPhotos.map(p => (
+                        <div key={p.id} style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '3/4', position: 'relative', border: '1px solid rgba(124,58,237,0.2)' }}>
+                          <img src={p.photo_url} alt="Progreso" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.65)', padding: '4px 6px', fontSize: '0.6rem', color: '#A1A1AA', textAlign: 'center' }}>
+                            {new Date(p.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                }
               </div>
             </div>
           )}
