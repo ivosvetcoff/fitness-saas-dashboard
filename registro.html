@@ -400,11 +400,11 @@
     </div>
 
     <div class="field" style="margin-top:24px">
-      <label>Foto de perfil *</label>
-      <div class="foto-area" onclick="document.getElementById('foto-input').click()">
+      <label>Foto de perfil <span class="req">*</span> <span style="color:#EF4444;font-size:0.78rem;font-weight:500;text-transform:none;letter-spacing:0">Obligatoria</span></label>
+      <div class="foto-area" id="foto-area" onclick="document.getElementById('foto-input').click()">
         <img class="foto-preview" id="foto-preview" src="" alt="foto" />
         <div class="foto-icon" id="foto-icon">📷</div>
-        <div class="foto-label">Toca para subir una foto</div>
+        <div class="foto-label" id="foto-label">Tocá para subir tu foto de perfil</div>
         <input type="file" id="foto-input" accept="image/*" onchange="previewFoto(this)" />
       </div>
     </div>
@@ -605,6 +605,8 @@
     img.src = url;
     img.style.display = 'block';
     document.getElementById('foto-icon').style.display = 'none';
+    document.getElementById('foto-label').textContent = '✓ Foto seleccionada';
+    document.getElementById('foto-area').style.borderColor = 'rgba(16,185,129,0.6)';
   }
 
   // ── Progress dots ──
@@ -678,6 +680,15 @@
       return;
     }
 
+    // Doble verificación: foto obligatoria
+    const fotoGuard = document.getElementById('foto-input').files[0];
+    if (!fotoGuard) {
+      const e = document.getElementById('err-6');
+      e.textContent = 'La foto de perfil es obligatoria. Volvé al paso anterior y subí una foto.';
+      e.classList.add('visible');
+      return;
+    }
+
     const btn = document.getElementById('btn-submit');
     btn.disabled = true;
     btn.textContent = 'Creando cuenta...';
@@ -720,16 +731,15 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Error al registrarse.');
 
-      // Upload profile photo
+      // Upload profile photo (obligatoria)
       const fotoFile = document.getElementById('foto-input').files[0];
-      if (fotoFile && data.student_id) {
-        const formData = new FormData();
-        formData.append('file', fotoFile);
-        await fetch(`${BACKEND_URL}/student/${data.student_id}/profile-photo`, {
-          method: 'POST',
-          body: formData,
-        });
-      }
+      const formData = new FormData();
+      formData.append('file', fotoFile);
+      const fotoRes = await fetch(`${BACKEND_URL}/student/${data.student_id}/profile-photo`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!fotoRes.ok) throw new Error('Error al subir la foto. Intentá de nuevo.');
 
       // Success!
       document.getElementById('form-wrap').style.display = 'none';
