@@ -1308,44 +1308,6 @@
     }
   })();
 
-  // ── Lead form ──
-  document.getElementById('lead-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="login-spinner"></span> Enviando...';
-
-    const payload = {
-      name: document.getElementById('f-name').value,
-      phone: document.getElementById('f-phone').value,
-      email: document.getElementById('f-email').value || null,
-      plan_interest: document.getElementById('f-plan').value || null,
-      goal: document.getElementById('f-goal').value || null,
-    };
-
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok || res.status === 201) {
-        document.getElementById('lead-form').style.display = 'none';
-        document.getElementById('form-success').style.display = 'block';
-      } else { throw new Error(); }
-    } catch {
-      alert('Hubo un error. Por favor escribinos por WhatsApp.');
-      btn.disabled = false;
-      btn.textContent = 'Enviar consulta →';
-    }
-  });
-
-
   // ── Payment modal ──
   const WA_PAY = '5493794293284';
   const payOverlay = document.getElementById('pay-modal-overlay');
