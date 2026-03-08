@@ -597,7 +597,7 @@
 
     <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px">
 
-      <div class="plan-sel-card" id="plan-card-0" onclick="selectPlan(0, 'Plan Entrenamiento', '$60.000')">
+      <div class="plan-sel-card" id="plan-card-0" onclick="selectPlan(0, 'Plan Entrenamiento', '$60.000', 60000)">
         <div class="plan-sel-top">
           <div>
             <div class="plan-sel-name">Plan Entrenamiento</div>
@@ -608,7 +608,7 @@
         <div class="plan-sel-check" id="check-0">✓</div>
       </div>
 
-      <div class="plan-sel-card featured" id="plan-card-1" onclick="selectPlan(1, 'Plan Entrenamiento + Nutrición', '$90.000')">
+      <div class="plan-sel-card featured" id="plan-card-1" onclick="selectPlan(1, 'Plan Entrenamiento + Nutrición', '$90.000', 90000)">
         <div class="plan-sel-badge">⭐ Más elegido</div>
         <div class="plan-sel-top">
           <div>
@@ -620,7 +620,7 @@
         <div class="plan-sel-check" id="check-1">✓</div>
       </div>
 
-      <div class="plan-sel-card" id="plan-card-2" onclick="selectPlan(2, 'Plan Elite', '$120.000')">
+      <div class="plan-sel-card" id="plan-card-2" onclick="selectPlan(2, 'Plan Elite', '$120.000', 120000)">
         <div class="plan-sel-top">
           <div>
             <div class="plan-sel-name">Plan Elite</div>
@@ -651,6 +651,13 @@
   <div style="margin-top:24px;background:var(--bg-card);border:1.5px solid var(--accent);border-radius:16px;padding:20px;text-align:left;width:100%;max-width:360px;">
     <div style="font-weight:800;font-size:1rem;margin-bottom:4px;color:#fff;">💳 Datos para abonar tu plan</div>
     <div id="success-plan-badge" style="display:inline-block;background:rgba(124,58,237,0.15);color:#A78BFA;font-size:0.78rem;font-weight:700;border-radius:20px;padding:3px 12px;margin-bottom:16px;"></div>
+
+    <!-- MONTO A PAGAR -->
+    <div id="monto-pagar-box" style="background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.3);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:0.78rem;color:#6EE7B7;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em;">Monto a pagar este mes</div>
+      <div id="monto-valor" style="font-size:1.6rem;font-weight:900;color:#10B981;"></div>
+      <div id="monto-detalle" style="font-size:0.78rem;color:#6EE7B7;margin-top:4px;line-height:1.5;"></div>
+    </div>
 
     <div style="display:flex;flex-direction:column;gap:10px;font-size:0.875rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
@@ -740,12 +747,40 @@
   const TOTAL_STEPS = 8;
 
   // ── Selección de plan ──
-  function selectPlan(idx, nombre, precio) {
+  function selectPlan(idx, nombre, precio, precioNum) {
     [0, 1, 2].forEach(i => document.getElementById('plan-card-' + i).classList.remove('selected'));
     document.getElementById('plan-card-' + idx).classList.add('selected');
     sel.planIdx = idx;
     sel.planNombre = nombre;
     sel.planPrecio = precio;
+    sel.planPrecioNum = precioNum;
+  }
+
+  // ── Cálculo del monto según día del mes ──
+  function calcularMontoPago(precioBase) {
+    const hoy = new Date();
+    const dia = hoy.getDate();
+    const año = hoy.getFullYear();
+    const mes = hoy.getMonth(); // 0-based
+    const diasEnMes = new Date(año, mes + 1, 0).getDate();
+
+    let monto, detalle;
+
+    if (dia <= 5) {
+      monto = precioBase;
+      detalle = `Pago dentro del período normal (días 1 al 5). Precio completo.`;
+    } else if (dia <= 10) {
+      monto = Math.round(precioBase * 1.10);
+      detalle = `Pago fuera de período (día ${dia}). Precio completo + 10% de recargo.`;
+    } else {
+      const diasRestantes = diasEnMes - dia + 1; // incluye hoy
+      const proporcional = Math.round((diasRestantes / diasEnMes) * precioBase);
+      monto = Math.round(proporcional * 1.10);
+      detalle = `Quedan ${diasRestantes} días del mes (${diasRestantes}/${diasEnMes}). ` +
+                `Proporcional $${proporcional.toLocaleString('es-AR')} + 10% recargo.`;
+    }
+
+    return { monto, detalle };
   }
 
   // ── Copiar al portapapeles ──
@@ -896,6 +931,11 @@
       // Mostrar plan elegido en success screen
       const planLabel = `${sel.planNombre} — ${sel.planPrecio}/mes`;
       document.getElementById('success-plan-badge').textContent = planLabel;
+
+      // Calcular y mostrar monto a pagar según día del mes
+      const { monto, detalle } = calcularMontoPago(sel.planPrecioNum);
+      document.getElementById('monto-valor').textContent = `$${monto.toLocaleString('es-AR')}`;
+      document.getElementById('monto-detalle').textContent = detalle;
 
       // Botón de comprobante
       const compText = encodeURIComponent(
