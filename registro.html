@@ -222,6 +222,50 @@
     .foto-icon { font-size: 2.5rem; margin-bottom: 8px; }
     .foto-label { font-size: 0.85rem; color: var(--text-muted); }
 
+    /* ── PLAN SELECTOR ── */
+    .plan-sel-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 18px 14px;
+      cursor: pointer;
+      position: relative;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .plan-sel-card:hover { border-color: rgba(124,58,237,0.5); }
+    .plan-sel-card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+    .plan-sel-card.featured { border-color: rgba(124,58,237,0.4); }
+    .plan-sel-badge {
+      display: inline-block;
+      background: rgba(124,58,237,0.15);
+      color: var(--accent-light);
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 20px;
+      padding: 3px 10px;
+      margin-bottom: 10px;
+    }
+    .plan-sel-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .plan-sel-name { font-weight: 800; font-size: 1rem; color: var(--text); margin-bottom: 4px; }
+    .plan-sel-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+    .plan-sel-price { font-size: 1.15rem; font-weight: 900; color: var(--accent); white-space: nowrap; text-align: right; }
+    .plan-sel-price span { font-size: 0.72rem; color: var(--text-muted); font-weight: 500; display: block; }
+    .plan-sel-check {
+      display: none;
+      position: absolute;
+      top: 14px; right: 14px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      font-size: 0.75rem;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+    .plan-sel-card.selected .plan-sel-check { display: flex; }
+    .plan-sel-card.selected .plan-sel-price { margin-right: 28px; }
+
     /* ── SUCCESS SCREEN ── */
     #success-screen {
       display: none;
@@ -277,6 +321,7 @@
     <div class="step-dot" id="dot-4"></div>
     <div class="step-dot" id="dot-5"></div>
     <div class="step-dot" id="dot-6"></div>
+    <div class="step-dot" id="dot-7"></div>
   </div>
 </div>
 
@@ -539,8 +584,57 @@
       <textarea id="f-dificultad" placeholder="Ej: no tengo tiempo, me cuesta la constancia, como mal en el trabajo..."></textarea>
     </div>
 
-    <button class="btn-next" id="btn-submit" onclick="submitRegistro()">Crear mi cuenta 🔥</button>
+    <button class="btn-next" onclick="goStep(7)">Continuar →</button>
     <button class="btn-back" onclick="goStep(5)">← Volver</button>
+  </div>
+
+  <!-- ───── PASO 7: Elegí tu plan ───── -->
+  <div class="step" id="step-7">
+    <h2 class="step-title">Elegí tu plan 💳</h2>
+    <p class="step-sub">Seleccioná el plan con el que querés arrancar. Podés cambiarlo después hablando con Agustín.</p>
+
+    <div class="error-msg" id="err-7"></div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px">
+
+      <div class="plan-sel-card" id="plan-card-0" onclick="selectPlan(0, 'Plan Entrenamiento', '$60.000')">
+        <div class="plan-sel-top">
+          <div>
+            <div class="plan-sel-name">Plan Entrenamiento</div>
+            <div class="plan-sel-desc">Rutina personalizada · Seguimiento · App con tus ejercicios</div>
+          </div>
+          <div class="plan-sel-price">$60.000<span>/mes</span></div>
+        </div>
+        <div class="plan-sel-check" id="check-0">✓</div>
+      </div>
+
+      <div class="plan-sel-card featured" id="plan-card-1" onclick="selectPlan(1, 'Plan Entrenamiento + Nutrición', '$90.000')">
+        <div class="plan-sel-badge">⭐ Más elegido</div>
+        <div class="plan-sel-top">
+          <div>
+            <div class="plan-sel-name">Plan Entrenamiento + Nutrición</div>
+            <div class="plan-sel-desc">Todo lo anterior + plan nutricional personalizado + ajustes mensuales</div>
+          </div>
+          <div class="plan-sel-price">$90.000<span>/mes</span></div>
+        </div>
+        <div class="plan-sel-check" id="check-1">✓</div>
+      </div>
+
+      <div class="plan-sel-card" id="plan-card-2" onclick="selectPlan(2, 'Plan Elite', '$120.000')">
+        <div class="plan-sel-top">
+          <div>
+            <div class="plan-sel-name">Plan Elite</div>
+            <div class="plan-sel-desc">Todo lo anterior + videollamadas mensuales + análisis de composición corporal</div>
+          </div>
+          <div class="plan-sel-price">$120.000<span>/mes</span></div>
+        </div>
+        <div class="plan-sel-check" id="check-2">✓</div>
+      </div>
+
+    </div>
+
+    <button class="btn-next" id="btn-submit" onclick="submitRegistro()" style="margin-top:28px">Crear mi cuenta 🔥</button>
+    <button class="btn-back" onclick="goStep(6)">← Volver</button>
   </div>
 
 </div>
@@ -548,19 +642,52 @@
 <!-- SUCCESS SCREEN -->
 <div id="success-screen">
   <div class="success-icon">🔥</div>
-  <h2 class="success-title">Registro exitoso!</h2>
+  <h2 class="success-title">Cuenta creada!</h2>
   <p class="success-sub">
-    Agustin esta revisando tu informacion y en breve te asigna tu plan personalizado.
-    Te avisamos por WhatsApp cuando este listo.
+    Ya sos parte de AE Personal Training. Agustín va a revisar tu info y asignarte el plan en breve.
   </p>
-  <div style="margin-top:24px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:14px;padding:16px 20px;text-align:left;max-width:340px;font-size:0.85rem;line-height:1.6;color:#FDE68A;">
-    <div style="font-weight:700;margin-bottom:8px;font-size:0.9rem;">⚠️ Info sobre tu cuota mensual</div>
-    <div>La cuota se abona del <strong>1 al 5 de cada mes</strong>.</div>
-    <div style="margin-top:8px">• Si abonás fuera de ese período, pagás <strong>proporcional a los días restantes del mes + 10% de recargo</strong>.</div>
-    <div style="margin-top:6px;opacity:0.8;font-size:0.8rem;">Ej: si te quedan 15 días del mes → pagás el 50% de la cuota + 10% de recargo.</div>
+
+  <!-- DATOS DE PAGO -->
+  <div style="margin-top:24px;background:var(--bg-card);border:1.5px solid var(--accent);border-radius:16px;padding:20px;text-align:left;width:100%;max-width:360px;">
+    <div style="font-weight:800;font-size:1rem;margin-bottom:4px;color:#fff;">💳 Datos para abonar tu plan</div>
+    <div id="success-plan-badge" style="display:inline-block;background:rgba(124,58,237,0.15);color:#A78BFA;font-size:0.78rem;font-weight:700;border-radius:20px;padding:3px 12px;margin-bottom:16px;"></div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:0.875rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="color:var(--text-muted);min-width:64px">Alias</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+          <span style="font-weight:700;color:#fff;font-family:monospace;font-size:0.85rem">IMPERA.SURCOS.FOCA</span>
+          <button onclick="copyText('IMPERA.SURCOS.FOCA', this)" style="background:rgba(124,58,237,0.2);border:none;color:#A78BFA;border-radius:8px;padding:4px 10px;font-size:0.75rem;cursor:pointer;font-weight:700">Copiar</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="color:var(--text-muted);min-width:64px">CBU</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+          <span style="font-weight:700;color:#fff;font-family:monospace;font-size:0.8rem">3840200500000018952467</span>
+          <button onclick="copyText('3840200500000018952467', this)" style="background:rgba(124,58,237,0.2);border:none;color:#A78BFA;border-radius:8px;padding:4px 10px;font-size:0.75rem;cursor:pointer;font-weight:700">Copiar</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px">
+        <span style="color:var(--text-muted);min-width:64px">Titular</span>
+        <span style="font-weight:600;color:#fff">Agustin Lopez</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px">
+        <span style="color:var(--text-muted);min-width:64px">Banco</span>
+        <span style="font-weight:600;color:#fff">Wilobank</span>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:0.8rem;color:#FDE68A;line-height:1.5;">
+      ⚠️ La cuota se abona del <strong>1 al 5 de cada mes</strong>. Si abonás fuera de ese período, pagás proporcional a los días restantes + 10% de recargo.
+    </div>
   </div>
-  <a id="success-wa-btn" href="#" class="success-wa" target="_blank" rel="noopener" style="margin-top:20px">
-    Escribirle a Agustin
+
+  <!-- BOTÓN ENVIAR COMPROBANTE -->
+  <a id="success-wa-btn" href="#" class="success-wa" target="_blank" rel="noopener" style="margin-top:16px;background:#25D366;color:#fff;">
+    📲 Enviar comprobante por WhatsApp
+  </a>
+  <a id="success-wa-chat" href="#" class="success-wa" target="_blank" rel="noopener" style="margin-top:10px;background:transparent;border:1.5px solid var(--border);color:var(--text-muted);font-size:0.85rem;">
+    Escribirle a Agustín
   </a>
 </div>
 
@@ -569,7 +696,7 @@
   const WA_NUMBER  = '5493794293284';
 
   // ── State ──
-  const sel = { objetivo: null, nivel: null, dias: null, lugar: null, lesion: null };
+  const sel = { objetivo: null, nivel: null, dias: null, lugar: null, lesion: null, planIdx: null, planNombre: null, planPrecio: null };
 
   function select(key, el, val) {
     const grid = el.parentElement;
@@ -610,7 +737,25 @@
   }
 
   // ── Progress dots ──
-  const TOTAL_STEPS = 7;
+  const TOTAL_STEPS = 8;
+
+  // ── Selección de plan ──
+  function selectPlan(idx, nombre, precio) {
+    [0, 1, 2].forEach(i => document.getElementById('plan-card-' + i).classList.remove('selected'));
+    document.getElementById('plan-card-' + idx).classList.add('selected');
+    sel.planIdx = idx;
+    sel.planNombre = nombre;
+    sel.planPrecio = precio;
+  }
+
+  // ── Copiar al portapapeles ──
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓';
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    });
+  }
   function updateDots(current) {
     for (let i = 0; i < TOTAL_STEPS; i++) {
       const d = document.getElementById('dot-' + i);
@@ -667,14 +812,17 @@
     }
     if (n === 5) { /* campos opcionales */ }
     if (n === 6) { /* campos opcionales */ }
+    if (n === 7) {
+      if (sel.planIdx === null) return 'Seleccioná el plan con el que querés arrancar.';
+    }
     return null;
   }
 
   // ── Submit ──
   async function submitRegistro() {
-    const err = validateStep(6);
+    const err = validateStep(7);
     if (err) {
-      const e = document.getElementById('err-6');
+      const e = document.getElementById('err-7');
       e.textContent = err;
       e.classList.add('visible');
       return;
@@ -745,14 +893,26 @@
       document.getElementById('form-wrap').style.display = 'none';
       document.querySelector('.progress-wrap').style.display = 'none';
 
-      const waText = encodeURIComponent(
-        `Hola Agustin! Me acabo de registrar en la app como "${body.name}". Quiero empezar mi plan cuanto antes!`
+      // Mostrar plan elegido en success screen
+      const planLabel = `${sel.planNombre} — ${sel.planPrecio}/mes`;
+      document.getElementById('success-plan-badge').textContent = planLabel;
+
+      // Botón de comprobante
+      const compText = encodeURIComponent(
+        `Hola Agustín! Acabo de registrarme como *${body.name}*. Te envío el comprobante de transferencia para el *${sel.planNombre}* (${sel.planPrecio}/mes) 💪`
       );
-      document.getElementById('success-wa-btn').href = `https://wa.me/${WA_NUMBER}?text=${waText}`;
+      document.getElementById('success-wa-btn').href = `https://wa.me/${WA_NUMBER}?text=${compText}`;
+
+      // Botón de chat general
+      const chatText = encodeURIComponent(
+        `Hola Agustín! Me acabo de registrar en la app como *${body.name}*. Quiero empezar mi plan cuanto antes!`
+      );
+      document.getElementById('success-wa-chat').href = `https://wa.me/${WA_NUMBER}?text=${chatText}`;
+
       document.getElementById('success-screen').classList.add('visible');
 
     } catch (e) {
-      const errEl = document.getElementById('err-3');
+      const errEl = document.getElementById('err-7');
       errEl.textContent = e.message;
       errEl.classList.add('visible');
       btn.disabled = false;
