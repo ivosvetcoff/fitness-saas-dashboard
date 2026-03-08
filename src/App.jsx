@@ -694,14 +694,21 @@ export default function App() {
                 const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
                 const daysLeft = lastDay - day;
                 const isLate = day > 5;
-                const isHalf = daysLeft < 14;
+                const propPct = Math.round((daysLeft / lastDay) * 100);
+                const totalPct = Math.round(propPct * 1.1);
                 return (
-                  <div style={{ marginTop: '16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '14px', padding: '14px 16px', fontSize: '0.83rem', lineHeight: 1.6, color: '#FDE68A' }}>
-                    <div style={{ fontWeight: 700, marginBottom: '6px' }}>⚠️ Info sobre tu cuota mensual</div>
-                    <div>La cuota se abona del <strong>1 al 5 de cada mes</strong>.</div>
-                    {isLate && !isHalf && <div style={{ marginTop: '4px', color: '#FCA5A5' }}>• Estás pasado del día 5 — se aplica un <strong>recargo del 10%</strong>.</div>}
-                    {isHalf && <div style={{ marginTop: '4px', color: '#FCA5A5' }}>• Faltan menos de 2 semanas para fin de mes — pagás la <strong>mitad de la cuota + 10% de recargo</strong>.</div>}
-                    {!isLate && !isHalf && <div style={{ marginTop: '4px', color: '#6EE7B7' }}>• Estás en el período normal de pago ✓</div>}
+                  <div style={{ marginTop: '16px', background: isLate ? 'rgba(239,68,68,0.07)' : 'rgba(16,185,129,0.07)', border: `1px solid ${isLate ? 'rgba(239,68,68,0.25)' : 'rgba(16,185,129,0.25)'}`, borderRadius: '14px', padding: '14px 16px', fontSize: '0.83rem', lineHeight: 1.6 }}>
+                    <div style={{ fontWeight: 700, marginBottom: '6px', color: '#FDE68A' }}>⚠️ Info sobre tu cuota mensual</div>
+                    <div style={{ color: '#D4D4D8' }}>La cuota se abona del <strong style={{ color: '#FAFAFA' }}>1 al 5 de cada mes</strong>.</div>
+                    {isLate ? (
+                      <div style={{ marginTop: '8px', color: '#FCA5A5' }}>
+                        Hoy es día {day} — estás fuera del período.<br />
+                        Te quedan <strong>{daysLeft} días</strong> del mes ({propPct}% de la cuota) + 10% de recargo.<br />
+                        <strong>Total a pagar: ~{totalPct}% de tu cuota mensual.</strong>
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: '6px', color: '#6EE7B7' }}>Estás en el período normal de pago ✓ (día {day} de {lastDay})</div>
+                    )}
                   </div>
                 );
               })()}
