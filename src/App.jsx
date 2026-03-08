@@ -689,86 +689,203 @@ export default function App() {
 
           {/* HOME */}
           {studentScreen === 'home' && (
-            <div className="view-fade-in">
-              <div className="st-greeting">
-                <h2>{greeting()} 👋</h2>
-                <p className="st-name">{loggedInUser.name}</p>
-              </div>
-              <div className="st-banner">
-                <div><h3>No hay excusas.</h3><p>Solo resultados.</p><span className="st-date">{today.charAt(0).toUpperCase() + today.slice(1)}</span></div>
-                <Flame color="#F59E0B" size={40} />
-              </div>
-              {stStreak.milestone_100 && (
-                <div style={{ background: 'linear-gradient(135deg, rgba(234,179,8,0.15), rgba(124,58,237,0.15))', border: '1px solid rgba(234,179,8,0.4)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '6px' }}>🏆</div>
-                  <strong style={{ color: '#FBBF24', fontSize: '1rem', display: 'block' }}>¡100 días seguidos!</strong>
-                  <p style={{ color: '#D4D4D8', fontSize: '0.85rem', marginTop: '6px' }}>Ganaste un <strong style={{ color: '#4ADE80' }}>25% de descuento</strong> para tu próximo mes.<br />Mostráselo a Agustin 🎉</p>
+            <div className="view-fade-in" style={{ paddingBottom: '100px' }}>
+
+              {/* GREETING HEADER */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0 20px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: 'rgba(124,58,237,0.2)', border: '2px solid rgba(124,58,237,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 800, color: '#A78BFA', flexShrink: 0 }}>
+                    {stStudentData?.foto_perfil_url
+                      ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : loggedInUser?.name?.charAt(0)?.toUpperCase()}
+                  </div>
+                  <div>
+                    <p style={{ color: '#71717A', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px' }}>Bienvenido</p>
+                    <h2 style={{ color: '#FAFAFA', fontSize: '1.3rem', fontWeight: 800, lineHeight: 1 }}>Hola, {loggedInUser.name.split(' ')[0]}</h2>
+                  </div>
                 </div>
-              )}
-              <div className="st-stats-row">
-                <div className={`st-stat ${stStreak.at_risk ? 'at-risk' : ''}`}>
-                  <Flame color="#F59E0B" size={20} />
-                  <strong style={{ fontSize: '1.4rem' }}>🔥 {stStreak.streak}</strong>
-                  <span>{stStreak.at_risk ? '⚠️ ¡En riesgo!' : 'días seguidos'}</span>
-                </div>
-                <div className="st-stat">
-                  <Target color="#7C3AED" size={20} />
-                  <strong>{stSession ? `Día ${stSession.current_day}` : '—'}</strong>
-                  <span>Entreno actual</span>
-                </div>
-                <div className="st-stat">
-                  <Trophy color="#A78BFA" size={20} />
-                  <strong>{stStreak.longest_streak || '—'}</strong>
-                  <span>Mejor racha</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#121217', border: '1px solid rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '999px' }}>
+                  <Flame size={16} color="#F97316" style={{ fill: '#F97316' }} />
+                  <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#FAFAFA' }}>{stStreak.streak} días</span>
                 </div>
               </div>
 
-              {/* Aviso de pagos — Punto 13 */}
+              {/* MILESTONE 100 banner */}
+              {stStreak.milestone_100 && (
+                <div style={{ background: 'linear-gradient(135deg, rgba(234,179,8,0.15), rgba(124,58,237,0.15))', border: '1px solid rgba(234,179,8,0.4)', borderRadius: '16px', padding: '14px 16px', marginBottom: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.8rem', marginBottom: '4px' }}>🏆</div>
+                  <strong style={{ color: '#FBBF24', fontSize: '0.95rem', display: 'block' }}>¡{stStreak.streak} días seguidos!</strong>
+                  <p style={{ color: '#D4D4D8', fontSize: '0.82rem', marginTop: '4px' }}>Ganaste un <strong style={{ color: '#4ADE80' }}>25% de descuento</strong> 🎉</p>
+                </div>
+              )}
+
+              {/* METRICS GRID */}
               {(() => {
-                const now = new Date();
-                const day = now.getDate();
-                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                const daysLeft = lastDay - day;
-                const isLate = day > 5;
-                const propPct = Math.round((daysLeft / lastDay) * 100);
-                const totalPct = Math.round(propPct * 1.1);
+                const sorted = [...stMetrics].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+                const latest = sorted[0];
+                const prev = sorted[1];
+                const pesoDelta = latest?.peso && prev?.peso ? (latest.peso - prev.peso).toFixed(1) : null;
+                const pesoTrend = pesoDelta > 0 ? 'up' : pesoDelta < 0 ? 'down' : null;
+
+                // Volumen: sum of best weights from all exercises
+                const totalVolumen = stExercises.reduce((acc, ex) => acc + ((ex.suggested_weight || 0) * (ex.rep_range_min || 10)), 0);
+
+                // Comidas cargadas en el plan nutricional
+                const mealKeys = ['ayuno','desayuno','media_manana','almuerzo','merienda','pre_entrenamiento','post_entrenamiento','cena','antes_de_dormir'];
+                const comidasCount = nutritionPlan ? mealKeys.filter(k => nutritionPlan[k]?.trim()).length : 0;
+
                 return (
-                  <div style={{ marginTop: '16px', background: isLate ? 'rgba(239,68,68,0.07)' : 'rgba(16,185,129,0.07)', border: `1px solid ${isLate ? 'rgba(239,68,68,0.25)' : 'rgba(16,185,129,0.25)'}`, borderRadius: '14px', padding: '14px 16px', fontSize: '0.83rem', lineHeight: 1.6 }}>
-                    <div style={{ fontWeight: 700, marginBottom: '6px', color: '#FDE68A' }}>⚠️ Info sobre tu cuota mensual</div>
-                    <div style={{ color: '#D4D4D8' }}>La cuota se abona del <strong style={{ color: '#FAFAFA' }}>1 al 5 de cada mes</strong>.</div>
-                    {isLate ? (
-                      <div style={{ marginTop: '8px', color: '#FCA5A5' }}>
-                        Hoy es día {day} — estás fuera del período.<br />
-                        Te quedan <strong>{daysLeft} días</strong> del mes ({propPct}% de la cuota) + 10% de recargo.<br />
-                        <strong>Total a pagar: ~{totalPct}% de tu cuota mensual.</strong>
-                      </div>
-                    ) : (
-                      <div style={{ marginTop: '6px', color: '#6EE7B7' }}>Estás en el período normal de pago ✓ (día {day} de {lastDay})</div>
-                    )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '28px' }}>
+                    {/* Peso corporal - full width */}
+                    <div style={{ gridColumn: '1 / -1', background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', top: 0, right: 0, padding: '14px', opacity: 0.08, fontSize: '3.5rem', lineHeight: 1 }}>⚖️</div>
+                      <p style={{ color: '#71717A', fontSize: '0.82rem', fontWeight: 500, marginBottom: '6px' }}>Peso Corporal</p>
+                      {latest?.peso ? (
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                          <p style={{ fontSize: '1.8rem', fontWeight: 800, color: '#FAFAFA' }}>{latest.peso} <span style={{ fontSize: '0.85rem', fontWeight: 400, color: '#71717A' }}>kg</span></p>
+                          {pesoDelta !== null && (
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '2px', background: pesoTrend === 'down' ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', color: pesoTrend === 'down' ? '#F87171' : '#4ADE80', padding: '2px 8px', borderRadius: '6px' }}>
+                              {pesoTrend === 'down' ? '↘' : '↗'} {Math.abs(pesoDelta)}kg
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <p style={{ fontSize: '1.4rem', fontWeight: 800, color: '#52525B' }}>Sin datos</p>
+                      )}
+                    </div>
+                    {/* Racha */}
+                    <div style={{ background: '#121217', border: `1px solid ${stStreak.at_risk ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.05)'}`, borderRadius: '16px', padding: '16px' }}>
+                      <p style={{ color: '#71717A', fontSize: '0.75rem', fontWeight: 500, marginBottom: '6px' }}>Racha Actual</p>
+                      <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FAFAFA' }}>{stStreak.streak} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#71717A' }}>días</span></p>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: stStreak.at_risk ? '#F87171' : '#A78BFA', marginTop: '4px', display: 'block' }}>
+                        {stStreak.at_risk ? '⚠️ ¡En riesgo!' : `Mejor: ${stStreak.longest_streak}d`}
+                      </span>
+                    </div>
+                    {/* Plan nutricional */}
+                    <div style={{ background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }}>
+                      <p style={{ color: '#71717A', fontSize: '0.75rem', fontWeight: 500, marginBottom: '6px' }}>Comidas del Plan</p>
+                      <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FAFAFA' }}>{comidasCount} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#71717A' }}>/ 9</span></p>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: comidasCount > 0 ? '#4ADE80' : '#52525B', marginTop: '4px', display: 'block' }}>
+                        {comidasCount > 0 ? 'Plan activo ✓' : 'Sin plan aún'}
+                      </span>
+                    </div>
                   </div>
                 );
               })()}
 
-              <div style={{ marginTop: '24px' }}>
-                <h3 style={{ fontSize: '1rem', color: '#FAFAFA', marginBottom: '16px' }}>Tu entrenamiento de hoy</h3>
-                {stSession ? (
-                  <button className="st-main-card" onClick={() => { setStSelectedDay(stSession.current_day); setStudentScreen('workout'); }} style={{ border: '1px solid rgba(124, 58, 237, 0.3)', background: 'linear-gradient(145deg, rgba(30,30,36,1) 0%, rgba(39,39,46,1) 100%)' }}>
-                    <div className="st-card-icon" style={{ background: '#7C3AED' }}><Dumbbell color="#fff" size={24} /></div>
-                    <div style={{ flex: 1, textAlign: 'left' }}>
-                      <h4 style={{ color: '#FAFAFA', fontSize: '1.05rem', marginBottom: '4px' }}>Día {stSession.current_day} - {getDayName(stSession.current_day) || 'Entrenamiento'}</h4>
-                      <p style={{ color: '#A1A1AA', fontSize: '0.85rem' }}>
-                        {stExercises.filter(e => e.day_number === stSession.current_day).length} ejercicios asignados
-                      </p>
+              {/* AVISO PAGO */}
+              {(() => {
+                const now = new Date();
+                const day = now.getDate();
+                if (day <= 5) return null; // solo mostrar si está fuera del período
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const daysLeft = lastDay - day;
+                const propPct = Math.round((daysLeft / lastDay) * 100);
+                const totalPct = Math.round(propPct * 1.1);
+                return (
+                  <div style={{ marginBottom: '20px', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '14px', padding: '12px 14px', fontSize: '0.82rem', lineHeight: 1.6 }}>
+                    <div style={{ fontWeight: 700, marginBottom: '4px', color: '#FDE68A' }}>⚠️ Cuota mensual</div>
+                    <div style={{ color: '#FCA5A5' }}>
+                      Hoy es día {day} — te quedan <strong>{daysLeft} días</strong> ({propPct}% + 10% recargo).<br />
+                      <strong>Total a pagar: ~{totalPct}% de tu cuota mensual.</strong>
                     </div>
-                    <ChevronDown color="#7C3AED" size={20} style={{ transform: 'rotate(-90deg)' }} />
-                  </button>
-                ) : (
-                  <div className="st-main-card" style={{ opacity: 0.7 }}>
-                    <div className="st-card-icon"><Target color="#A1A1AA" size={24} /></div>
-                    <div><h4>Día libre</h4><p>No tienes rutinas activas hoy.</p></div>
+                  </div>
+                );
+              })()}
+
+              {/* TODAY'S WORKOUT CARD */}
+              <div style={{ marginBottom: '28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#FAFAFA' }}>Tu entrenamiento de hoy</h3>
+                  {stSession && <button onClick={() => setStudentScreen('workout')} style={{ background: 'none', border: 'none', color: '#7C3AED', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}>Ver todo</button>}
+                </div>
+                {stSession ? (() => {
+                  const todayExs = stExercises.filter(e => e.day_number === stSession.current_day);
+                  const dayName = getDayName(stSession.current_day);
+                  return (
+                    <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#121217', border: '1px solid rgba(124,58,237,0.2)' }}>
+                      {/* image/gradient banner */}
+                      <div style={{ height: '140px', background: 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 40%, #1a1030 100%)', position: 'relative', display: 'flex', alignItems: 'flex-end' }}>
+                        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 60%, rgba(124,58,237,0.3) 0%, transparent 70%)' }} />
+                        <div style={{ position: 'absolute', top: '16px', right: '16px', fontSize: '3rem', opacity: 0.15 }}>🏋️</div>
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(to top, #121217, transparent)' }} />
+                      </div>
+                      <div style={{ padding: '16px 20px 20px', marginTop: '-8px', position: 'relative' }}>
+                        {stStudentData?.objetivo && (
+                          <span style={{ color: '#7C3AED', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>{stStudentData.objetivo}</span>
+                        )}
+                        <h4 style={{ color: '#FAFAFA', fontSize: '1.15rem', fontWeight: 800, marginBottom: '8px' }}>
+                          Día {stSession.current_day}{dayName ? ` - ${dayName}` : ''}
+                        </h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: '#71717A', fontSize: '0.82rem', marginBottom: '18px' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Dumbbell size={14} /> {todayExs.length} ejercicios
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Target size={14} /> Día {stSession.current_day} de {stSession.total_days}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => { setStSelectedDay(stSession.current_day); setStudentScreen('workout'); }}
+                          style={{ width: '100%', background: '#7C3AED', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'background 0.2s' }}
+                        >
+                          Empezar entrenamiento <span style={{ fontSize: '1rem' }}>→</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })() : (
+                  <div style={{ borderRadius: '16px', background: '#121217', border: '1px solid rgba(255,255,255,0.05)', padding: '28px 20px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>⏳</div>
+                    <h4 style={{ color: '#FAFAFA', fontSize: '1rem', fontWeight: 700, marginBottom: '6px' }}>Tu plan está siendo preparado</h4>
+                    <p style={{ color: '#71717A', fontSize: '0.85rem', lineHeight: 1.5 }}>Agustín está revisando tu información y en breve te asigna tu plan personalizado.</p>
                   </div>
                 )}
               </div>
+
+              {/* ACTIVIDAD SEMANAL */}
+              {(() => {
+                const now = new Date();
+                const dayOfWeek = now.getDay(); // 0=dom, 1=lun...
+                const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+                // Map JS day (0=Sun) to index in our L-D array
+                const todayIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                const streak = stStreak.streak;
+                return (
+                  <div>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#FAFAFA', marginBottom: '14px' }}>Actividad semanal</h3>
+                    <div style={{ background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '18px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '6px', height: '80px', marginBottom: '10px' }}>
+                        {days.map((d, i) => {
+                          const isToday = i === todayIdx;
+                          const isPast = i < todayIdx;
+                          // If streak covers this day, show it as active
+                          const daysAgo = todayIdx - i;
+                          const isActive = daysAgo >= 0 && daysAgo < streak;
+                          const h = isActive ? (isToday ? '90%' : `${40 + Math.floor(Math.random() * 50)}%`) : '15%';
+                          return (
+                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '100%', justifyContent: 'flex-end' }}>
+                              <div style={{
+                                width: '100%', borderRadius: '6px 6px 0 0',
+                                height: h,
+                                background: isActive ? (isToday ? '#7C3AED' : 'rgba(124,58,237,0.4)') : 'rgba(255,255,255,0.05)',
+                                border: (!isActive && isPast) ? '1px dashed rgba(255,255,255,0.1)' : 'none',
+                                transition: 'height 0.3s ease'
+                              }} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        {days.map((d, i) => (
+                          <span key={i} style={{ flex: 1, textAlign: 'center', fontSize: '0.65rem', fontWeight: 600, color: i === (dayOfWeek === 0 ? 6 : dayOfWeek - 1) ? '#A78BFA' : '#52525B' }}>{d}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
             </div>
           )}
 
