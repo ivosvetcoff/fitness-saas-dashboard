@@ -93,6 +93,23 @@
     }
     .field label .req { color: var(--accent-light); margin-left: 2px; }
 
+    .field textarea {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+      min-height: 90px;
+    }
+    .field textarea:focus { border-color: var(--accent); }
+    .field textarea::placeholder { color: #52525B; }
+
     .field input,
     .field select {
       width: 100%;
@@ -257,6 +274,9 @@
     <div class="step-dot" id="dot-1"></div>
     <div class="step-dot" id="dot-2"></div>
     <div class="step-dot" id="dot-3"></div>
+    <div class="step-dot" id="dot-4"></div>
+    <div class="step-dot" id="dot-5"></div>
+    <div class="step-dot" id="dot-6"></div>
   </div>
 </div>
 
@@ -389,8 +409,138 @@
       </div>
     </div>
 
-    <button class="btn-next" id="btn-submit" onclick="submitRegistro()">Crear mi cuenta 🔥</button>
+    <button class="btn-next" onclick="goStep(4)">Continuar →</button>
     <button class="btn-back" onclick="goStep(2)">← Volver</button>
+  </div>
+
+  <!-- ───── PASO 4: Tu rutina actual ───── -->
+  <div class="step" id="step-4">
+    <h2 class="step-title">Tu rutina actual 🏃</h2>
+    <p class="step-sub">Contanos cómo es tu entrenamiento hoy para poder personalizarte mejor el plan.</p>
+
+    <div class="error-msg" id="err-4"></div>
+
+    <div class="field">
+      <label>¿Qué deportes o entrenamientos hacés actualmente?</label>
+      <textarea id="f-entrenamientos" placeholder="Ej: voy al gym 3 veces, juego al fútbol los fines de semana..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>¿Cuántas veces por semana entrenás actualmente?</label>
+      <input id="f-frecuencia" type="number" placeholder="Ej: 3" min="0" max="14" />
+    </div>
+
+    <div class="field">
+      <label>¿Tenés o tuviste alguna lesión?</label>
+      <div class="options-grid" id="opts-lesion">
+        <div class="opt-btn" onclick="selectLesion(this, false)">No, ninguna</div>
+        <div class="opt-btn" onclick="selectLesion(this, true)">Sí, tuve o tengo</div>
+      </div>
+    </div>
+
+    <div class="field" id="field-lesion-desc" style="display:none">
+      <label>¿Cuál es o fue la lesión?</label>
+      <textarea id="f-lesion-desc" placeholder="Ej: luxación de hombro derecho, rodilla operada..."></textarea>
+    </div>
+
+    <button class="btn-next" onclick="goStep(5)">Continuar →</button>
+    <button class="btn-back" onclick="goStep(3)">← Volver</button>
+  </div>
+
+  <!-- ───── PASO 5: Tu alimentación ───── -->
+  <div class="step" id="step-5">
+    <h2 class="step-title">Tu alimentación 🥗</h2>
+    <p class="step-sub">Esta info ayuda a Agustin a armar el plan nutricional ideal para vos.</p>
+
+    <div class="error-msg" id="err-5"></div>
+
+    <div class="field">
+      <label>¿Cómo es tu alimentación actual? Describila brevemente</label>
+      <textarea id="f-alimentacion" placeholder="Ej: como bastante, no sigo ningún plan, mucho delivery..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>¿Tenés alguna restricción alimentaria o alergia?</label>
+      <textarea id="f-restricciones" placeholder="Ej: intolerancia a la lactosa, vegano, alérgico al maní... (dejá vacío si no)"></textarea>
+    </div>
+
+    <div class="field">
+      <label>¿Cuántas comidas hacés por día?</label>
+      <input id="f-comidas" type="number" placeholder="Ej: 4" min="1" max="10" />
+    </div>
+
+    <button class="btn-next" onclick="goStep(6)">Continuar →</button>
+    <button class="btn-back" onclick="goStep(4)">← Volver</button>
+  </div>
+
+  <!-- ───── PASO 6: Tu rutina diaria ───── -->
+  <div class="step" id="step-6">
+    <h2 class="step-title">Tu rutina diaria 🕐</h2>
+    <p class="step-sub">Último paso: contanos tu horario para coordinar el entrenamiento.</p>
+
+    <div class="error-msg" id="err-6"></div>
+
+    <div class="field">
+      <label>¿A qué hora trabajás o estudiás?</label>
+      <div class="field-row">
+        <div class="field" style="margin-bottom:0">
+          <label style="font-size:0.75rem">Desde</label>
+          <select id="f-trabajo-desde">
+            <option value="">--</option>
+            <option>06:00</option><option>07:00</option><option>08:00</option>
+            <option>09:00</option><option>10:00</option><option>11:00</option>
+            <option>12:00</option><option>13:00</option><option>14:00</option>
+            <option>15:00</option><option>16:00</option><option>17:00</option>
+            <option>18:00</option><option>19:00</option><option>20:00</option>
+            <option>21:00</option><option>22:00</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label style="font-size:0.75rem">Hasta</label>
+          <select id="f-trabajo-hasta">
+            <option value="">--</option>
+            <option>06:00</option><option>07:00</option><option>08:00</option>
+            <option>09:00</option><option>10:00</option><option>11:00</option>
+            <option>12:00</option><option>13:00</option><option>14:00</option>
+            <option>15:00</option><option>16:00</option><option>17:00</option>
+            <option>18:00</option><option>19:00</option><option>20:00</option>
+            <option>21:00</option><option>22:00</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>¿A qué hora preferirías entrenar?</label>
+      <select id="f-hora-entreno">
+        <option value="">Seleccioná una hora</option>
+        <option>05:00 — Madrugada</option>
+        <option>06:00 — Madrugada</option>
+        <option>07:00 — Mañana temprano</option>
+        <option>08:00 — Mañana</option>
+        <option>09:00 — Mañana</option>
+        <option>10:00 — Media mañana</option>
+        <option>11:00 — Media mañana</option>
+        <option>12:00 — Mediodía</option>
+        <option>13:00 — Mediodía</option>
+        <option>14:00 — Tarde temprano</option>
+        <option>15:00 — Tarde</option>
+        <option>16:00 — Tarde</option>
+        <option>17:00 — Tarde</option>
+        <option>18:00 — Tarde-noche</option>
+        <option>19:00 — Noche</option>
+        <option>20:00 — Noche</option>
+        <option>21:00 — Noche</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>¿Cuál es tu mayor dificultad para entrenar o comer bien?</label>
+      <textarea id="f-dificultad" placeholder="Ej: no tengo tiempo, me cuesta la constancia, como mal en el trabajo..."></textarea>
+    </div>
+
+    <button class="btn-next" id="btn-submit" onclick="submitRegistro()">Crear mi cuenta 🔥</button>
+    <button class="btn-back" onclick="goStep(5)">← Volver</button>
   </div>
 
 </div>
@@ -403,7 +553,13 @@
     Agustin esta revisando tu informacion y en breve te asigna tu plan personalizado.
     Te avisamos por WhatsApp cuando este listo.
   </p>
-  <a id="success-wa-btn" href="#" class="success-wa" target="_blank" rel="noopener">
+  <div style="margin-top:24px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:14px;padding:16px 20px;text-align:left;max-width:340px;font-size:0.85rem;line-height:1.6;color:#FDE68A;">
+    <div style="font-weight:700;margin-bottom:8px;font-size:0.9rem;">⚠️ Info sobre tu cuota mensual</div>
+    <div>La cuota se abona del <strong>1 al 5 de cada mes</strong>.</div>
+    <div style="margin-top:6px">• Después del día 5: se aplica un <strong>recargo del 10%</strong></div>
+    <div style="margin-top:4px">• Si faltan menos de 2 semanas para fin de mes: pagás la <strong>mitad de la cuota + 10% de recargo</strong></div>
+  </div>
+  <a id="success-wa-btn" href="#" class="success-wa" target="_blank" rel="noopener" style="margin-top:20px">
     Escribirle a Agustin
   </a>
 </div>
@@ -413,13 +569,22 @@
   const WA_NUMBER  = '5493794293284';
 
   // ── State ──
-  const sel = { objetivo: null, nivel: null, dias: null, lugar: null };
+  const sel = { objetivo: null, nivel: null, dias: null, lugar: null, lesion: null };
 
   function select(key, el, val) {
     const grid = el.parentElement;
     grid.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
     sel[key] = val;
+  }
+
+  // ── Lesión toggle ──
+  function selectLesion(el, hasLesion) {
+    const grid = el.parentElement;
+    grid.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    sel.lesion = hasLesion;
+    document.getElementById('field-lesion-desc').style.display = hasLesion ? 'block' : 'none';
   }
 
   // ── Password strength ──
@@ -443,7 +608,7 @@
   }
 
   // ── Progress dots ──
-  const TOTAL_STEPS = 4;
+  const TOTAL_STEPS = 7;
   function updateDots(current) {
     for (let i = 0; i < TOTAL_STEPS; i++) {
       const d = document.getElementById('dot-' + i);
@@ -495,14 +660,19 @@
       if (!sel.lugar) return 'Selecciona donde entrenas.';
       if (!document.getElementById('foto-input').files[0]) return 'La foto de perfil es obligatoria.';
     }
+    if (n === 4) {
+      if (sel.lesion === null) return 'Indicá si tenés o tuviste alguna lesión.';
+    }
+    if (n === 5) { /* campos opcionales */ }
+    if (n === 6) { /* campos opcionales */ }
     return null;
   }
 
   // ── Submit ──
   async function submitRegistro() {
-    const err = validateStep(3);
+    const err = validateStep(6);
     if (err) {
-      const e = document.getElementById('err-3');
+      const e = document.getElementById('err-6');
       e.textContent = err;
       e.classList.add('visible');
       return;
@@ -511,6 +681,10 @@
     const btn = document.getElementById('btn-submit');
     btn.disabled = true;
     btn.textContent = 'Creando cuenta...';
+
+    const trabajoDesde = document.getElementById('f-trabajo-desde').value;
+    const trabajoHasta = document.getElementById('f-trabajo-hasta').value;
+    const horarioTrabajo = (trabajoDesde && trabajoHasta) ? `${trabajoDesde} a ${trabajoHasta}` : (trabajoDesde || trabajoHasta || null);
 
     const body = {
       name: document.getElementById('f-name').value.trim(),
@@ -524,6 +698,17 @@
       nivel_experiencia: sel.nivel,
       dias_disponibles: Number(sel.dias) || null,
       lugar_entrenamiento: sel.lugar,
+      // Punto 12 — campos adicionales
+      entrenamientos_actuales: document.getElementById('f-entrenamientos').value.trim() || null,
+      frecuencia_actual: parseInt(document.getElementById('f-frecuencia').value) || null,
+      tiene_lesion: sel.lesion === true,
+      descripcion_lesion: sel.lesion ? (document.getElementById('f-lesion-desc').value.trim() || null) : null,
+      alimentacion_actual: document.getElementById('f-alimentacion').value.trim() || null,
+      restricciones_alimentarias: document.getElementById('f-restricciones').value.trim() || null,
+      comidas_por_dia: parseInt(document.getElementById('f-comidas').value) || null,
+      horario_trabajo: horarioTrabajo,
+      horario_entrenamiento: document.getElementById('f-hora-entreno').value || null,
+      dificultad_principal: document.getElementById('f-dificultad').value.trim() || null,
     };
 
     try {

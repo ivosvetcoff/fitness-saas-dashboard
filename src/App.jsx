@@ -687,6 +687,25 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Aviso de pagos — Punto 13 */}
+              {(() => {
+                const now = new Date();
+                const day = now.getDate();
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const daysLeft = lastDay - day;
+                const isLate = day > 5;
+                const isHalf = daysLeft < 14;
+                return (
+                  <div style={{ marginTop: '16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '14px', padding: '14px 16px', fontSize: '0.83rem', lineHeight: 1.6, color: '#FDE68A' }}>
+                    <div style={{ fontWeight: 700, marginBottom: '6px' }}>⚠️ Info sobre tu cuota mensual</div>
+                    <div>La cuota se abona del <strong>1 al 5 de cada mes</strong>.</div>
+                    {isLate && !isHalf && <div style={{ marginTop: '4px', color: '#FCA5A5' }}>• Estás pasado del día 5 — se aplica un <strong>recargo del 10%</strong>.</div>}
+                    {isHalf && <div style={{ marginTop: '4px', color: '#FCA5A5' }}>• Faltan menos de 2 semanas para fin de mes — pagás la <strong>mitad de la cuota + 10% de recargo</strong>.</div>}
+                    {!isLate && !isHalf && <div style={{ marginTop: '4px', color: '#6EE7B7' }}>• Estás en el período normal de pago ✓</div>}
+                  </div>
+                );
+              })()}
+
               <div style={{ marginTop: '24px' }}>
                 <h3 style={{ fontSize: '1rem', color: '#FAFAFA', marginBottom: '16px' }}>Tu entrenamiento de hoy</h3>
                 {stSession ? (
