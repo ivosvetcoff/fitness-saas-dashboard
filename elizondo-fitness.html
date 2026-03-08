@@ -271,7 +271,8 @@
     .method-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
 
     /* ── PLANES ── */
-    .plans-grid { display: flex; flex-direction: column; gap: 16px; }
+    .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+    @media (max-width: 600px) { .plans-grid { grid-template-columns: 1fr; } }
     .plan-card {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
       padding: 28px; position: relative;
@@ -710,6 +711,7 @@
   <div class="nav-brand">AE <span>Personal Training</span></div>
   <div class="nav-links">
     <a href="#planes" class="nav-link">Planes</a>
+    <a href="#retos" class="nav-link">Retos</a>
     <a href="#contacto" class="nav-cta">Empezar →</a>
   </div>
 </nav>
@@ -965,50 +967,129 @@
     <p class="section-sub reveal reveal-delay-3">Elegí el que mejor se adapta a tu objetivo</p>
 
     <div class="plans-grid">
+
+      <!-- Plan 1 -->
       <div class="plan-card reveal reveal-delay-1">
-        <h3>💪 Plan Entrenamiento</h3>
-        <p class="plan-price">Consultá</p>
-        <p class="plan-price-note">precio según objetivo y duración</p>
+        <h3>💪 Entrenamiento</h3>
+        <p class="plan-price">$60.000</p>
+        <p class="plan-price-note">por mes</p>
         <ul>
           <li>Rutina 100% personalizada</li>
           <li>Seguimiento semanal de cargas y progresión</li>
-          <li>Sistema de progresión por RPE + e1RM</li>
-          <li>Acceso a la app de entrenamiento</li>
-          <li>Ajustes y adaptaciones cuando lo necesites</li>
+          <li>Sistema RIR + e1RM autoregulado</li>
+          <li>Acceso al dashboard de entrenamiento</li>
+          <li>Ajustes y adaptaciones cuando los necesitás</li>
         </ul>
-        <a href="https://wa.me/5493794293284?text=Hola%20Agust%C3%ADn!%20Me%20interesa%20el%20Plan%20Entrenamiento.%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp">💬 Quiero este plan</a>
-        <button class="btn-pay" onclick="openPayModal('Plan Entrenamiento')">💳 Abonar este plan</button>
+        <a href="https://wa.me/5493794293284?text=Hola%20Agustin!%20Quiero%20el%20Plan%20Entrenamiento%20(%2460.000%2Fmes).%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp">💬 Quiero este plan</a>
+        <button class="btn-pay" onclick="openPayModal('Plan Entrenamiento', '$60.000')">💳 Abonar</button>
       </div>
 
+      <!-- Plan 2 -->
       <div class="plan-card featured reveal reveal-delay-2">
         <span class="plan-tag">⭐ Más elegido</span>
-        <h3>🥗 Plan Nutricional</h3>
-        <p class="plan-price">Consultá</p>
-        <p class="plan-price-note">precio según objetivo</p>
+        <h3>🥗 Entrenamiento + Nutrición</h3>
+        <p class="plan-price">$90.000</p>
+        <p class="plan-price-note">por mes</p>
         <ul>
-          <li>Plan de alimentación personalizado</li>
+          <li>Todo lo del Plan Entrenamiento</li>
+          <li>Plan nutricional personalizado</li>
           <li>Macros y calorías ajustadas a tu meta</li>
-          <li>Comidas organizadas en la app</li>
+          <li>10 momentos del día organizados en la app</li>
           <li>Seguimiento y ajustes mensuales</li>
-          <li>Sin alimentos prohibidos</li>
         </ul>
-        <a href="https://wa.me/5493794293284?text=Hola%20Agust%C3%ADn!%20Me%20interesa%20el%20Plan%20Nutricional.%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp">💬 Quiero este plan</a>
-        <button class="btn-pay" onclick="openPayModal('Plan Nutricional')">💳 Abonar este plan</button>
+        <a href="https://wa.me/5493794293284?text=Hola%20Agustin!%20Quiero%20el%20Plan%20Entrenamiento%20%2B%20Nutrici%C3%B3n%20(%2490.000%2Fmes).%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp">💬 Quiero este plan</a>
+        <button class="btn-pay" onclick="openPayModal('Plan Entrenamiento + Nutrición', '$90.000')">💳 Abonar</button>
       </div>
 
-      <div class="plan-card reveal reveal-delay-3" style="border-color:rgba(245,158,11,0.4);background:linear-gradient(145deg,var(--bg-card),#16120a);">
-        <h3>🔥 Pack Completo</h3>
-        <p class="plan-price" style="color:#F59E0B;">Consultá</p>
-        <p class="plan-price-note">entrenamiento + nutrición</p>
+      <!-- Plan 3 -->
+      <div class="plan-card reveal reveal-delay-3">
+        <h3>💊 Entreno + Nutrición + Suplementación</h3>
+        <p class="plan-price">$120.000</p>
+        <p class="plan-price-note">por mes</p>
         <ul>
-          <li>Todo del Plan Entrenamiento</li>
-          <li>Todo del Plan Nutricional</li>
-          <li>Seguimiento combinado semanal</li>
-          <li>Prioridad en respuestas y ajustes</li>
-          <li>La mejor relación valor/resultado</li>
+          <li>Todo lo del Plan Entrenamiento + Nutrición</li>
+          <li>Plan de suplementación personalizado</li>
+          <li>Protocolo diario de suplementos en la app</li>
+          <li>Recomendaciones actualizadas según tu progreso</li>
+          <li>Máximo resultado con el menor tiempo de recuperación</li>
         </ul>
-        <a href="https://wa.me/5493794293284?text=Hola%20Agust%C3%ADn!%20Me%20interesa%20el%20Pack%20Completo%20(Entrenamiento%20%2B%20Nutrici%C3%B3n).%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp" style="background:linear-gradient(135deg,#F59E0B,#D97706);box-shadow:0 8px 32px rgba(245,158,11,0.4);">💬 Quiero este plan</a>
-        <button class="btn-pay" onclick="openPayModal('Pack Completo')">💳 Abonar este plan</button>
+        <a href="https://wa.me/5493794293284?text=Hola%20Agustin!%20Quiero%20el%20Plan%20Entreno%20%2B%20Nutrici%C3%B3n%20%2B%20Suplementaci%C3%B3n%20(%24120.000%2Fmes).%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp">💬 Quiero este plan</a>
+        <button class="btn-pay" onclick="openPayModal('Plan Entreno + Nutrición + Suplementación', '$120.000')">💳 Abonar</button>
+      </div>
+
+      <!-- Plan 4 Competitivo -->
+      <div class="plan-card reveal reveal-delay-4" style="border-color:rgba(245,158,11,0.4);background:linear-gradient(145deg,var(--bg-card),#16120a);">
+        <span class="plan-tag" style="background:rgba(245,158,11,0.15);color:#F59E0B;border-color:rgba(245,158,11,0.3);">🏆 Premium</span>
+        <h3 style="color:#F59E0B;">🥇 Plan Competitivo</h3>
+        <p class="plan-price" style="color:#F59E0B;">$150.000</p>
+        <p class="plan-price-note">por mes · coordinación personalizada</p>
+        <ul>
+          <li>Todo lo del plan anterior</li>
+          <li>Preparación para competencia o alto rendimiento</li>
+          <li>Ajustes semanales de periodización avanzada</li>
+          <li>Acceso directo y prioritario a Agustin</li>
+          <li>Plan 100% coordinado según tu calendario</li>
+        </ul>
+        <p style="font-size:0.82rem;color:#A1A1AA;margin-bottom:12px;text-align:center;">📋 Este plan se coordina directamente con Agustin</p>
+        <a href="https://wa.me/5493794293284?text=Hola%20Agustin!%20Me%20interesa%20el%20Plan%20Competitivo%20(%24150.000%2Fmes).%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%20para%20coordinar%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp" style="background:linear-gradient(135deg,#F59E0B,#D97706);box-shadow:0 8px 32px rgba(245,158,11,0.4);">💬 Escribile a Agustin para coordinar</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     RETOS
+══════════════════════════════════════ -->
+<section class="section" id="retos">
+  <div class="container">
+    <div class="reveal"><div class="divider"></div></div>
+    <div class="reveal reveal-delay-1"><span class="section-eyebrow">Comprometite con un objetivo</span></div>
+    <h2 class="section-title reveal reveal-delay-2">Retos</h2>
+    <p class="section-sub reveal reveal-delay-3">Programas intensivos con rutina + nutrición ya cargados. Empezás de inmediato.</p>
+    <div id="retos-grid" class="plans-grid" style="margin-top:32px;">
+      <!-- Se cargan dinámicamente desde la API -->
+      <div class="plan-card reveal reveal-delay-1">
+        <span class="plan-tag" style="background:rgba(239,68,68,0.12);color:#F87171;border-color:rgba(239,68,68,0.3);">🔥 45 días</span>
+        <h3>🏃 Pérdida de Peso</h3>
+        <p class="plan-price" id="reto-1-price">Consultá</p>
+        <p class="plan-price-note">programa completo</p>
+        <ul>
+          <li>Rutina cardio-metabólica adaptada</li>
+          <li>Plan nutricional en déficit calórico</li>
+          <li>Versión para hombre y mujer</li>
+          <li>Seguimiento semanal de progreso</li>
+          <li>Acceso completo al dashboard</li>
+        </ul>
+        <a href="https://wa.me/5493794293284?text=Hola%20Agustin!%20Me%20interesa%20el%20Reto%2045%20d%C3%ADas%20P%C3%A9rdida%20de%20Peso.%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp">💬 Me anoto en este reto</a>
+      </div>
+      <div class="plan-card reveal reveal-delay-2">
+        <span class="plan-tag" style="background:rgba(16,185,129,0.12);color:#34D399;border-color:rgba(16,185,129,0.3);">⚡ 30 días</span>
+        <h3>✂️ Definición</h3>
+        <p class="plan-price" id="reto-2-price">Consultá</p>
+        <p class="plan-price-note">programa completo</p>
+        <ul>
+          <li>Rutina de tonificación y definición</li>
+          <li>Plan nutricional para perder grasa sin perder músculo</li>
+          <li>Versión para hombre y mujer</li>
+          <li>Ajustes semanales de intensidad</li>
+          <li>Acceso completo al dashboard</li>
+        </ul>
+        <a href="https://wa.me/5493794293284?text=Hola%20Agustin!%20Me%20interesa%20el%20Reto%2030%20d%C3%ADas%20Definici%C3%B3n.%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp">💬 Me anoto en este reto</a>
+      </div>
+      <div class="plan-card reveal reveal-delay-3">
+        <span class="plan-tag" style="background:rgba(124,58,237,0.12);color:#A78BFA;border-color:rgba(124,58,237,0.3);">💪 60 días</span>
+        <h3>🏋️ Masa Muscular</h3>
+        <p class="plan-price" id="reto-3-price">Consultá</p>
+        <p class="plan-price-note">programa completo</p>
+        <ul>
+          <li>Rutina de hipertrofia con progresión RIR</li>
+          <li>Plan nutricional en superávit calórico controlado</li>
+          <li>Versión para hombre y mujer</li>
+          <li>Seguimiento de e1RM y progresión de fuerza</li>
+          <li>Acceso completo al dashboard</li>
+        </ul>
+        <a href="https://wa.me/5493794293284?text=Hola%20Agustin!%20Me%20interesa%20el%20Reto%2060%20d%C3%ADas%20Masa%20Muscular.%20%C2%BFMe%20pod%C3%A9s%20dar%20m%C3%A1s%20info%3F" target="_blank" rel="noopener" class="btn-primary btn-whatsapp">💬 Me anoto en este reto</a>
       </div>
     </div>
   </div>
@@ -1304,10 +1385,10 @@
   const payPlanName = document.getElementById('pay-plan-name');
   const payWaBtn = document.getElementById('pay-wa-btn');
 
-  function openPayModal(planName) {
-    payPlanName.textContent = planName;
+  function openPayModal(planName, planPrice) {
+    payPlanName.textContent = `${planName}${planPrice ? ' — ' + planPrice : ''}`;
     payWaBtn.onclick = () => {
-      const msg = encodeURIComponent(`Hola Agustin! Te envío el comprobante de transferencia para el *${planName}* 💪`);
+      const msg = encodeURIComponent(`Hola Agustin! Te envío el comprobante de transferencia para el *${planName}*${planPrice ? ' (' + planPrice + '/mes)' : ''} 💪`);
       window.open(`https://wa.me/${WA_PAY}?text=${msg}`, '_blank');
     };
     payOverlay.classList.add('open');

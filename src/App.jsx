@@ -28,6 +28,12 @@ export default function App() {
 
   // ===== PROFESSOR STATE =====
   const [currentView, setCurrentView] = useState('ListaAlumnos');
+  const [challenges, setChallenges] = useState([]);
+  const [challengeForm, setChallengeForm] = useState({ name: '', duration_days: 30, price: '', description: '', emoji: '🏆', routine_hombre: '', routine_mujer: '', nutrition_hombre: '', nutrition_mujer: '' });
+  const [editingChallenge, setEditingChallenge] = useState(null);
+  const [challengeEnrollments, setChallengeEnrollments] = useState({});
+  const [savingChallenge, setSavingChallenge] = useState(false);
+  const [challengesLoading, setChallengesLoading] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [students, setStudents] = useState([]);
   const [showNewStudentForm, setShowNewStudentForm] = useState(false);
@@ -120,6 +126,13 @@ export default function App() {
   }, []);
 
   // ===== PROFESSOR FETCHES =====
+  const fetchChallenges = useCallback(async () => {
+    setChallengesLoading(true);
+    try { const r = await axios.get(`${API_URL}/challenges/`); setChallenges(r.data || []); }
+    catch (e) { console.error(e); }
+    finally { setChallengesLoading(false); }
+  }, []);
+
   const fetchStudents = useCallback(async () => {
     setLoadingStudents(true);
     try {
@@ -320,12 +333,31 @@ export default function App() {
   const [stStudentData, setStStudentData] = useState(null);
   const [stStudentDataLoading, setStStudentDataLoading] = useState(false);
 
+  // ===== RETOS STATE (STUDENT) =====
+  const [stChallenges, setStChallenges] = useState([]);
+  const [stMyEnrollments, setStMyEnrollments] = useState([]);
+  const [stEnrolling, setStEnrolling] = useState(null);
+  const [stEnrollGender, setStEnrollGender] = useState('hombre');
+
   // ===== STREAK STATE =====
   const [stStreak, setStStreak] = useState({ streak: 0, at_risk: false, last_training_date: null, longest_streak: 0, milestone_100: false });
 
   const stFetchStreak = async () => {
     if (!studentId) return;
     try { const r = await axios.get(`${API_URL}/students/${studentId}/streak`); setStStreak(r.data || { streak: 0, at_risk: false, last_training_date: null, longest_streak: 0, milestone_100: false }); } catch { }
+  };
+
+  const stFetchChallenges = async (sid) => {
+    const id = sid || studentId;
+    if (!id) return;
+    try {
+      const [allR, myR] = await Promise.all([
+        axios.get(`${API_URL}/challenges/`),
+        axios.get(`${API_URL}/student/${id}/challenges`),
+      ]);
+      setStChallenges(allR.data || []);
+      setStMyEnrollments(myR.data || []);
+    } catch { }
   };
 
   const stFetchStudentData = async () => {
@@ -397,7 +429,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (loggedInUser?.role === 'student') { stFetchExercises(); stFetchNutrition(); stFetchStreak(); stFetchStudentData(); stFetchPhotos(); stFetchMetrics(); }
+    if (loggedInUser?.role === 'student') { stFetchExercises(); stFetchNutrition(); stFetchStreak(); stFetchStudentData(); stFetchPhotos(); stFetchMetrics(); stFetchChallenges(); }
   }, [loggedInUser]);
 
   // setsData: [{ set_number, actual_weight, actual_reps, actual_rir }]
@@ -596,7 +628,7 @@ export default function App() {
 
         {/* STUDENT NAV */}
         <div className="student-nav">
-          {[{ key: 'home', icon: Home, label: 'Inicio' }, { key: 'workout', icon: Dumbbell, label: 'Entreno' }, { key: 'ranking', icon: Trophy, label: 'Racha' }, { key: 'nutrition', icon: Utensils, label: 'Nutrición' }, { key: 'profile', icon: User, label: 'Perfil' }].map(tab => (
+          {[{ key: 'home', icon: Home, label: 'Inicio' }, { key: 'workout', icon: Dumbbell, label: 'Entreno' }, { key: 'retos', icon: Trophy, label: 'Retos' }, { key: 'nutrition', icon: Utensils, label: 'Nutrición' }, { key: 'profile', icon: User, label: 'Perfil' }].map(tab => (
             <button key={tab.key} className={`student-nav-item ${studentScreen === tab.key ? 'active' : ''}`} onClick={() => {
               setStudentScreen(tab.key);
               if (tab.key === 'ranking') stFetchRankings();
@@ -872,6 +904,78 @@ export default function App() {
             </div>
           )}
 
+          {/* RETOS */}
+          {studentScreen === 'retos' && (
+            <div className="view-fade-in">
+              <h2 className="st-section-title">🏆 Retos</h2>
+              <p style={{ color: '#71717A', fontSize: '0.88rem', marginBottom: '20px' }}>Programas intensivos con rutina y nutrición ya cargados. Elegí el tuyo.</p>
+              {stChallenges.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🏆</div>
+                  <p style={{ fontSize: '0.88rem' }}>Todavía no hay retos disponibles.</p>
+                </div>
+              ) : stChallenges.map(ch => {
+                const myEnrollment = stMyEnrollments.find(e => e.challenge_id === ch.id || e.challenges?.id === ch.id);
+                const isEnrolled = !!myEnrollment;
+                return (
+                  <div key={ch.id} className="st-exercise-card" style={{ marginBottom: '12px', border: isEnrolled ? '1px solid rgba(124,58,237,0.5)' : undefined }}>
+                    <div style={{ padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div>
+                          <span style={{ fontSize: '1.4rem' }}>{ch.emoji}</span>
+                          <h4 style={{ fontSize: '1rem', fontWeight: 800, marginTop: '4px' }}>{ch.name}</h4>
+                          <p style={{ color: '#A1A1AA', fontSize: '0.8rem' }}>{ch.duration_days} días · {ch.price ? `$${Number(ch.price).toLocaleString('es-AR')}` : 'Consultá precio'}</p>
+                        </div>
+                        {isEnrolled && <span style={{ background: 'rgba(124,58,237,0.2)', color: '#A78BFA', border: '1px solid rgba(124,58,237,0.4)', borderRadius: '999px', padding: '3px 10px', fontSize: '0.72rem', fontWeight: 800 }}>✓ Anotado{myEnrollment.gender === 'mujer' ? ' ♀' : ' ♂'}</span>}
+                      </div>
+                      {ch.description && <p style={{ color: '#71717A', fontSize: '0.82rem', marginBottom: '12px' }}>{ch.description}</p>}
+                      {!isEnrolled ? (
+                        stEnrolling === ch.id ? (
+                          <div style={{ background: '#18181B', borderRadius: '10px', padding: '12px', marginTop: '8px' }}>
+                            <p style={{ fontSize: '0.82rem', color: '#A1A1AA', marginBottom: '8px' }}>¿Qué versión del reto querés?</p>
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                              {['hombre', 'mujer'].map(g => (
+                                <button key={g} type="button" onClick={() => setStEnrollGender(g)}
+                                  style={{ flex: 1, padding: '8px', borderRadius: '8px', border: stEnrollGender === g ? '2px solid #7C3AED' : '2px solid transparent', background: stEnrollGender === g ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.03)', color: stEnrollGender === g ? '#A78BFA' : '#71717A', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}>
+                                  {g === 'hombre' ? '♂ Hombre' : '♀ Mujer'}
+                                </button>
+                              ))}
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setStEnrolling(null)}>Cancelar</button>
+                              <button className="btn-primary" style={{ flex: 2 }} onClick={async () => {
+                                try {
+                                  await axios.post(`${API_URL}/challenges/${ch.id}/enroll`, { student_id: studentId, gender: stEnrollGender });
+                                  await stFetchChallenges();
+                                  setStEnrolling(null);
+                                } catch { alert('Error al anotarte. Intentá de nuevo.'); }
+                              }}>Anotarme en este reto</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button className="btn-primary" style={{ width: '100%', marginTop: '8px' }} onClick={() => { setStEnrolling(ch.id); setStEnrollGender('hombre'); }}>
+                            Quiero este reto
+                          </button>
+                        )
+                      ) : (
+                        <div style={{ background: '#18181B', borderRadius: '10px', padding: '12px', marginTop: '8px' }}>
+                          {(myEnrollment.gender === 'hombre' ? ch.routine_hombre : ch.routine_mujer) ? (
+                            <>
+                              <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '6px' }}>Tu rutina:</p>
+                              <p style={{ fontSize: '0.82rem', color: '#D4D4D8', whiteSpace: 'pre-wrap' }}>{myEnrollment.gender === 'hombre' ? ch.routine_hombre : ch.routine_mujer}</p>
+                            </>
+                          ) : (
+                            <p style={{ fontSize: '0.82rem', color: '#71717A', textAlign: 'center' }}>⏳ Agustin está preparando tu plan. Te avisamos cuando esté listo.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* PROFILE */}
           {studentScreen === 'profile' && (
             <div className="view-fade-in">
@@ -1110,6 +1214,7 @@ export default function App() {
           </button>
           <button className="nav-item"><FileText size={20} /><span>Plantillas</span></button>
           <button className="nav-item"><Dumbbell size={20} /><span>Biblioteca</span></button>
+          <button className={`nav-item ${currentView === 'Retos' ? 'active' : ''}`} onClick={() => { setCurrentView('Retos'); fetchChallenges(); }}><Trophy size={20} /><span>Retos</span></button>
         </nav>
         <div className="sidebar-footer">
           <div className="user-profile">
@@ -1128,12 +1233,106 @@ export default function App() {
             <span style={{ position: 'absolute', top: '4px', right: 'calc(50% - 18px)', background: '#EF4444', color: '#fff', fontSize: '0.62rem', fontWeight: 800, borderRadius: '99px', padding: '1px 5px', minWidth: '16px', textAlign: 'center' }}>{pendingStudents.length}</span>
           )}
         </button>
+        <button className={`prof-bottom-nav-item ${currentView === 'Retos' ? 'active' : ''}`} onClick={() => { setCurrentView('Retos'); fetchChallenges(); }}>
+          <Trophy size={22} /><span>Retos</span>
+        </button>
         <button className="prof-bottom-nav-item" onClick={handleLogout} style={{ color: '#EF4444' }}>
           <LogOut size={22} /><span>Salir</span>
         </button>
       </nav>
 
       <main className="main-content">
+
+        {/* RETOS VIEW */}
+        {currentView === 'Retos' && (
+          <div className="view-fade-in">
+            <header className="main-header flex-between">
+              <div><h1>Retos</h1><p className="subtitle">Programas intensivos con rutina y nutrición pre-cargada</p></div>
+              <button className="btn-primary" onClick={() => { setEditingChallenge(null); setChallengeForm({ name: '', duration_days: 30, price: '', description: '', emoji: '🏆', routine_hombre: '', routine_mujer: '', nutrition_hombre: '', nutrition_mujer: '', _open: true }); }}><Plus size={18} /><span>Nuevo Reto</span></button>
+            </header>
+
+            {(editingChallenge !== null || challengeForm._open) && (
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <div className="card-header"><Trophy size={20} className="icon-accent" /><h2>{editingChallenge ? 'Editar Reto' : 'Nuevo Reto'}</h2></div>
+                <div className="form-grid">
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ flex: 1 }}><label className="form-label">Emoji</label><input className="form-input" style={{ width: '60px' }} value={challengeForm.emoji} onChange={e => setChallengeForm(f => ({ ...f, emoji: e.target.value }))} /></div>
+                    <div style={{ flex: 4 }}><label className="form-label">Nombre *</label><input className="form-input" placeholder="Ej: Reto 45 días Pérdida de Peso" value={challengeForm.name} onChange={e => setChallengeForm(f => ({ ...f, name: e.target.value }))} /></div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ flex: 1 }}><label className="form-label">Duración (días)</label><input className="form-input" type="number" value={challengeForm.duration_days} onChange={e => setChallengeForm(f => ({ ...f, duration_days: e.target.value }))} /></div>
+                    <div style={{ flex: 1 }}><label className="form-label">Precio ($) — vacío = Consultá</label><input className="form-input" type="number" placeholder="90000" value={challengeForm.price} onChange={e => setChallengeForm(f => ({ ...f, price: e.target.value }))} /></div>
+                  </div>
+                  <div><label className="form-label">Descripción</label><input className="form-input" placeholder="Descripción del reto" value={challengeForm.description} onChange={e => setChallengeForm(f => ({ ...f, description: e.target.value }))} /></div>
+                  <div><label className="form-label">Rutina — Hombre</label><textarea className="form-input" rows={3} placeholder="Describí la rutina para hombre..." value={challengeForm.routine_hombre} onChange={e => setChallengeForm(f => ({ ...f, routine_hombre: e.target.value }))} /></div>
+                  <div><label className="form-label">Rutina — Mujer</label><textarea className="form-input" rows={3} placeholder="Describí la rutina para mujer..." value={challengeForm.routine_mujer} onChange={e => setChallengeForm(f => ({ ...f, routine_mujer: e.target.value }))} /></div>
+                  <div><label className="form-label">Nutrición — Hombre</label><textarea className="form-input" rows={3} placeholder="Plan nutricional para hombre..." value={challengeForm.nutrition_hombre} onChange={e => setChallengeForm(f => ({ ...f, nutrition_hombre: e.target.value }))} /></div>
+                  <div><label className="form-label">Nutrición — Mujer</label><textarea className="form-input" rows={3} placeholder="Plan nutricional para mujer..." value={challengeForm.nutrition_mujer} onChange={e => setChallengeForm(f => ({ ...f, nutrition_mujer: e.target.value }))} /></div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                  <button className="btn-secondary" style={{ flex: 1 }} onClick={() => { setEditingChallenge(null); setChallengeForm({ name: '', duration_days: 30, price: '', description: '', emoji: '🏆', routine_hombre: '', routine_mujer: '', nutrition_hombre: '', nutrition_mujer: '' }); }}>Cancelar</button>
+                  <button className="btn-primary" style={{ flex: 2 }} disabled={!challengeForm.name || savingChallenge} onClick={async () => {
+                    setSavingChallenge(true);
+                    try {
+                      const body = { ...challengeForm, duration_days: Number(challengeForm.duration_days), price: challengeForm.price ? Number(challengeForm.price) : null, professor_id: loggedInUser?.id };
+                      if (editingChallenge) { await axios.put(`${API_URL}/challenges/${editingChallenge}`, body); }
+                      else { await axios.post(`${API_URL}/challenges/`, body); }
+                      await fetchChallenges();
+                      setEditingChallenge(null);
+                      setChallengeForm({ name: '', duration_days: 30, price: '', description: '', emoji: '🏆', routine_hombre: '', routine_mujer: '', nutrition_hombre: '', nutrition_mujer: '' });
+                    } catch { alert('Error al guardar reto.'); }
+                    finally { setSavingChallenge(false); }
+                  }}><Save size={18} /><span>{savingChallenge ? 'Guardando...' : (editingChallenge ? 'Actualizar Reto' : 'Crear Reto')}</span></button>
+                </div>
+              </div>
+            )}
+
+            {challengesLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 size={32} className="spin-icon" color="#7C3AED" /></div>
+            ) : challenges.length === 0 ? (
+              <div className="card" style={{ padding: '40px', textAlign: 'center' }}><Trophy size={48} color="#52525B" /><h3 style={{ color: '#A1A1AA', marginTop: '12px' }}>Sin retos todavía</h3><p style={{ color: '#71717A', marginTop: '6px', fontSize: '0.88rem' }}>Creá el primer reto con el botón de arriba</p></div>
+            ) : (
+              <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+                {challenges.map(ch => (
+                  <div key={ch.id} className="card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                      <div>
+                        <span style={{ fontSize: '1.5rem' }}>{ch.emoji}</span>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, marginTop: '4px' }}>{ch.name}</h3>
+                        <p style={{ color: '#A1A1AA', fontSize: '0.82rem' }}>{ch.duration_days} días · {ch.price ? `$${Number(ch.price).toLocaleString('es-AR')}` : 'Consultá precio'}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button className="btn-icon-sm" onClick={() => { setEditingChallenge(ch.id); setChallengeForm({ name: ch.name, duration_days: ch.duration_days, price: ch.price || '', description: ch.description || '', emoji: ch.emoji || '🏆', routine_hombre: ch.routine_hombre || '', routine_mujer: ch.routine_mujer || '', nutrition_hombre: ch.nutrition_hombre || '', nutrition_mujer: ch.nutrition_mujer || '', _open: true }); }}><Save size={15} /></button>
+                        <button className="btn-icon-danger" onClick={async () => { if (!window.confirm(`Eliminar reto "${ch.name}"?`)) return; await axios.delete(`${API_URL}/challenges/${ch.id}`); fetchChallenges(); }}><Trash2 size={15} /></button>
+                      </div>
+                    </div>
+                    {ch.description && <p style={{ color: '#71717A', fontSize: '0.82rem', marginBottom: '12px' }}>{ch.description}</p>}
+                    <button style={{ width: '100%', background: '#7C3AED22', border: '1px solid #7C3AED', color: '#A78BFA', borderRadius: '8px', padding: '7px 0', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                      onClick={async () => {
+                        try { const r = await axios.get(`${API_URL}/challenges/${ch.id}/enrollments`); setChallengeEnrollments(prev => ({ ...prev, [ch.id]: r.data || [] })); }
+                        catch { alert('Error al cargar inscriptos.'); }
+                      }}>
+                      Ver inscriptos {challengeEnrollments[ch.id] ? `(${challengeEnrollments[ch.id].length})` : ''}
+                    </button>
+                    {challengeEnrollments[ch.id] && (
+                      <div style={{ marginTop: '10px' }}>
+                        {challengeEnrollments[ch.id].length === 0 ? (
+                          <p style={{ color: '#71717A', fontSize: '0.82rem', textAlign: 'center', padding: '8px 0' }}>Sin inscriptos aún</p>
+                        ) : challengeEnrollments[ch.id].map(en => (
+                          <div key={en.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0', borderTop: '1px solid #27272A' }}>
+                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#3F3F46', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700 }}>{en.students?.name?.charAt(0).toUpperCase()}</div>
+                            <div style={{ flex: 1 }}><p style={{ fontSize: '0.85rem', fontWeight: 600 }}>{en.students?.name}</p><p style={{ fontSize: '0.72rem', color: '#A1A1AA' }}>{en.gender === 'hombre' ? '♂ Hombre' : '♀ Mujer'}</p></div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* LIST */}
         {currentView === 'ListaAlumnos' && (
           <div className="view-fade-in">
