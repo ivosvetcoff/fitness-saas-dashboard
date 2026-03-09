@@ -664,7 +664,7 @@ export default function App() {
 
         {/* STUDENT NAV */}
         <div className="student-nav">
-          {[{ key: 'home', icon: Home, label: 'Inicio' }, { key: 'workout', icon: Dumbbell, label: 'Entreno' }, { key: 'retos', icon: Trophy, label: 'Retos' }, { key: 'nutrition', icon: Utensils, label: 'Nutrición' }, { key: 'profile', icon: User, label: 'Perfil' }].map(tab => (
+          {[{ key: 'home', icon: Home, label: 'Inicio' }, { key: 'workout', icon: Dumbbell, label: 'Entreno' }, { key: 'nutrition', icon: Utensils, label: 'Nutrición' }, { key: 'profile', icon: User, label: 'Perfil' }].map(tab => (
             <button key={tab.key} className={`student-nav-item ${studentScreen === tab.key ? 'active' : ''}`} onClick={() => {
               setStudentScreen(tab.key);
               if (tab.key === 'ranking') stFetchRankings();
@@ -674,14 +674,6 @@ export default function App() {
               <span>{tab.label}</span>
             </button>
           ))}
-          <button className={`student-nav-item ${studentScreen === 'fotos' ? 'active' : ''}`} onClick={() => setStudentScreen('fotos')}>
-            <span style={{ fontSize: '22px', lineHeight: 1 }}>📷</span>
-            <span>Mis Fotos</span>
-          </button>
-          <button className={`student-nav-item ${studentScreen === 'metricas' ? 'active' : ''}`} onClick={() => setStudentScreen('metricas')}>
-            <span style={{ fontSize: '22px', lineHeight: 1 }}>📊</span>
-            <span>Mis Métricas</span>
-          </button>
         </div>
 
         {/* STUDENT CONTENT */}
@@ -1231,128 +1223,94 @@ export default function App() {
                 </div>
               )}
 
-              {/* ── FOTO DEL MES ── */}
+              {/* ── FOTOS DE PROGRESO ── */}
               <div style={{ marginTop: '32px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>📸 Foto del mes</h3>
-                  <label style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: stPhotoUploading ? '#52525B' : '#A78BFA', borderRadius: '8px', padding: '5px 14px', fontSize: '0.8rem', fontWeight: 700, cursor: stPhotoUploading ? 'default' : 'pointer' }}>
-                    {stPhotoUploading ? <><Loader2 size={12} className="spin-icon" /> Subiendo...</> : '+ Subir foto'}
+                <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '14px' }}>📷 Mis Fotos de Progreso</h3>
+                <p style={{ fontSize: '0.82rem', color: '#71717A', marginBottom: '16px' }}>Subí fotos mensuales para documentar tu transformación.</p>
+                <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
+                  <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Subir foto del mes</p>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    {['frente', 'perfil', 'espalda'].map(t => (
+                      <button key={t} onClick={() => setStPhotoTipo(t)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: stPhotoTipo === t ? '2px solid #7C3AED' : '2px solid #3F3F46', background: stPhotoTipo === t ? 'rgba(124,58,237,0.15)' : 'transparent', color: stPhotoTipo === t ? '#A78BFA' : '#71717A', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', textTransform: 'capitalize' }}>{t}</button>
+                    ))}
+                  </div>
+                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#7C3AED', color: '#fff', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: 'pointer', opacity: stPhotoUploading ? 0.6 : 1 }}>
+                    {stPhotoUploading ? 'Subiendo...' : `📷 Subir foto (${stPhotoTipo})`}
                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
                   </label>
                 </div>
-                <p style={{ fontSize: '0.78rem', color: '#52525B', marginBottom: '14px' }}>Documentá tu progreso mes a mes. Agustin puede ver tus fotos para hacer ajustes en tu plan.</p>
-                {stPhotosLoading
-                  ? <div style={{ textAlign: 'center', padding: '20px' }}><Loader2 size={24} className="spin-icon" color="#7C3AED" /></div>
-                  : stPhotos.length === 0
-                  ? <div style={{ textAlign: 'center', padding: '28px', border: '1px dashed rgba(124,58,237,0.25)', borderRadius: '16px', color: '#52525B', fontSize: '0.85rem' }}>
-                      Aún no subiste ninguna foto.<br />Tu primera foto es el punto de partida. 💪
-                    </div>
-                  : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                      {stPhotos.map(p => (
-                        <div key={p.id} style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '3/4', position: 'relative', border: '1px solid rgba(124,58,237,0.2)' }}>
-                          <img src={p.photo_url} alt="Progreso" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.65)', padding: '4px 6px', fontSize: '0.6rem', color: '#A1A1AA', textAlign: 'center' }}>
-                            {new Date(p.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                }
-              </div>
-            </div>
-          )}
-
-          {studentScreen === 'fotos' && (
-            <div style={{ padding: '20px 16px', maxWidth: '480px', margin: '0 auto' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '4px' }}>📷 Mis Fotos de Progreso</h3>
-              <p style={{ fontSize: '0.82rem', color: '#71717A', marginBottom: '20px' }}>Subí fotos mensuales para documentar tu transformación.</p>
-
-              <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
-                <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Subir foto del mes</p>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                  {['frente', 'perfil', 'espalda'].map(t => (
-                    <button key={t} onClick={() => setStPhotoTipo(t)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: stPhotoTipo === t ? '2px solid #7C3AED' : '2px solid #3F3F46', background: stPhotoTipo === t ? 'rgba(124,58,237,0.15)' : 'transparent', color: stPhotoTipo === t ? '#A78BFA' : '#71717A', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', textTransform: 'capitalize' }}>{t}</button>
-                  ))}
-                </div>
-                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#7C3AED', color: '#fff', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: 'pointer', opacity: stPhotoUploading ? 0.6 : 1 }}>
-                  {stPhotoUploading ? 'Subiendo...' : `📷 Subir foto (${stPhotoTipo})`}
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
-                </label>
-              </div>
-
-              {stPhotosLoading ? (
-                <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
-              ) : stPhotos.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📷</div>
-                  <p style={{ fontSize: '0.88rem' }}>Todavía no subiste ninguna foto.</p>
-                </div>
-              ) : (
-                stPhotos.map(month => (
-                  <div key={month.fecha} style={{ marginBottom: '20px' }}>
-                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{month.fecha}</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                      {['frente', 'perfil', 'espalda'].map(tipo => (
-                        <div key={tipo} style={{ aspectRatio: '3/4', borderRadius: '10px', overflow: 'hidden', background: '#18181B', border: '1px solid #3F3F46', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {month[tipo] ? (
-                            <img src={month[tipo]} alt={tipo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          ) : (
-                            <span style={{ fontSize: '1.5rem', opacity: 0.3 }}>📷</span>
-                          )}
-                          <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.6rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>{tipo}</span>
-                        </div>
-                      ))}
-                    </div>
+                {stPhotosLoading ? (
+                  <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
+                ) : stPhotos.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📷</div>
+                    <p style={{ fontSize: '0.88rem' }}>Todavía no subiste ninguna foto.</p>
                   </div>
-                ))
-              )}
-            </div>
-          )}
-
-          {studentScreen === 'metricas' && (
-            <div style={{ padding: '20px 16px', maxWidth: '480px', margin: '0 auto' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '4px' }}>📊 Mis Métricas</h3>
-              <p style={{ fontSize: '0.82rem', color: '#71717A', marginBottom: '20px' }}>Registrá tus medidas mensuales para ver tu evolución.</p>
-
-              <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '24px' }}>
-                <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Registrar nueva medición</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
-                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Fecha</label><input type="date" value={stMetricForm.fecha} onChange={e => setStMetricForm(f => ({...f, fecha: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Peso (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="75.5" value={stMetricForm.peso} onChange={e => setStMetricForm(f => ({...f, peso: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa muscular (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="35.0" value={stMetricForm.masa_muscular} onChange={e => setStMetricForm(f => ({...f, masa_muscular: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa grasa (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="20.0" value={stMetricForm.masa_grasa} onChange={e => setStMetricForm(f => ({...f, masa_grasa: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cintura (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="80" value={stMetricForm.cintura} onChange={e => setStMetricForm(f => ({...f, cintura: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                  <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cadera (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="95" value={stMetricForm.cadera} onChange={e => setStMetricForm(f => ({...f, cadera: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                </div>
-                <button onClick={stSaveMetric} disabled={stMetricSaving} style={{ width: '100%', background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: stMetricSaving ? 'default' : 'pointer', opacity: stMetricSaving ? 0.7 : 1 }}>{stMetricSaving ? 'Guardando...' : '💾 Guardar métricas'}</button>
-              </div>
-
-              {stMetricsLoading ? (
-                <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
-              ) : stMetrics.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📊</div>
-                  <p style={{ fontSize: '0.88rem' }}>Todavía no registraste métricas.</p>
-                </div>
-              ) : (
-                <div>
-                  <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Historial</p>
-                  {[...stMetrics].reverse().map((m, i) => (
-                    <div key={m.id || i} style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
-                      <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px' }}>{m.fecha}</p>
+                ) : (
+                  stPhotos.map(month => (
+                    <div key={month.fecha} style={{ marginBottom: '20px' }}>
+                      <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{month.fecha}</p>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                        {m.peso != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff' }}>{m.peso}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Peso kg</div></div>}
-                        {m.masa_muscular != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#10B981' }}>{m.masa_muscular}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Músculo kg</div></div>}
-                        {m.masa_grasa != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#F59E0B' }}>{m.masa_grasa}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Grasa kg</div></div>}
-                        {m.cintura != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#A78BFA' }}>{m.cintura}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cintura cm</div></div>}
-                        {m.cadera != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#EC4899' }}>{m.cadera}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cadera cm</div></div>}
+                        {['frente', 'perfil', 'espalda'].map(tipo => (
+                          <div key={tipo} style={{ aspectRatio: '3/4', borderRadius: '10px', overflow: 'hidden', background: '#18181B', border: '1px solid #3F3F46', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {month[tipo] ? (
+                              <img src={month[tipo]} alt={tipo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <span style={{ fontSize: '1.5rem', opacity: 0.3 }}>📷</span>
+                            )}
+                            <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.6rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>{tipo}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  ))
+                )}
+              </div>
+
+              {/* ── MIS MÉTRICAS ── */}
+              <div style={{ marginTop: '32px' }}>
+                <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '14px' }}>📊 Mis Métricas</h3>
+                <p style={{ fontSize: '0.82rem', color: '#71717A', marginBottom: '16px' }}>Registrá tus medidas mensuales para ver tu evolución.</p>
+                <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '24px' }}>
+                  <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Registrar nueva medición</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Fecha</label><input type="date" value={stMetricForm.fecha} onChange={e => setStMetricForm(f => ({...f, fecha: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Peso (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="75.5" value={stMetricForm.peso} onChange={e => setStMetricForm(f => ({...f, peso: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa muscular (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="35.0" value={stMetricForm.masa_muscular} onChange={e => setStMetricForm(f => ({...f, masa_muscular: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa grasa (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="20.0" value={stMetricForm.masa_grasa} onChange={e => setStMetricForm(f => ({...f, masa_grasa: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cintura (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="80" value={stMetricForm.cintura} onChange={e => setStMetricForm(f => ({...f, cintura: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cadera (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="95" value={stMetricForm.cadera} onChange={e => setStMetricForm(f => ({...f, cadera: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                  </div>
+                  <button onClick={stSaveMetric} disabled={stMetricSaving} style={{ width: '100%', background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: stMetricSaving ? 'default' : 'pointer', opacity: stMetricSaving ? 0.7 : 1 }}>{stMetricSaving ? 'Guardando...' : '💾 Guardar métricas'}</button>
                 </div>
-              )}
+                {stMetricsLoading ? (
+                  <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
+                ) : stMetrics.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📊</div>
+                    <p style={{ fontSize: '0.88rem' }}>Todavía no registraste métricas.</p>
+                  </div>
+                ) : (
+                  <div>
+                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Historial</p>
+                    {[...stMetrics].reverse().map((m, i) => (
+                      <div key={m.id || i} style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
+                        <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px' }}>{m.fecha}</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                          {m.peso != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff' }}>{m.peso}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Peso kg</div></div>}
+                          {m.masa_muscular != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#10B981' }}>{m.masa_muscular}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Músculo kg</div></div>}
+                          {m.masa_grasa != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#F59E0B' }}>{m.masa_grasa}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Grasa kg</div></div>}
+                          {m.cintura != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#A78BFA' }}>{m.cintura}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cintura cm</div></div>}
+                          {m.cadera != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#EC4899' }}>{m.cadera}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cadera cm</div></div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
+
         </div>
       </div>
     );
