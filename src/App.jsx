@@ -719,6 +719,7 @@ export default function App() {
                 const prev = sorted[1];
                 const pesoDelta = latest?.peso && prev?.peso ? (latest.peso - prev.peso).toFixed(1) : null;
                 const pesoTrend = pesoDelta > 0 ? 'up' : pesoDelta < 0 ? 'down' : null;
+                const grasaDeltaHome = latest?.masa_grasa != null && prev?.masa_grasa != null ? parseFloat((latest.masa_grasa - prev.masa_grasa).toFixed(1)) : null;
 
                 // Volumen: sum of best weights from all exercises
                 const totalVolumen = stExercises.reduce((acc, ex) => acc + ((ex.suggested_weight || 0) * (ex.rep_range_min || 10)), 0);
@@ -761,6 +762,22 @@ export default function App() {
                       <span style={{ fontSize: '0.72rem', fontWeight: 600, color: comidasCount > 0 ? '#4ADE80' : '#52525B', marginTop: '4px', display: 'block' }}>
                         {comidasCount > 0 ? 'Plan activo ✓' : 'Sin plan aún'}
                       </span>
+                    </div>
+                    {/* Grasa Corporal */}
+                    <div style={{ background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }}>
+                      <p style={{ color: '#71717A', fontSize: '0.75rem', fontWeight: 500, marginBottom: '6px' }}>Grasa Corporal</p>
+                      {latest?.masa_grasa != null ? (
+                        <>
+                          <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FAFAFA' }}>{latest.masa_grasa} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#71717A' }}>%</span></p>
+                          {grasaDeltaHome !== null && (
+                            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: grasaDeltaHome <= 0 ? '#4ADE80' : '#F87171', marginTop: '4px', display: 'block' }}>
+                              {grasaDeltaHome > 0 ? '↗' : '↘'} {Math.abs(grasaDeltaHome)}% este mes
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <p style={{ fontSize: '1.2rem', fontWeight: 800, color: '#52525B' }}>Sin datos</p>
+                      )}
                     </div>
                   </div>
                 );
@@ -1191,7 +1208,7 @@ export default function App() {
 
                 {/* Mis Métricas */}
                 <div style={{ marginBottom: '32px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', marginLeft: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', marginLeft: '4px' }}>
                     <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0 }}>Mis Métricas</h3>
                     <button onClick={() => setStShowMetricHistory(v => !v)} style={{ background: 'none', border: 'none', color: '#7C3AED', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
                       {stShowMetricHistory ? 'Ocultar' : 'Ver Historial'}
@@ -1212,15 +1229,15 @@ export default function App() {
                       )}
                     </div>
                     <div style={{ background: 'rgba(24,24,27,0.5)', border: '1px solid #27272A', borderRadius: '14px', padding: '16px' }}>
-                      <p style={{ fontSize: '0.75rem', color: '#71717A', marginBottom: '6px', marginTop: 0 }}>Masa Grasa</p>
+                      <p style={{ fontSize: '0.75rem', color: '#71717A', marginBottom: '6px', marginTop: 0 }}>Grasa Corporal</p>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                         <span style={{ fontSize: '1.6rem', fontWeight: 700 }}>{latestM?.masa_grasa ?? '--'}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#71717A' }}>kg</span>
+                        <span style={{ fontSize: '0.75rem', color: '#71717A' }}>%</span>
                       </div>
                       {grasaDelta != null && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', color: grasaDelta <= 0 ? '#10B981' : '#EF4444', fontSize: '0.75rem' }}>
                           {grasaDelta <= 0 ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
-                          <span>{grasaDelta > 0 ? '+' : ''}{grasaDelta}kg este mes</span>
+                          <span>{grasaDelta > 0 ? '+' : ''}{grasaDelta}% este mes</span>
                         </div>
                       )}
                     </div>
@@ -1233,7 +1250,7 @@ export default function App() {
                           <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Fecha</label><input type="date" value={stMetricForm.fecha} onChange={e => setStMetricForm(f => ({...f, fecha: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
                           <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Peso (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="75.5" value={stMetricForm.peso} onChange={e => setStMetricForm(f => ({...f, peso: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
                           <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa muscular (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="35.0" value={stMetricForm.masa_muscular} onChange={e => setStMetricForm(f => ({...f, masa_muscular: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                          <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa grasa (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="20.0" value={stMetricForm.masa_grasa} onChange={e => setStMetricForm(f => ({...f, masa_grasa: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                          <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa grasa (%)</label><input type="number" inputMode="decimal" step="0.1" placeholder="20.0" value={stMetricForm.masa_grasa} onChange={e => setStMetricForm(f => ({...f, masa_grasa: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
                           <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cintura (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="80" value={stMetricForm.cintura} onChange={e => setStMetricForm(f => ({...f, cintura: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
                           <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cadera (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="95" value={stMetricForm.cadera} onChange={e => setStMetricForm(f => ({...f, cadera: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
                         </div>
@@ -1249,7 +1266,7 @@ export default function App() {
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                             {m.peso != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff' }}>{m.peso}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Peso kg</div></div>}
                             {m.masa_muscular != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#10B981' }}>{m.masa_muscular}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Músculo kg</div></div>}
-                            {m.masa_grasa != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#F59E0B' }}>{m.masa_grasa}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Grasa kg</div></div>}
+                            {m.masa_grasa != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#F59E0B' }}>{m.masa_grasa}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Grasa %</div></div>}
                             {m.cintura != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#A78BFA' }}>{m.cintura}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cintura cm</div></div>}
                             {m.cadera != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#EC4899' }}>{m.cadera}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cadera cm</div></div>}
                           </div>
