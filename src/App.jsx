@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, LogOut, Home, Utensils, Loader2, Flame, Trophy, CheckCircle2, TrendingUp, TrendingDown, Minus, User, ChevronDown, ChevronUp, BarChart2, X } from 'lucide-react';
+import { Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, LogOut, Home, Utensils, Loader2, Flame, Trophy, CheckCircle2, TrendingUp, TrendingDown, Minus, User, ChevronDown, ChevronUp, BarChart2, X, Settings, Bell, Edit3 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 import axios from 'axios';
 import SeriesInput from './components/SeriesInput';
@@ -102,6 +102,7 @@ export default function App() {
   const [stMetricSaving, setStMetricSaving] = useState(false);
   const [stActivePhotoMonth, setStActivePhotoMonth] = useState(null);
   const [stPhotoTipo, setStPhotoTipo] = useState('frente');
+  const [stShowMetricHistory, setStShowMetricHistory] = useState(false);
 
   // ===== LOGIN =====
   const handleLogin = async () => {
@@ -1130,186 +1131,239 @@ export default function App() {
           )}
 
           {/* PROFILE */}
-          {studentScreen === 'profile' && (
-            <div className="view-fade-in">
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 className="st-section-title" style={{ margin: 0 }}>Mi Perfil</h2>
-                <button className="btn-icon-sm" onClick={handleLogout} style={{ color: '#EF4444' }}><LogOut size={20} /></button>
-              </div>
+          {studentScreen === 'profile' && (() => {
+            const latestM = stMetrics.length > 0 ? stMetrics[stMetrics.length - 1] : null;
+            const prevM   = stMetrics.length > 1 ? stMetrics[stMetrics.length - 2] : null;
+            const pesoDelta  = latestM?.peso != null && prevM?.peso != null ? parseFloat((latestM.peso - prevM.peso).toFixed(1)) : null;
+            const grasaDelta = latestM?.masa_grasa != null && prevM?.masa_grasa != null ? parseFloat((latestM.masa_grasa - prevM.masa_grasa).toFixed(1)) : null;
+            return (
+              <div className="view-fade-in" style={{ paddingBottom: '100px' }}>
 
-              {/* Avatar + nombre */}
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <div className="st-profile-avatar">
-                  {stStudentData?.foto_perfil_url
-                    ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                    : <span style={{ fontSize: '2rem', fontWeight: 800 }}>{loggedInUser.name?.charAt(0).toUpperCase()}</span>}
+                {/* Top bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0 20px', position: 'sticky', top: 0, background: 'rgba(6,6,8,0.88)', backdropFilter: 'blur(10px)', zIndex: 10 }}>
+                  <button style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: '4px', display: 'flex' }}><Settings size={22} /></button>
+                  <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>Mi Perfil</h2>
+                  <button style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: '4px', display: 'flex' }}><Bell size={22} /></button>
                 </div>
-                <h2 style={{ marginTop: '14px', fontSize: '1.4rem' }}>{loggedInUser.name}</h2>
-                <p style={{ color: '#A1A1AA', marginTop: '4px' }}>{loggedInUser.email}</p>
-                {stStudentData?.goal && (
-                  <span style={{ display: 'inline-block', marginTop: '8px', background: 'rgba(124,58,237,0.15)', color: '#A78BFA', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '999px', padding: '4px 14px', fontSize: '0.82rem', fontWeight: 700 }}>
-                    🎯 {stStudentData.goal}
-                  </span>
-                )}
-              </div>
 
-              {/* Streak */}
-              <div className="streak-hero" style={{ marginBottom: '24px' }}>
-                <span style={{ fontSize: '2rem' }}>{stStreak.milestone_100 ? '🏆' : '🔥'}</span>
-                <span className="streak-hero-num">{stStreak.streak}</span>
-                <span className="streak-hero-label">días de racha</span>
-                {stStreak.milestone_100 && <span style={{ display: 'inline-block', marginTop: '8px', background: 'rgba(234,179,8,0.15)', color: '#FBBF24', border: '1px solid rgba(234,179,8,0.4)', borderRadius: '999px', padding: '4px 14px', fontSize: '0.82rem', fontWeight: 800 }}>🏆 100 días · 25% de descuento</span>}
-                {stStreak.at_risk && <p style={{ color: '#EF4444', marginTop: '8px', fontSize: '0.85rem', fontWeight: 600 }}>⚠️ ¡Entrená hoy para no perder tu racha!</p>}
-                {stStreak.longest_streak > 0 && <p style={{ color: '#A1A1AA', marginTop: '8px', fontSize: '0.8rem' }}>Mejor racha: {stStreak.longest_streak} días</p>}
-              </div>
-
-              {/* ── MIS DATOS ── */}
-              {!stProfileEditing ? (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Mis datos</h3>
+                {/* Avatar + nombre */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', paddingBottom: '28px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ width: '112px', height: '112px', borderRadius: '50%', border: '2px solid #7C3AED', padding: '3px', boxSizing: 'border-box' }}>
+                      <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: 'rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {stStudentData?.foto_perfil_url
+                          ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#A78BFA' }}>{loggedInUser.name?.charAt(0).toUpperCase()}</span>}
+                      </div>
+                    </div>
                     <button
                       onClick={() => { setStProfileForm({ weight_kg: stStudentData?.weight_kg ?? '', height_cm: stStudentData?.height_cm ?? '', whatsapp: stStudentData?.whatsapp ?? '', nivel_experiencia: stStudentData?.nivel_experiencia ?? '', dias_disponibles: stStudentData?.dias_disponibles ?? '', lugar_entrenamiento: stStudentData?.lugar_entrenamiento ?? '' }); setStProfileEditing(true); }}
-                      style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#A78BFA', borderRadius: '8px', padding: '5px 14px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
-                      Editar
+                      style={{ position: 'absolute', bottom: 0, right: 0, background: '#7C3AED', borderRadius: '50%', width: '32px', height: '32px', border: '3px solid #060608', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <Edit3 size={14} color="#fff" />
                     </button>
                   </div>
-                  <div className="st-stats-row">
-                    {stStudentData?.weight_kg && <div className="st-stat"><Activity color="#10B981" size={20} /><strong>{stStudentData.weight_kg} kg</strong><span>Peso</span></div>}
-                    {stStudentData?.height_cm && <div className="st-stat"><TrendingUp color="#F59E0B" size={20} /><strong>{stStudentData.height_cm} cm</strong><span>Altura</span></div>}
-                    {stStudentData?.dias_disponibles && <div className="st-stat"><Target color="#7C3AED" size={20} /><strong>{stStudentData.dias_disponibles}</strong><span>Días/sem</span></div>}
+                  <div style={{ textAlign: 'center' }}>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>{loggedInUser.name}</h1>
+                    <p style={{ color: '#71717A', fontSize: '0.85rem', marginTop: '4px' }}>
+                      Socio #{stStudentData?.id?.slice(-4)?.toUpperCase() ?? '----'}{stStudentData?.nivel_experiencia ? ` · Nivel ${stStudentData.nivel_experiencia}` : ''}
+                    </p>
                   </div>
-                  {[{ label: 'Nivel', val: stStudentData?.nivel_experiencia }, { label: 'Entrena en', val: stStudentData?.lugar_entrenamiento }, { label: 'WhatsApp', val: stStudentData?.whatsapp }].filter(r => r.val).map(r => (
-                    <div key={r.label} style={{ marginTop: '8px', background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.12)', borderRadius: '12px', padding: '12px 16px', display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#71717A', fontSize: '0.85rem' }}>{r.label}</span>
-                      <span style={{ color: '#FAFAFA', fontWeight: 700, fontSize: '0.85rem' }}>{r.val}</span>
-                    </div>
-                  ))}
                 </div>
-              ) : (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Actualizar datos</h3>
-                    <button onClick={() => setStProfileEditing(false)} style={{ background: 'none', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.85rem' }}>Cancelar</button>
-                  </div>
-                  {[{ label: 'Peso actual (kg)', key: 'weight_kg', type: 'number', ph: 'Ej: 75' }, { label: 'Altura (cm)', key: 'height_cm', type: 'number', ph: 'Ej: 175' }, { label: 'WhatsApp', key: 'whatsapp', type: 'tel', ph: '+54 9 11 0000 0000' }, { label: 'Días disponibles por semana', key: 'dias_disponibles', type: 'number', ph: '3' }].map(f => (
-                    <div key={f.key} style={{ marginBottom: '12px' }}>
-                      <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{f.label}</label>
-                      <input type={f.type} placeholder={f.ph} value={stProfileForm[f.key]} onChange={e => setStProfileForm(p => ({ ...p, [f.key]: e.target.value }))} style={{ width: '100%', background: '#1a1730', border: '1px solid #2a2640', borderRadius: '12px', padding: '12px 14px', color: '#fff', fontSize: '0.92rem', outline: 'none', boxSizing: 'border-box' }} />
+
+                {/* Mi Plan */}
+                <div style={{ marginBottom: '32px' }}>
+                  <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '12px', marginLeft: '4px' }}>Mi Plan</h3>
+                  <div style={{ background: 'rgba(24,24,27,0.5)', border: '1px solid #27272A', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ background: 'rgba(124,58,237,0.2)', borderRadius: '10px', padding: '12px', display: 'flex' }}>
+                        <Trophy size={22} color="#A78BFA" />
+                      </div>
+                      <div>
+                        <p style={{ fontWeight: 700, fontSize: '0.95rem', margin: 0 }}>{stStudentData?.goal || 'Plan Mensual'}</p>
+                        <p style={{ fontSize: '0.75rem', color: '#71717A', marginTop: '2px', marginBottom: 0 }}>Plan activo</p>
+                      </div>
                     </div>
-                  ))}
-                  <div style={{ marginBottom: '12px' }}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nivel de experiencia</label>
-                    <select value={stProfileForm.nivel_experiencia} onChange={e => setStProfileForm(p => ({ ...p, nivel_experiencia: e.target.value }))} style={{ width: '100%', background: '#1a1730', border: '1px solid #2a2640', borderRadius: '12px', padding: '12px 14px', color: stProfileForm.nivel_experiencia ? '#fff' : '#52525B', fontSize: '0.92rem', outline: 'none' }}>
-                      <option value="">Seleccionar</option>
-                      <option value="Principiante">Principiante</option>
-                      <option value="Intermedio">Intermedio</option>
-                      <option value="Avanzado">Avanzado</option>
-                    </select>
+                    <button style={{ background: 'rgba(124,58,237,0.1)', border: 'none', color: '#A78BFA', borderRadius: '10px', padding: '8px 16px', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+                      Gestionar
+                    </button>
                   </div>
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Lugar de entrenamiento</label>
-                    <select value={stProfileForm.lugar_entrenamiento} onChange={e => setStProfileForm(p => ({ ...p, lugar_entrenamiento: e.target.value }))} style={{ width: '100%', background: '#1a1730', border: '1px solid #2a2640', borderRadius: '12px', padding: '12px 14px', color: stProfileForm.lugar_entrenamiento ? '#fff' : '#52525B', fontSize: '0.92rem', outline: 'none' }}>
-                      <option value="">Seleccionar</option>
-                      <option value="Gimnasio completo">Gimnasio completo</option>
-                      <option value="Gimnasio en casa">Gimnasio en casa</option>
-                      <option value="Sin equipamiento">Sin equipamiento</option>
-                    </select>
+                </div>
+
+                {/* Mis Métricas */}
+                <div style={{ marginBottom: '32px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', marginLeft: '4px' }}>
+                    <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0 }}>Mis Métricas</h3>
+                    <button onClick={() => setStShowMetricHistory(v => !v)} style={{ background: 'none', border: 'none', color: '#7C3AED', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+                      {stShowMetricHistory ? 'Ocultar' : 'Ver Historial'}
+                    </button>
                   </div>
-                  <button className="btn-primary w-full" disabled={stProfileSaving} onClick={stUpdateProfile}>
-                    {stProfileSaving ? <Loader2 size={18} className="spin-icon" /> : <><Save size={16} /> Guardar cambios</>}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: stShowMetricHistory ? '20px' : 0 }}>
+                    <div style={{ background: 'rgba(24,24,27,0.5)', border: '1px solid #27272A', borderRadius: '14px', padding: '16px' }}>
+                      <p style={{ fontSize: '0.75rem', color: '#71717A', marginBottom: '6px', marginTop: 0 }}>Peso Actual</p>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span style={{ fontSize: '1.6rem', fontWeight: 700 }}>{latestM?.peso ?? '--'}</span>
+                        <span style={{ fontSize: '0.75rem', color: '#71717A' }}>kg</span>
+                      </div>
+                      {pesoDelta != null && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', color: pesoDelta <= 0 ? '#10B981' : '#EF4444', fontSize: '0.75rem' }}>
+                          {pesoDelta <= 0 ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
+                          <span>{pesoDelta > 0 ? '+' : ''}{pesoDelta}kg este mes</span>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ background: 'rgba(24,24,27,0.5)', border: '1px solid #27272A', borderRadius: '14px', padding: '16px' }}>
+                      <p style={{ fontSize: '0.75rem', color: '#71717A', marginBottom: '6px', marginTop: 0 }}>Masa Grasa</p>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span style={{ fontSize: '1.6rem', fontWeight: 700 }}>{latestM?.masa_grasa ?? '--'}</span>
+                        <span style={{ fontSize: '0.75rem', color: '#71717A' }}>kg</span>
+                      </div>
+                      {grasaDelta != null && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '8px', color: grasaDelta <= 0 ? '#10B981' : '#EF4444', fontSize: '0.75rem' }}>
+                          {grasaDelta <= 0 ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
+                          <span>{grasaDelta > 0 ? '+' : ''}{grasaDelta}kg este mes</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {stShowMetricHistory && (
+                    <div>
+                      <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                        <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Registrar nueva medición</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                          <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Fecha</label><input type="date" value={stMetricForm.fecha} onChange={e => setStMetricForm(f => ({...f, fecha: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                          <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Peso (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="75.5" value={stMetricForm.peso} onChange={e => setStMetricForm(f => ({...f, peso: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                          <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa muscular (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="35.0" value={stMetricForm.masa_muscular} onChange={e => setStMetricForm(f => ({...f, masa_muscular: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                          <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa grasa (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="20.0" value={stMetricForm.masa_grasa} onChange={e => setStMetricForm(f => ({...f, masa_grasa: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                          <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cintura (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="80" value={stMetricForm.cintura} onChange={e => setStMetricForm(f => ({...f, cintura: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                          <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cadera (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="95" value={stMetricForm.cadera} onChange={e => setStMetricForm(f => ({...f, cadera: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
+                        </div>
+                        <button onClick={stSaveMetric} disabled={stMetricSaving} style={{ width: '100%', background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: stMetricSaving ? 'default' : 'pointer', opacity: stMetricSaving ? 0.7 : 1 }}>{stMetricSaving ? 'Guardando...' : '💾 Guardar métricas'}</button>
+                      </div>
+                      {stMetricsLoading ? (
+                        <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
+                      ) : stMetrics.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '24px 20px', color: '#52525B' }}><p style={{ fontSize: '0.88rem' }}>Todavía no registraste métricas.</p></div>
+                      ) : [...stMetrics].reverse().map((m, i) => (
+                        <div key={m.id || i} style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
+                          <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px' }}>{m.fecha}</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                            {m.peso != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff' }}>{m.peso}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Peso kg</div></div>}
+                            {m.masa_muscular != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#10B981' }}>{m.masa_muscular}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Músculo kg</div></div>}
+                            {m.masa_grasa != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#F59E0B' }}>{m.masa_grasa}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Grasa kg</div></div>}
+                            {m.cintura != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#A78BFA' }}>{m.cintura}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cintura cm</div></div>}
+                            {m.cadera != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#EC4899' }}>{m.cadera}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cadera cm</div></div>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Fotos de Progreso */}
+                <div style={{ marginBottom: '32px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', marginLeft: '4px' }}>
+                    <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0 }}>Fotos de Progreso</h3>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7C3AED', color: '#fff', borderRadius: '8px', padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, cursor: stPhotoUploading ? 'default' : 'pointer', opacity: stPhotoUploading ? 0.6 : 1 }}>
+                      <span style={{ fontSize: '14px' }}>📷</span> {stPhotoUploading ? 'Subiendo...' : 'Subir'}
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
+                    {stPhotosLoading ? (
+                      <div style={{ padding: '20px', color: '#71717A', fontSize: '0.85rem' }}>Cargando...</div>
+                    ) : (
+                      <>
+                        {stPhotos.map(month => {
+                          const url = month.frente || month.perfil || month.espalda;
+                          return url ? (
+                            <div key={month.fecha} style={{ flexShrink: 0, width: '128px' }}>
+                              <div style={{ height: '160px', borderRadius: '14px', overflow: 'hidden', background: '#18181B' }}>
+                                <img src={url} alt={month.fecha} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              </div>
+                              <p style={{ fontSize: '0.65rem', textAlign: 'center', color: '#71717A', marginTop: '6px', fontWeight: 500 }}>{month.fecha}</p>
+                            </div>
+                          ) : null;
+                        })}
+                        <div style={{ flexShrink: 0, width: '128px' }}>
+                          <label style={{ cursor: 'pointer' }}>
+                            <div style={{ height: '160px', borderRadius: '14px', border: '2px dashed #27272A', background: 'rgba(24,24,27,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Plus size={28} color="#3F3F46" />
+                            </div>
+                            <p style={{ fontSize: '0.65rem', textAlign: 'center', color: '#52525B', marginTop: '6px' }}>Nueva Foto</p>
+                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
+                          </label>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mis Datos */}
+                <div style={{ marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '12px', marginLeft: '4px' }}>Mis Datos</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Información Personal */}
+                    <div>
+                      <button onClick={() => { if (!stProfileEditing) { setStProfileForm({ weight_kg: stStudentData?.weight_kg ?? '', height_cm: stStudentData?.height_cm ?? '', whatsapp: stStudentData?.whatsapp ?? '', nivel_experiencia: stStudentData?.nivel_experiencia ?? '', dias_disponibles: stStudentData?.dias_disponibles ?? '', lugar_entrenamiento: stStudentData?.lugar_entrenamiento ?? '' }); } setStProfileEditing(v => !v); }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: stProfileEditing ? '14px 14px 0 0' : '14px', background: 'rgba(24,24,27,0.3)', border: '1px solid #27272A', cursor: 'pointer', color: '#fff' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <User size={18} color="#71717A" />
+                          <span style={{ fontSize: '0.9rem' }}>Información Personal</span>
+                        </div>
+                        {stProfileEditing ? <ChevronUp size={16} color="#71717A" /> : <ChevronDown size={16} color="#71717A" />}
+                      </button>
+                      {stProfileEditing && (
+                        <div style={{ background: '#18181B', border: '1px solid #27272A', borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '16px' }}>
+                          {[{ label: 'Peso actual (kg)', key: 'weight_kg', type: 'number', ph: 'Ej: 75' }, { label: 'Altura (cm)', key: 'height_cm', type: 'number', ph: 'Ej: 175' }, { label: 'WhatsApp', key: 'whatsapp', type: 'tel', ph: '+54 9 11 0000 0000' }, { label: 'Días disponibles por semana', key: 'dias_disponibles', type: 'number', ph: '3' }].map(f => (
+                            <div key={f.key} style={{ marginBottom: '12px' }}>
+                              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{f.label}</label>
+                              <input type={f.type} placeholder={f.ph} value={stProfileForm[f.key]} onChange={e => setStProfileForm(p => ({ ...p, [f.key]: e.target.value }))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '10px', padding: '10px 14px', color: '#fff', fontSize: '0.92rem', outline: 'none', boxSizing: 'border-box' }} />
+                            </div>
+                          ))}
+                          <div style={{ marginBottom: '12px' }}>
+                            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Nivel de experiencia</label>
+                            <select value={stProfileForm.nivel_experiencia} onChange={e => setStProfileForm(p => ({ ...p, nivel_experiencia: e.target.value }))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '10px', padding: '10px 14px', color: stProfileForm.nivel_experiencia ? '#fff' : '#52525B', fontSize: '0.92rem', outline: 'none' }}>
+                              <option value="">Seleccionar</option>
+                              <option value="Principiante">Principiante</option>
+                              <option value="Intermedio">Intermedio</option>
+                              <option value="Avanzado">Avanzado</option>
+                            </select>
+                          </div>
+                          <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Lugar de entrenamiento</label>
+                            <select value={stProfileForm.lugar_entrenamiento} onChange={e => setStProfileForm(p => ({ ...p, lugar_entrenamiento: e.target.value }))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '10px', padding: '10px 14px', color: stProfileForm.lugar_entrenamiento ? '#fff' : '#52525B', fontSize: '0.92rem', outline: 'none' }}>
+                              <option value="">Seleccionar</option>
+                              <option value="Gimnasio completo">Gimnasio completo</option>
+                              <option value="Gimnasio en casa">Gimnasio en casa</option>
+                              <option value="Sin equipamiento">Sin equipamiento</option>
+                            </select>
+                          </div>
+                          <button className="btn-primary w-full" disabled={stProfileSaving} onClick={stUpdateProfile}>
+                            {stProfileSaving ? <Loader2 size={18} className="spin-icon" /> : <><Save size={16} /> Guardar cambios</>}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    {/* Email */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderRadius: '14px', background: 'rgba(24,24,27,0.3)', border: '1px solid #27272A' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ color: '#71717A', fontSize: '18px' }}>✉️</span>
+                        <span style={{ fontSize: '0.88rem', color: '#A1A1AA' }}>{loggedInUser.email}</span>
+                      </div>
+                      <ChevronDown size={16} color="#52525B" />
+                    </div>
+                  </div>
+
+                  {/* Cerrar Sesión */}
+                  <button onClick={handleLogout} style={{ width: '100%', marginTop: '24px', padding: '16px', color: '#EF4444', fontWeight: 500, fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', background: 'rgba(239,68,68,0.05)', cursor: 'pointer' }}>
+                    <LogOut size={16} />
+                    Cerrar Sesión
                   </button>
                 </div>
-              )}
 
-              {/* ── FOTOS DE PROGRESO ── */}
-              <div style={{ marginTop: '32px' }}>
-                <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '14px' }}>📷 Mis Fotos de Progreso</h3>
-                <p style={{ fontSize: '0.82rem', color: '#71717A', marginBottom: '16px' }}>Subí fotos mensuales para documentar tu transformación.</p>
-                <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
-                  <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Subir foto del mes</p>
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    {['frente', 'perfil', 'espalda'].map(t => (
-                      <button key={t} onClick={() => setStPhotoTipo(t)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: stPhotoTipo === t ? '2px solid #7C3AED' : '2px solid #3F3F46', background: stPhotoTipo === t ? 'rgba(124,58,237,0.15)' : 'transparent', color: stPhotoTipo === t ? '#A78BFA' : '#71717A', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', textTransform: 'capitalize' }}>{t}</button>
-                    ))}
-                  </div>
-                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#7C3AED', color: '#fff', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: 'pointer', opacity: stPhotoUploading ? 0.6 : 1 }}>
-                    {stPhotoUploading ? 'Subiendo...' : `📷 Subir foto (${stPhotoTipo})`}
-                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
-                  </label>
-                </div>
-                {stPhotosLoading ? (
-                  <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
-                ) : stPhotos.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📷</div>
-                    <p style={{ fontSize: '0.88rem' }}>Todavía no subiste ninguna foto.</p>
-                  </div>
-                ) : (
-                  stPhotos.map(month => (
-                    <div key={month.fecha} style={{ marginBottom: '20px' }}>
-                      <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{month.fecha}</p>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                        {['frente', 'perfil', 'espalda'].map(tipo => (
-                          <div key={tipo} style={{ aspectRatio: '3/4', borderRadius: '10px', overflow: 'hidden', background: '#18181B', border: '1px solid #3F3F46', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {month[tipo] ? (
-                              <img src={month[tipo]} alt={tipo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                              <span style={{ fontSize: '1.5rem', opacity: 0.3 }}>📷</span>
-                            )}
-                            <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.6rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>{tipo}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                )}
               </div>
-
-              {/* ── MIS MÉTRICAS ── */}
-              <div style={{ marginTop: '32px' }}>
-                <h3 style={{ fontSize: '0.8rem', color: '#71717A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '14px' }}>📊 Mis Métricas</h3>
-                <p style={{ fontSize: '0.82rem', color: '#71717A', marginBottom: '16px' }}>Registrá tus medidas mensuales para ver tu evolución.</p>
-                <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '24px' }}>
-                  <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Registrar nueva medición</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
-                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Fecha</label><input type="date" value={stMetricForm.fecha} onChange={e => setStMetricForm(f => ({...f, fecha: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Peso (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="75.5" value={stMetricForm.peso} onChange={e => setStMetricForm(f => ({...f, peso: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa muscular (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="35.0" value={stMetricForm.masa_muscular} onChange={e => setStMetricForm(f => ({...f, masa_muscular: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Masa grasa (kg)</label><input type="number" inputMode="decimal" step="0.1" placeholder="20.0" value={stMetricForm.masa_grasa} onChange={e => setStMetricForm(f => ({...f, masa_grasa: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cintura (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="80" value={stMetricForm.cintura} onChange={e => setStMetricForm(f => ({...f, cintura: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                    <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Cadera (cm)</label><input type="number" inputMode="decimal" step="0.5" placeholder="95" value={stMetricForm.cadera} onChange={e => setStMetricForm(f => ({...f, cadera: e.target.value}))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
-                  </div>
-                  <button onClick={stSaveMetric} disabled={stMetricSaving} style={{ width: '100%', background: 'linear-gradient(135deg,#7C3AED,#6D28D9)', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: 700, cursor: stMetricSaving ? 'default' : 'pointer', opacity: stMetricSaving ? 0.7 : 1 }}>{stMetricSaving ? 'Guardando...' : '💾 Guardar métricas'}</button>
-                </div>
-                {stMetricsLoading ? (
-                  <p style={{ textAlign: 'center', color: '#71717A', fontSize: '0.88rem' }}>Cargando...</p>
-                ) : stMetrics.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '40px 20px', color: '#52525B' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>📊</div>
-                    <p style={{ fontSize: '0.88rem' }}>Todavía no registraste métricas.</p>
-                  </div>
-                ) : (
-                  <div>
-                    <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Historial</p>
-                    {[...stMetrics].reverse().map((m, i) => (
-                      <div key={m.id || i} style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
-                        <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px' }}>{m.fecha}</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                          {m.peso != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff' }}>{m.peso}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Peso kg</div></div>}
-                          {m.masa_muscular != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#10B981' }}>{m.masa_muscular}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Músculo kg</div></div>}
-                          {m.masa_grasa != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#F59E0B' }}>{m.masa_grasa}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Grasa kg</div></div>}
-                          {m.cintura != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#A78BFA' }}>{m.cintura}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cintura cm</div></div>}
-                          {m.cadera != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#EC4899' }}>{m.cadera}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Cadera cm</div></div>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
         </div>
       </div>
