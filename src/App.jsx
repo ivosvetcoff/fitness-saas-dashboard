@@ -89,6 +89,16 @@ export default function App() {
   const [profNutritionSaving, setProfNutritionSaving] = useState(false);
   const [profNutritionSaved, setProfNutritionSaved] = useState(false);
 
+  // ===== BIBLIOTECA STATE =====
+  const [biblioteca, setBiblioteca] = useState([]);
+  const [bibliotecaLoading, setBibliotecaLoading] = useState(false);
+  const [bibliotecaFilter, setBibliotecaFilter] = useState('todos');
+  const [bibliotecaSearch, setBibliotecaSearch] = useState('');
+  const [bibliotecaModal, setBibliotecaModal] = useState(null); // null | 'new' | exercise obj
+  const EMPTY_BIBLIO_FORM = { nombre: '', nombre_alternativo: '', grupo_muscular: 'gluteos', subgrupo: '', equipamiento: 'barra', es_unilateral: false, es_bilateral: true, youtube_url: '', notas: '' };
+  const [bibliotecaForm, setBibliotecaForm] = useState(EMPTY_BIBLIO_FORM);
+  const [bibliotecaSaving, setBibliotecaSaving] = useState(false);
+
   // ===== STUDENT PROFILE EDITING =====
   const [stProfileEditing, setStProfileEditing] = useState(false);
   const [stProfileForm, setStProfileForm] = useState({});
@@ -103,6 +113,7 @@ export default function App() {
   const [stActivePhotoMonth, setStActivePhotoMonth] = useState(null);
   const [stPhotoTipo, setStPhotoTipo] = useState('frente');
   const [stShowMetricHistory, setStShowMetricHistory] = useState(false);
+  const [stVideoModal, setStVideoModal] = useState(null); // null | youtube_url string
 
   // ===== LOGIN =====
   const handleLogin = async () => {
@@ -145,6 +156,16 @@ export default function App() {
   }, []);
 
   // ===== PROFESSOR FETCHES =====
+  const fetchBiblioteca = useCallback(async (grupo = 'todos') => {
+    setBibliotecaLoading(true);
+    try {
+      const params = grupo && grupo !== 'todos' ? `?grupo_muscular=${grupo}` : '';
+      const res = await axios.get(`${API_URL}/exercises${params}`);
+      setBiblioteca(res.data || []);
+    } catch (e) { console.error(e); }
+    finally { setBibliotecaLoading(false); }
+  }, []);
+
   const fetchChallenges = useCallback(async () => {
     setChallengesLoading(true);
     try { const r = await axios.get(`${API_URL}/challenges/`); setChallenges(r.data || []); }
@@ -346,8 +367,11 @@ export default function App() {
           return {
             id: ex.exercise_id,
             routine_id: ex.routine_id,
-            name: ex.exercises?.name || '?',
-            muscleGroup: ex.exercises?.muscle_group || '',
+            name: ex.exercises?.nombre || ex.exercises?.name || '?',
+            nombreAlternativo: ex.exercises?.nombre_alternativo || null,
+            muscleGroup: ex.exercises?.grupo_muscular || ex.exercises?.muscle_group || '',
+            esUnilateral: ex.exercises?.es_unilateral || false,
+            youtubeUrl: ex.exercises?.youtube_url || null,
             targetSets: ex.sets || 3,
             targetRepsText: repsPerSet ? repsPerSet.join('-') : (ex.rep_range_min ? `${ex.rep_range_min}-${ex.rep_range_max}` : '10'),
             repsPerSet,
@@ -932,9 +956,22 @@ export default function App() {
                     <button className={`st-exercise-header ${isExp ? 'expanded' : ''}`} onClick={() => { if (done) return; setStExpandedId(isExp ? null : exercise.id); setStNextTarget(null); setStSuccess(false); }}>
                       <div className="st-exercise-left">
                         <div className="st-exercise-icon"><Dumbbell color="#fff" size={20} /></div>
-                        <div><h4>{exercise.name}</h4><p>{done ? `✅ Completado (${exercise.setsCompleted}/${exercise.targetSets})` : exercise.setsCompleted > 0 ? `${exercise.setsCompleted}/${exercise.targetSets} sets` : `${exercise.targetSets} sets de ${exercise.targetRepsText} reps`}</p></div>
+                        <div>
+                          <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            {exercise.name}
+                            {exercise.esUnilateral && <span style={{ fontSize: '0.65rem', background: 'rgba(245,158,11,0.15)', color: '#F59E0B', borderRadius: '6px', padding: '1px 6px', fontWeight: 700, flexShrink: 0 }}>1 pierna / 1 brazo</span>}
+                          </h4>
+                          <p>{done ? `✅ Completado (${exercise.setsCompleted}/${exercise.targetSets})` : exercise.setsCompleted > 0 ? `${exercise.setsCompleted}/${exercise.targetSets} sets` : `${exercise.targetSets} sets de ${exercise.targetRepsText} reps`}</p>
+                        </div>
                       </div>
-                      {done ? <CheckCircle2 color="#10B981" size={20} /> : isExp ? <ChevronUp color="#7C3AED" size={20} /> : <ChevronDown color="#52525B" size={20} />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {exercise.youtubeUrl && (
+                          <button onClick={e => { e.stopPropagation(); setStVideoModal(exercise.youtubeUrl); }} style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: '8px', padding: '4px 8px', color: '#F87171', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+                            ▶ Tutorial
+                          </button>
+                        )}
+                        {done ? <CheckCircle2 color="#10B981" size={20} /> : isExp ? <ChevronUp color="#7C3AED" size={20} /> : <ChevronDown color="#52525B" size={20} />}
+                      </div>
                     </button>
                     {isExp && (
                       <div className="st-exercise-body">
@@ -995,6 +1032,41 @@ export default function App() {
             </div>
           )
           }
+
+          {/* MODAL VIDEO TUTORIAL */}
+          {stVideoModal && (() => {
+            // Extraer video ID de YouTube para embed
+            const getEmbedId = (url) => {
+              const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&\s]+)/);
+              return m ? m[1] : null;
+            };
+            const embedId = getEmbedId(stVideoModal);
+            return (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={() => setStVideoModal(null)}>
+                <div style={{ width: '100%', maxWidth: '560px', background: '#0f0d18', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }} onClick={e => e.stopPropagation()}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px' }}>
+                    <span style={{ fontWeight: 700, fontSize: '1rem' }}>Tutorial</span>
+                    <button onClick={() => setStVideoModal(null)} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={20} /></button>
+                  </div>
+                  {embedId ? (
+                    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                      <iframe
+                        src={`https://www.youtube.com/embed/${embedId}?autoplay=1`}
+                        title="Tutorial"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ padding: '24px', textAlign: 'center' }}>
+                      <a href={stVideoModal} target="_blank" rel="noreferrer" style={{ color: '#A78BFA', fontWeight: 700 }}>Abrir en YouTube</a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* NUTRITION */}
           {
@@ -1403,7 +1475,7 @@ export default function App() {
             )}
           </button>
           <button className="nav-item"><FileText size={20} /><span>Plantillas</span></button>
-          <button className="nav-item"><Dumbbell size={20} /><span>Biblioteca</span></button>
+          <button className={`nav-item ${currentView === 'Biblioteca' ? 'active' : ''}`} onClick={() => { setCurrentView('Biblioteca'); fetchBiblioteca(bibliotecaFilter); }}><Dumbbell size={20} /><span>Biblioteca</span></button>
           <button className={`nav-item ${currentView === 'Retos' ? 'active' : ''}`} onClick={() => { setCurrentView('Retos'); fetchChallenges(); }}><Trophy size={20} /><span>Retos</span></button>
         </nav>
         <div className="sidebar-footer">
@@ -1423,6 +1495,9 @@ export default function App() {
             <span style={{ position: 'absolute', top: '4px', right: 'calc(50% - 18px)', background: '#EF4444', color: '#fff', fontSize: '0.62rem', fontWeight: 800, borderRadius: '99px', padding: '1px 5px', minWidth: '16px', textAlign: 'center' }}>{pendingStudents.length}</span>
           )}
         </button>
+        <button className={`prof-bottom-nav-item ${currentView === 'Biblioteca' ? 'active' : ''}`} onClick={() => { setCurrentView('Biblioteca'); fetchBiblioteca(bibliotecaFilter); }}>
+          <Dumbbell size={22} /><span>Biblioteca</span>
+        </button>
         <button className={`prof-bottom-nav-item ${currentView === 'Retos' ? 'active' : ''}`} onClick={() => { setCurrentView('Retos'); fetchChallenges(); }}>
           <Trophy size={22} /><span>Retos</span>
         </button>
@@ -1432,6 +1507,167 @@ export default function App() {
       </nav>
 
       <main className="main-content">
+
+        {/* BIBLIOTECA VIEW */}
+        {currentView === 'Biblioteca' && (() => {
+          const GRUPO_COLORS = { gluteos: '#7C3AED', femoral: '#5B21B6', cuadriceps: '#2563EB', pantorrilla: '#0891B2', espalda: '#059669', hombro: '#D97706', pecho: '#DC2626', biceps: '#A855F7', triceps: '#6D28D9', core: '#475569', calentamiento: '#64748B', full_body: '#0EA5E9' };
+          const GRUPOS = ['todos','gluteos','femoral','cuadriceps','pantorrilla','espalda','hombro','pecho','biceps','triceps','core','calentamiento'];
+          const EQUIP_LABELS = { barra:'Barra', mancuernas:'Mancuernas', polea:'Polea', máquina:'Máquina', multifuerza:'Multifuerza', peso_corporal:'Peso corporal', banda:'Banda', disco:'Disco' };
+
+          const filtered = biblioteca.filter(ex => {
+            const q = bibliotecaSearch.toLowerCase();
+            const matchNombre = (ex.nombre || '').toLowerCase().includes(q) || (ex.nombre_alternativo || '').toLowerCase().includes(q);
+            const matchGrupo = bibliotecaFilter === 'todos' || ex.grupo_muscular === bibliotecaFilter;
+            return matchNombre && matchGrupo;
+          });
+
+          const openNew = () => { setBibliotecaForm(EMPTY_BIBLIO_FORM); setBibliotecaModal('new'); };
+          const openEdit = (ex) => { setBibliotecaForm({ nombre: ex.nombre || '', nombre_alternativo: ex.nombre_alternativo || '', grupo_muscular: ex.grupo_muscular || 'gluteos', subgrupo: ex.subgrupo || '', equipamiento: ex.equipamiento || 'barra', es_unilateral: ex.es_unilateral || false, es_bilateral: ex.es_bilateral !== false, youtube_url: ex.youtube_url || '', notas: ex.notas || '' }); setBibliotecaModal(ex); };
+          const closeModal = () => setBibliotecaModal(null);
+
+          const handleSave = async () => {
+            setBibliotecaSaving(true);
+            try {
+              if (bibliotecaModal === 'new') {
+                await axios.post(`${API_URL}/exercises/biblioteca`, bibliotecaForm);
+              } else {
+                // update via youtube only if url changed, otherwise PATCH the full exercise
+                await axios.patch(`${API_URL}/exercises/${bibliotecaModal.id}/youtube`, { youtube_url: bibliotecaForm.youtube_url });
+              }
+              closeModal();
+              fetchBiblioteca(bibliotecaFilter);
+            } catch (e) { alert(e.response?.data?.detail || 'Error al guardar'); }
+            finally { setBibliotecaSaving(false); }
+          };
+
+          return (
+            <div className="view-fade-in">
+              <header className="main-header flex-between">
+                <div><h1>Biblioteca de Ejercicios</h1><p className="subtitle">{biblioteca.length} ejercicios cargados</p></div>
+                <button className="btn-primary" onClick={openNew}><Plus size={18} /><span>Nuevo Ejercicio</span></button>
+              </header>
+
+              {/* Buscador */}
+              <div style={{ marginBottom: '16px' }}>
+                <input
+                  className="form-input"
+                  placeholder="Buscar por nombre..."
+                  value={bibliotecaSearch}
+                  onChange={e => setBibliotecaSearch(e.target.value)}
+                  style={{ width: '100%', maxWidth: '360px' }}
+                />
+              </div>
+
+              {/* Filtros por grupo muscular */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+                {GRUPOS.map(g => (
+                  <button
+                    key={g}
+                    onClick={() => { setBibliotecaFilter(g); fetchBiblioteca(g); }}
+                    style={{
+                      padding: '5px 14px', borderRadius: '99px', fontSize: '0.78rem', fontWeight: 600, border: 'none', cursor: 'pointer',
+                      background: bibliotecaFilter === g ? (GRUPO_COLORS[g] || '#7C3AED') : 'rgba(255,255,255,0.06)',
+                      color: bibliotecaFilter === g ? '#fff' : '#A1A1AA',
+                      textTransform: 'capitalize',
+                    }}
+                  >{g === 'todos' ? 'Todos' : g}</button>
+                ))}
+              </div>
+
+              {/* Lista de ejercicios */}
+              {bibliotecaLoading ? (
+                <div style={{ textAlign: 'center', padding: '48px', color: '#71717A' }}><Loader2 size={28} style={{ animation: 'spin 1s linear infinite' }} /></div>
+              ) : filtered.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px', color: '#52525B' }}>
+                  <Dumbbell size={40} style={{ marginBottom: '12px', opacity: 0.4 }} />
+                  <p>No hay ejercicios.{' '}<button style={{ color: '#7C3AED', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }} onClick={() => axios.post(`${API_URL}/exercises/biblioteca/seed`).then(() => fetchBiblioteca())}>Cargar biblioteca AE</button></p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {filtered.map(ex => {
+                    const color = GRUPO_COLORS[ex.grupo_muscular] || '#7C3AED';
+                    return (
+                      <div key={ex.id} style={{ background: '#0f0d18', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                        {/* Nombre */}
+                        <div style={{ flex: 1, minWidth: '180px' }}>
+                          <p style={{ fontWeight: 700, fontSize: '0.95rem', color: '#FAFAFA' }}>{ex.nombre}</p>
+                          {ex.nombre_alternativo && <p style={{ fontSize: '0.78rem', color: '#71717A', marginTop: '2px' }}>{ex.nombre_alternativo}</p>}
+                        </div>
+                        {/* Chips */}
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                          {ex.grupo_muscular && (
+                            <span style={{ background: color + '22', color, border: `1px solid ${color}55`, borderRadius: '8px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700, textTransform: 'capitalize' }}>{ex.grupo_muscular}</span>
+                          )}
+                          {ex.equipamiento && (
+                            <span style={{ background: 'rgba(255,255,255,0.05)', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 600 }}>{EQUIP_LABELS[ex.equipamiento] || ex.equipamiento}</span>
+                          )}
+                          {ex.es_unilateral && (
+                            <span style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '8px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>Unilateral</span>
+                          )}
+                        </div>
+                        {/* Acciones */}
+                        <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+                          {ex.youtube_url && (
+                            <a href={ex.youtube_url} target="_blank" rel="noreferrer" style={{ background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.25)', borderRadius: '8px', padding: '5px 10px', color: '#F87171', fontSize: '0.78rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              ▶ Tutorial
+                            </a>
+                          )}
+                          <button onClick={() => openEdit(ex)} style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '8px', padding: '5px 10px', color: '#A78BFA', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Edit3 size={13} /> Editar
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* MODAL CREAR / EDITAR */}
+              {bibliotecaModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+                  <div style={{ background: '#0f0d18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                      <h2 style={{ fontWeight: 800, fontSize: '1.1rem' }}>{bibliotecaModal === 'new' ? 'Nuevo Ejercicio' : 'Editar Ejercicio'}</h2>
+                      <button onClick={closeModal} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer' }}><X size={20} /></button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      <div><label className="form-label">Nombre *</label><input className="form-input" value={bibliotecaForm.nombre} onChange={e => setBibliotecaForm(f => ({ ...f, nombre: e.target.value }))} placeholder="Ej: Femoral sentada 1 pierna" /></div>
+                      <div><label className="form-label">Nombre alternativo</label><input className="form-input" value={bibliotecaForm.nombre_alternativo} onChange={e => setBibliotecaForm(f => ({ ...f, nombre_alternativo: e.target.value }))} placeholder="Ej: Curl femoral unilateral" /></div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                        <div>
+                          <label className="form-label">Grupo muscular</label>
+                          <select className="form-input" value={bibliotecaForm.grupo_muscular} onChange={e => setBibliotecaForm(f => ({ ...f, grupo_muscular: e.target.value }))}>
+                            {['gluteos','femoral','cuadriceps','pantorrilla','espalda','hombro','pecho','biceps','triceps','core','calentamiento','full_body'].map(g => <option key={g} value={g}>{g}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="form-label">Equipamiento</label>
+                          <select className="form-input" value={bibliotecaForm.equipamiento} onChange={e => setBibliotecaForm(f => ({ ...f, equipamiento: e.target.value }))}>
+                            {['barra','mancuernas','polea','máquina','multifuerza','peso_corporal','banda','disco'].map(e => <option key={e} value={e}>{EQUIP_LABELS[e]}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '24px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem', color: '#A1A1AA' }}>
+                          <input type="checkbox" checked={bibliotecaForm.es_unilateral} onChange={e => setBibliotecaForm(f => ({ ...f, es_unilateral: e.target.checked }))} />
+                          Unilateral (1 pierna / 1 brazo)
+                        </label>
+                      </div>
+                      <div><label className="form-label">URL YouTube tutorial</label><input className="form-input" value={bibliotecaForm.youtube_url} onChange={e => setBibliotecaForm(f => ({ ...f, youtube_url: e.target.value }))} placeholder="https://youtube.com/watch?v=..." /></div>
+                      <div><label className="form-label">Notas técnicas</label><textarea className="form-input" rows={3} value={bibliotecaForm.notas} onChange={e => setBibliotecaForm(f => ({ ...f, notas: e.target.value }))} placeholder="Indicaciones técnicas generales..." style={{ resize: 'vertical' }} /></div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                      <button className="btn-primary" style={{ flex: 1 }} disabled={!bibliotecaForm.nombre || bibliotecaSaving} onClick={handleSave}>
+                        <Save size={16} /><span>{bibliotecaSaving ? 'Guardando...' : 'Guardar'}</span>
+                      </button>
+                      <button onClick={closeModal} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#A1A1AA', cursor: 'pointer', fontWeight: 600 }}>Cancelar</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* RETOS VIEW */}
         {currentView === 'Retos' && (
