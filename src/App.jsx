@@ -95,7 +95,7 @@ export default function App() {
   const [bibliotecaFilter, setBibliotecaFilter] = useState('todos');
   const [bibliotecaSearch, setBibliotecaSearch] = useState('');
   const [bibliotecaModal, setBibliotecaModal] = useState(null); // null | 'new' | exercise obj
-  const EMPTY_BIBLIO_FORM = { nombre: '', nombre_alternativo: '', grupo_muscular: 'gluteos', subgrupo: '', equipamiento: 'barra', es_unilateral: false, es_bilateral: true, youtube_url: '', notas: '' };
+  const EMPTY_BIBLIO_FORM = { nombre: '', nombre_alternativo: '', grupo_muscular: 'gluteos', subgrupo: '', equipamiento: 'barra', es_unilateral: false, es_bilateral: true, youtube_url: '', notas: '', tipo_medicion: 'reps' };
   const [bibliotecaForm, setBibliotecaForm] = useState(EMPTY_BIBLIO_FORM);
   const [bibliotecaSaving, setBibliotecaSaving] = useState(false);
 
@@ -274,7 +274,22 @@ export default function App() {
 
   const createExercise = (exId) => {
     const ex = exerciseLibrary.find(e => e.id === exId);
-    return { id: crypto.randomUUID(), exerciseId: ex?.id || '', exerciseName: ex?.nombre || ex?.name || '?', muscleGroup: ex?.grupo_muscular || ex?.muscle_group || '', sets: 3, progressionModel: 'autoregulation', targetRir: 'rir2', repMin: 8, repMax: 12, repsPerSet: '' };
+    return {
+      id: crypto.randomUUID(),
+      exerciseId: ex?.id || '',
+      exerciseName: ex?.nombre || ex?.name || '?',
+      muscleGroup: ex?.grupo_muscular || ex?.muscle_group || '',
+      tipoMedicion: ex?.tipo_medicion || 'reps',
+      sets: 3,
+      progressionModel: 'autoregulation',
+      targetRir: 'rir2',
+      repMin: 8, repMax: 12,
+      repsPerSet: '',
+      duracionSegundos: '',
+      descansoEntreSeries: 90,
+      tempoSubida: '', tempoPausa: '', tempoBajada: '',
+      showTempo: false,
+    };
   };
 
   const handleStudentClick = (s) => { setSelectedStudent(s); fetchPerformance(s.id); fetchPhotos(s.id); fetchActiveRoutine(s.id); fetchNutritionPlan(s.id); setCurrentView('PerfilAlumno'); setShowAllExercises(false); setSelectedExerciseChart(null); setSelectedPlanDay(null); };
@@ -309,6 +324,11 @@ export default function App() {
             rep_range_max: hasRps ? null : Number(ex.repMax),
             target_rir: rir,
             reps_per_set: hasRps ? rpsNorm : null,
+            duracion_segundos: ex.duracionSegundos ? Number(ex.duracionSegundos) : null,
+            tempo_subida: ex.tempoSubida ? Number(ex.tempoSubida) : null,
+            tempo_pausa: ex.tempoPausa ? Number(ex.tempoPausa) : null,
+            tempo_bajada: ex.tempoBajada ? Number(ex.tempoBajada) : null,
+            descanso_entre_series: ex.descansoEntreSeries ? Number(ex.descansoEntreSeries) : null,
           });
         }
       }
@@ -373,10 +393,16 @@ export default function App() {
             muscleGroup: ex.exercises?.grupo_muscular || ex.exercises?.muscle_group || '',
             esUnilateral: ex.exercises?.es_unilateral || false,
             youtubeUrl: ex.exercises?.youtube_url || null,
+            tipoMedicion: ex.exercises?.tipo_medicion || 'reps',
             targetSets: ex.sets || 3,
             targetRepsText: repsPerSet ? repsPerSet.join('-') : (ex.rep_range_min ? `${ex.rep_range_min}-${ex.rep_range_max}` : '10'),
             repsPerSet,
             targetRir: ex.target_rir ?? 2,
+            duracionSegundos: ex.duracion_segundos || null,
+            tempoSubida: ex.tempo_subida || null,
+            tempoPausa: ex.tempo_pausa || null,
+            tempoBajada: ex.tempo_bajada || null,
+            descansoEntreSeries: ex.descanso_entre_series || null,
             setsCompleted: 0,
             day_number: ex.day_number,
             day_name: ex.day_name || null,
@@ -1006,6 +1032,12 @@ export default function App() {
                             repsRange={exercise.targetRepsText}
                             repsPerSet={exercise.repsPerSet}
                             rirTarget={exercise.targetRir}
+                            tipoMedicion={exercise.tipoMedicion}
+                            duracionSegundos={exercise.duracionSegundos}
+                            tempoSubida={exercise.tempoSubida}
+                            tempoPausa={exercise.tempoPausa}
+                            tempoBajada={exercise.tempoBajada}
+                            descansoEntreSeries={exercise.descansoEntreSeries}
                             onSave={(setsData) => stHandleSave(exercise.id, setsData)}
                             onCancel={() => setStExpandedId(null)}
                           />
@@ -1540,7 +1572,7 @@ export default function App() {
           });
 
           const openNew = () => { setBibliotecaForm(EMPTY_BIBLIO_FORM); setBibliotecaModal('new'); };
-          const openEdit = (ex) => { setBibliotecaForm({ nombre: ex.nombre || '', nombre_alternativo: ex.nombre_alternativo || '', grupo_muscular: ex.grupo_muscular || 'gluteos', subgrupo: ex.subgrupo || '', equipamiento: ex.equipamiento || 'barra', es_unilateral: ex.es_unilateral || false, es_bilateral: ex.es_bilateral !== false, youtube_url: ex.youtube_url || '', notas: ex.notas || '' }); setBibliotecaModal(ex); };
+          const openEdit = (ex) => { setBibliotecaForm({ nombre: ex.nombre || '', nombre_alternativo: ex.nombre_alternativo || '', grupo_muscular: ex.grupo_muscular || 'gluteos', subgrupo: ex.subgrupo || '', equipamiento: ex.equipamiento || 'barra', es_unilateral: ex.es_unilateral || false, es_bilateral: ex.es_bilateral !== false, youtube_url: ex.youtube_url || '', notas: ex.notas || '', tipo_medicion: ex.tipo_medicion || 'reps' }); setBibliotecaModal(ex); };
           const closeModal = () => setBibliotecaModal(null);
 
           const handleSave = async () => {
@@ -1622,6 +1654,12 @@ export default function App() {
                           {ex.es_unilateral && (
                             <span style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '8px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>Unilateral</span>
                           )}
+                          {ex.tipo_medicion === 'tiempo' && (
+                            <span style={{ background: 'rgba(6,182,212,0.12)', color: '#22D3EE', border: '1px solid rgba(6,182,212,0.25)', borderRadius: '8px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>⏱ TIEMPO</span>
+                          )}
+                          {ex.tipo_medicion === 'reps_y_tiempo' && (
+                            <span style={{ background: 'rgba(249,115,22,0.12)', color: '#FB923C', border: '1px solid rgba(249,115,22,0.25)', borderRadius: '8px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>⏱+🔢 MIXTO</span>
+                          )}
                         </div>
                         {/* Acciones */}
                         <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
@@ -1670,6 +1708,14 @@ export default function App() {
                           <input type="checkbox" checked={bibliotecaForm.es_unilateral} onChange={e => setBibliotecaForm(f => ({ ...f, es_unilateral: e.target.checked }))} />
                           Unilateral (1 pierna / 1 brazo)
                         </label>
+                      </div>
+                      <div>
+                        <label className="form-label">Tipo de medición</label>
+                        <select className="form-input" value={bibliotecaForm.tipo_medicion} onChange={e => setBibliotecaForm(f => ({ ...f, tipo_medicion: e.target.value }))}>
+                          <option value="reps">🔢 Reps — Series por repeticiones</option>
+                          <option value="tiempo">⏱ Tiempo — Duración en segundos</option>
+                          <option value="reps_y_tiempo">⏱+🔢 Mixto — Reps con pausa isométrica</option>
+                        </select>
                       </div>
                       <div><label className="form-label">URL YouTube tutorial</label><input className="form-input" value={bibliotecaForm.youtube_url} onChange={e => setBibliotecaForm(f => ({ ...f, youtube_url: e.target.value }))} placeholder="https://youtube.com/watch?v=..." /></div>
                       <div><label className="form-label">Notas técnicas</label><textarea className="form-input" rows={3} value={bibliotecaForm.notas} onChange={e => setBibliotecaForm(f => ({ ...f, notas: e.target.value }))} placeholder="Indicaciones técnicas generales..." style={{ resize: 'vertical' }} /></div>
@@ -2330,56 +2376,115 @@ export default function App() {
                         </button>
                       </div>
 
-                      {/* Config fields */}
-                      <div style={{ padding: '0 16px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
-                        {/* Series */}
-                        <div>
-                          <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Series</p>
-                          <input
-                            type="number"
-                            value={ex.sets}
-                            onChange={e => handleExerciseChange(day.id, ex.id, 'sets', e.target.value)}
-                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.9rem', fontWeight: 600, padding: '7px 10px', textAlign: 'center' }}
-                          />
+                      {/* Config fields — dinámico según tipoMedicion */}
+                      <div style={{ padding: '0 16px 14px' }}>
+                        {/* Fila 1: campos según tipo */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginBottom: '10px' }}>
+                          {/* Series — siempre visible */}
+                          <div>
+                            <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Series</p>
+                            <input type="number" value={ex.sets} onChange={e => handleExerciseChange(day.id, ex.id, 'sets', e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.9rem', fontWeight: 600, padding: '7px 10px', textAlign: 'center' }} />
+                          </div>
+
+                          {/* CASO B — tipo tiempo: solo duración */}
+                          {ex.tipoMedicion === 'tiempo' ? (
+                            <div>
+                              <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#22D3EE', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>⏱ Duración (seg)</p>
+                              <input type="number" placeholder="60" value={ex.duracionSegundos} onChange={e => handleExerciseChange(day.id, ex.id, 'duracionSegundos', e.target.value)} style={{ width: '100%', background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.2)', borderRadius: '8px', color: '#22D3EE', fontSize: '0.9rem', fontWeight: 600, padding: '7px 10px', textAlign: 'center' }} />
+                            </div>
+                          ) : (
+                            <>
+                              {/* Reps — para reps y reps_y_tiempo */}
+                              <div>
+                                <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Reps <span style={{ color: '#3F3F46', fontWeight: 400 }}>(rango o lista)</span></p>
+                                <input type="text" placeholder={`${ex.repMin}-${ex.repMax} ó 20,15,10`} value={ex.repsPerSet} onChange={e => handleExerciseChange(day.id, ex.id, 'repsPerSet', e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', fontFamily: 'monospace', padding: '7px 10px' }} />
+                              </div>
+
+                              {/* CASO C — pausa isométrica solo para reps_y_tiempo */}
+                              {ex.tipoMedicion === 'reps_y_tiempo' && (
+                                <div>
+                                  <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#FB923C', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>⏱ Pausa iso (seg)</p>
+                                  <input type="number" placeholder="2" value={ex.tempoPausa} onChange={e => handleExerciseChange(day.id, ex.id, 'tempoPausa', e.target.value)} style={{ width: '100%', background: 'rgba(249,115,22,0.07)', border: '1px solid rgba(249,115,22,0.2)', borderRadius: '8px', color: '#FB923C', fontSize: '0.9rem', fontWeight: 600, padding: '7px 10px', textAlign: 'center' }} />
+                                </div>
+                              )}
+
+                              {/* RIR */}
+                              <div>
+                                <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>RIR objetivo</p>
+                                <select value={ex.targetRir} onChange={e => handleExerciseChange(day.id, ex.id, 'targetRir', e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', padding: '7px 10px' }}>
+                                  <option value="rir3">RIR 3 — Fácil</option>
+                                  <option value="rir2">RIR 2 — Moderado</option>
+                                  <option value="rir1">RIR 1 — Exigente</option>
+                                  <option value="rir0">RIR 0 — Al fallo</option>
+                                </select>
+                              </div>
+                            </>
+                          )}
+
+                          {/* Descanso entre series — siempre */}
+                          <div>
+                            <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Descanso (seg)</p>
+                            <input type="number" value={ex.descansoEntreSeries} onChange={e => handleExerciseChange(day.id, ex.id, 'descansoEntreSeries', e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', padding: '7px 10px', textAlign: 'center' }} />
+                          </div>
+
+                          {/* Progresión — solo para reps */}
+                          {ex.tipoMedicion !== 'tiempo' && (
+                            <div>
+                              <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Progresión</p>
+                              <select value={ex.progressionModel} onChange={e => handleExerciseChange(day.id, ex.id, 'progressionModel', e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', padding: '7px 10px' }}>
+                                <option value="autoregulation">Auto-regulación</option>
+                                <option value="linear">Lineal</option>
+                                <option value="maintenance">Mantenimiento</option>
+                              </select>
+                            </div>
+                          )}
                         </div>
-                        {/* Reps */}
-                        <div>
-                          <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Reps <span style={{ color: '#3F3F46', fontWeight: 400 }}>(rango o lista)</span></p>
-                          <input
-                            type="text"
-                            placeholder={`${ex.repMin}-${ex.repMax} ó 20,15,10`}
-                            value={ex.repsPerSet}
-                            onChange={e => handleExerciseChange(day.id, ex.id, 'repsPerSet', e.target.value)}
-                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', fontFamily: 'monospace', padding: '7px 10px' }}
-                          />
-                        </div>
-                        {/* RIR */}
-                        <div>
-                          <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>RIR objetivo</p>
-                          <select
-                            value={ex.targetRir}
-                            onChange={e => handleExerciseChange(day.id, ex.id, 'targetRir', e.target.value)}
-                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', padding: '7px 10px' }}
-                          >
-                            <option value="rir3">RIR 3 — Fácil</option>
-                            <option value="rir2">RIR 2 — Moderado</option>
-                            <option value="rir1">RIR 1 — Exigente</option>
-                            <option value="rir0">RIR 0 — Al fallo</option>
-                          </select>
-                        </div>
-                        {/* Progresión */}
-                        <div>
-                          <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Progresión</p>
-                          <select
-                            value={ex.progressionModel}
-                            onChange={e => handleExerciseChange(day.id, ex.id, 'progressionModel', e.target.value)}
-                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', padding: '7px 10px' }}
-                          >
-                            <option value="autoregulation">Auto-regulación</option>
-                            <option value="linear">Lineal</option>
-                            <option value="maintenance">Mantenimiento</option>
-                          </select>
-                        </div>
+
+                        {/* Aviso series cortas */}
+                        {Number(ex.descansoEntreSeries) > 0 && Number(ex.descansoEntreSeries) < 30 && (
+                          <div style={{ background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.2)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.78rem', color: '#FDE047', marginBottom: '10px' }}>
+                            ⚡ Series cortas con {ex.descansoEntreSeries}" de descanso — el alumno verá un temporizador entre series
+                          </div>
+                        )}
+
+                        {/* TEMPO — colapsable, solo para reps */}
+                        {ex.tipoMedicion !== 'tiempo' && (
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => handleExerciseChange(day.id, ex.id, 'showTempo', !ex.showTempo)}
+                              style={{ background: 'none', border: 'none', color: ex.showTempo ? '#A78BFA' : '#52525B', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0', fontFamily: 'inherit' }}
+                            >
+                              ⚙️ Tempo de ejecución {ex.showTempo ? '▲' : '▼'}
+                              {(ex.tempoSubida || ex.tempoPausa || ex.tempoBajada) && !ex.showTempo && (
+                                <span style={{ background: 'rgba(124,58,237,0.15)', color: '#A78BFA', borderRadius: '6px', padding: '1px 8px', fontFamily: 'monospace' }}>
+                                  {ex.tempoSubida || '_'}-{ex.tempoPausa || '_'}-{ex.tempoBajada || '_'}
+                                </span>
+                              )}
+                            </button>
+                            {ex.showTempo && (
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '8px' }}>
+                                <div>
+                                  <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Subida (seg)</p>
+                                  <input type="number" placeholder="—" value={ex.tempoSubida} onChange={e => handleExerciseChange(day.id, ex.id, 'tempoSubida', e.target.value)} style={{ width: '100%', background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '8px', color: '#A78BFA', fontSize: '0.9rem', fontWeight: 600, padding: '6px 8px', textAlign: 'center' }} />
+                                </div>
+                                <div>
+                                  <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Pausa (seg)</p>
+                                  <input type="number" placeholder="—" value={ex.tipoMedicion === 'reps_y_tiempo' ? ex.tempoPausa : ex.tempoPausa} onChange={e => handleExerciseChange(day.id, ex.id, 'tempoPausa', e.target.value)} style={{ width: '100%', background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '8px', color: '#A78BFA', fontSize: '0.9rem', fontWeight: 600, padding: '6px 8px', textAlign: 'center' }} />
+                                </div>
+                                <div>
+                                  <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Bajada (seg)</p>
+                                  <input type="number" placeholder="—" value={ex.tempoBajada} onChange={e => handleExerciseChange(day.id, ex.id, 'tempoBajada', e.target.value)} style={{ width: '100%', background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '8px', color: '#A78BFA', fontSize: '0.9rem', fontWeight: 600, padding: '6px 8px', textAlign: 'center' }} />
+                                </div>
+                                {(ex.tempoSubida || ex.tempoPausa || ex.tempoBajada) && (
+                                  <div style={{ gridColumn: '1/-1', background: 'rgba(124,58,237,0.08)', borderRadius: '6px', padding: '6px 10px', fontSize: '0.8rem', color: '#A78BFA', fontFamily: 'monospace', textAlign: 'center' }}>
+                                    Tempo: {ex.tempoSubida || '_'}"-{ex.tempoPausa || '_'}"-{ex.tempoBajada || '_'}" (subida-pausa-bajada)
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
