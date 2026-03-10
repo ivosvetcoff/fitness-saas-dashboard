@@ -307,6 +307,44 @@ export default function App() {
 
   const handleStudentClick = (s) => { setSelectedStudent(s); fetchPerformance(s.id); fetchPhotos(s.id); fetchActiveRoutine(s.id); fetchNutritionPlan(s.id); setCurrentView('PerfilAlumno'); setShowAllExercises(false); setSelectedExerciseChart(null); setSelectedPlanDay(null); };
   const handleCreateRoutineClick = () => { setRoutineName(''); setDays([{ id: crypto.randomUUID(), dayNumber: 1, dayName: '', exercises: [] }]); setWizardStep(1); setEditingDayId(null); setExSearch(''); setExFilterGrupo('Todos'); setShowExBottomSheet(false); setPendingExConfig(null); setShowAddDayForm(false); setNewDayNameInput(''); setCurrentView('CrearRutina'); };
+
+  const handleEditRoutineClick = async () => {
+    if (!selectedStudent) return;
+    try {
+      const r = await axios.get(`${API_URL}/v2/routines/student/${selectedStudent.id}`);
+      const routine = r.data;
+      if (!routine) { handleCreateRoutineClick(); return; }
+      setRoutineName(routine.nombre || '');
+      const rirKeys = ['rir0','rir1','rir2','rir3'];
+      const mappedDays = (routine.days || []).map((day, di) => ({
+        id: day.id || crypto.randomUUID(),
+        dayNumber: day.numero_dia || day.orden || di + 1,
+        dayName: day.nombre || '',
+        exercises: (day.exercises || []).map(ex => ({
+          id: crypto.randomUUID(),
+          exerciseId: ex.exercise_id,
+          exerciseName: ex.exercise?.nombre || ex.exercise?.name || '?',
+          muscleGroup: ex.exercise?.grupo_muscular || ex.exercise?.muscle_group || '',
+          tipoMedicion: ex.exercise?.tipo_medicion || 'reps',
+          sets: ex.series || 3,
+          repMin: ex.reps_min || 8, repMax: ex.reps_max || 12,
+          repsPerSet: '',
+          duracionSegundos: ex.duracion_segundos || 60,
+          targetRir: rirKeys[ex.rir_objetivo] || 'rir2',
+          tempoSubida: ex.tempo_subida || '', tempoPausa: ex.tempo_pausa || '', tempoBajada: ex.tempo_bajada || '',
+          showTempo: !!(ex.tempo_subida || ex.tempo_pausa || ex.tempo_bajada),
+          descansoEntreSeries: ex.descanso_entre_series || 90,
+          progressionModel: 'autoregulation',
+          tecnicaEspecial: ex.tecnica_especial || '',
+          notasProfesor: ex.notas_profesor || '',
+        })),
+      }));
+      setDays(mappedDays.length ? mappedDays : [{ id: crypto.randomUUID(), dayNumber: 1, dayName: '', exercises: [] }]);
+      setWizardStep(2); setEditingDayId(null); setExSearch(''); setExFilterGrupo('Todos');
+      setShowExBottomSheet(false); setPendingExConfig(null); setShowAddDayForm(false); setNewDayNameInput('');
+      setCurrentView('CrearRutina');
+    } catch { handleCreateRoutineClick(); }
+  };
   const handleAddDay = () => setDays([...days, { id: crypto.randomUUID(), dayNumber: days.length + 1, dayName: '', exercises: [] }]);
   const handleAddExerciseToDay = (dayId) => { if (!selectedExerciseId) return; setDays(days.map(d => d.id === dayId ? { ...d, exercises: [...d.exercises, createExercise(selectedExerciseId)] } : d)); };
   const handleRemoveExercise = (dayId, exId) => setDays(days.map(d => d.id === dayId ? { ...d, exercises: d.exercises.filter(e => e.id !== exId) } : d));
@@ -428,6 +466,8 @@ export default function App() {
             tempoPausa: ex.tempo_pausa || null,
             tempoBajada: ex.tempo_bajada || null,
             descansoEntreSeries: ex.descanso_entre_series || null,
+            tecnicaEspecial: ex.tecnica_especial || null,
+            notasProfesor: ex.notas_profesor || null,
             setsCompleted: 0,
             day_number: ex.day_number,
             day_name: ex.day_name || null,
@@ -1047,6 +1087,26 @@ export default function App() {
                         )}
                         {stNextTarget && (
                           <div className="st-suggestion"><Trophy color="#F59E0B" size={20} /><div><small>Próximo Objetivo</small><strong>{stNextTarget.suggested_weight} kg × {stNextTarget.suggested_reps} reps</strong></div></div>
+                        )}
+                        {/* Tempo del ejercicio */}
+                        {(exercise.tempoSubida || exercise.tempoPausa || exercise.tempoBajada) && (
+                          <div style={{ marginBottom: '12px', padding: '10px 14px', background: 'rgba(124,58,237,0.07)', borderRadius: '10px', border: '1px solid rgba(124,58,237,0.15)', fontSize: '0.82rem', color: '#A78BFA' }}>
+                            ⏱ Tempo: {exercise.tempoSubida || '_'}"-{exercise.tempoPausa || '_'}"-{exercise.tempoBajada || '_'}" <span style={{ color: '#52525B' }}>(subida-pausa-bajada)</span>
+                          </div>
+                        )}
+                        {/* Técnica especial */}
+                        {exercise.tecnicaEspecial && (
+                          <div style={{ marginBottom: '12px', padding: '10px 14px', background: 'rgba(249,115,22,0.07)', borderRadius: '10px', border: '1px solid rgba(249,115,22,0.2)', fontSize: '0.82rem', color: '#FB923C', fontWeight: 600 }}>
+                            ⚡ {exercise.tecnicaEspecial.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                            {(exercise.tecnicaEspecial === 'drop_set' || exercise.tecnicaEspecial === 'myo_reps') && <span style={{ color: '#A16207', fontWeight: 400, marginLeft: '6px' }}>— aplicar en la última serie</span>}
+                          </div>
+                        )}
+                        {/* Nota del profesor */}
+                        {exercise.notasProfesor && (
+                          <div style={{ marginBottom: '12px', padding: '12px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', fontSize: '0.83rem', color: '#A1A1AA', lineHeight: 1.5 }}>
+                            <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: '4px' }}>📝 Nota del profesor</span>
+                            "{exercise.notasProfesor}"
+                          </div>
                         )}
                         {stSuccess && stExpandedId === exercise.id ? (
                           <div className="st-success"><CheckCircle2 color="#10B981" size={48} /><h3>¡Series Guardadas!</h3>{stNextTarget && <span className="st-next-target-badge">Próximo objetivo: {stNextTarget.suggested_weight} kg</span>}</div>
@@ -2205,7 +2265,7 @@ export default function App() {
                               <div key={e.id || i} style={{ background: '#0D0B14', borderRadius: '12px', padding: '14px', border: '1px solid #2a2640' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                                   <div>
-                                    <p style={{ fontWeight: 700, fontSize: '0.9rem', color: '#FAFAFA' }}>{e.exercises?.name}</p>
+                                    <p style={{ fontWeight: 700, fontSize: '0.9rem', color: '#FAFAFA' }}>{e.exercises?.nombre || e.exercises?.name}</p>
                                     <p style={{ fontSize: '0.75rem', color: '#71717A', marginTop: '3px' }}>{sets} series · {repsLabel} · RIR {e.target_rir}</p>
                                   </div>
                                   {lastPerf && (
@@ -2237,7 +2297,10 @@ export default function App() {
                     </>
                   );
                 })() : <div className="empty-state"><Dumbbell size={48} className="empty-icon" /><h3>Sin rutina</h3></div>}
-                <div className="mt-auto" style={{ marginTop: '16px' }}><button className="btn-primary w-full massive-btn" onClick={handleCreateRoutineClick}>+ Asignar Rutina</button></div>
+                <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+                  {activeRoutine && <button style={{ flex: 1, padding: '10px', background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '10px', color: '#A78BFA', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit' }} onClick={handleEditRoutineClick}>✏️ Editar rutina</button>}
+                  <button className="btn-primary massive-btn" style={{ flex: 1 }} onClick={handleCreateRoutineClick}>+ Nueva Rutina</button>
+                </div>
               </section>
               <section className="card flex-col">
                 <div className="card-header"><Flame size={20} className="icon-accent" /><h2>Plan Nutricional</h2></div>
