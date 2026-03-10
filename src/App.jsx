@@ -1509,6 +1509,23 @@ export default function App() {
 
       <main className="main-content">
 
+        {/* STICKY TOP BAR */}
+        <div className="prof-top-bar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 800, color: '#A78BFA', flexShrink: 0 }}>{loggedInUser.name?.charAt(0).toUpperCase()}</div>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#A1A1AA' }}>{currentView === 'ListaAlumnos' ? 'Panel' : currentView === 'PerfilAlumno' && selectedStudent ? selectedStudent.name : currentView === 'Biblioteca' ? 'Biblioteca' : currentView === 'Retos' ? 'Retos' : currentView === 'CrearRutina' ? 'Nueva Rutina' : 'Dashboard'}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {pendingStudents.length > 0 && (
+              <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '20px', padding: '3px 10px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.72rem', fontWeight: 700, color: '#F87171', cursor: 'pointer' }} onClick={() => { setSelectedStudent(null); setCurrentView('ListaAlumnos'); }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block' }} />
+                {pendingStudents.length} pendiente{pendingStudents.length !== 1 ? 's' : ''}
+              </div>
+            )}
+            <div style={{ fontSize: '0.75rem', color: '#52525B', fontWeight: 500 }}>{loggedInUser.name}</div>
+          </div>
+        </div>
+
         {/* BIBLIOTECA VIEW */}
         {currentView === 'Biblioteca' && (() => {
           const GRUPO_COLORS = { gluteos: '#7C3AED', femoral: '#5B21B6', cuadriceps: '#2563EB', pantorrilla: '#0891B2', espalda: '#059669', hombro: '#D97706', pecho: '#DC2626', biceps: '#A855F7', triceps: '#6D28D9', core: '#475569', calentamiento: '#64748B', full_body: '#0EA5E9' };
