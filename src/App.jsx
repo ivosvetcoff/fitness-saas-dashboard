@@ -2162,7 +2162,7 @@ export default function App() {
                       try {
                         await axios.post(`${API_URL}/students/${s.id}/payment`);
                         fetchStudents();
-                      } catch { alert('Error al registrar pago.'); }
+                      } catch (err) { alert('Error al registrar pago: ' + (err.response?.data?.detail || err.message)); }
                     }}
                   >
                     Registrar Pago
@@ -2197,8 +2197,8 @@ export default function App() {
                       try {
                         const r = await axios.post(`${API_URL}/students/${selectedStudent.id}/payment`);
                         fetchStudents();
-                        setSelectedStudent(r.data);
-                      } catch { alert('Error al registrar pago.'); }
+                        setSelectedStudent(r.data.student ?? r.data);
+                      } catch (err) { alert('Error al registrar pago: ' + (err.response?.data?.detail || err.message)); }
                     }}
                   >
                     Registrar Pago
