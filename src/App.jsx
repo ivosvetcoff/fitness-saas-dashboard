@@ -25,6 +25,13 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register' | 'registered'
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regWhatsapp, setRegWhatsapp] = useState('');
+  const [regError, setRegError] = useState('');
+  const [regLoading, setRegLoading] = useState(false);
 
   // ===== PROFESSOR STATE =====
   const [currentView, setCurrentView] = useState('ListaAlumnos');
@@ -138,6 +145,28 @@ export default function App() {
       setLoginError(err.response?.data?.detail || 'Error de conexión');
     } finally {
       setLoginLoading(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!regName.trim() || !regEmail.trim() || !regPassword.trim()) {
+      setRegError('Nombre, email y contraseña son obligatorios.');
+      return;
+    }
+    setRegLoading(true);
+    setRegError('');
+    try {
+      await axios.post(`${API_URL}/auth/student-register`, {
+        name: regName.trim(),
+        email: regEmail.trim(),
+        password: regPassword,
+        whatsapp: regWhatsapp.trim() || null,
+      });
+      setAuthMode('registered');
+    } catch (err) {
+      setRegError(err.response?.data?.detail || 'Error al registrarse. Intentá de nuevo.');
+    } finally {
+      setRegLoading(false);
     }
   };
 
@@ -615,6 +644,56 @@ export default function App() {
   // RENDER: LOGIN
   // ======================================================================
   if (!loggedInUser) {
+    // ── REGISTRO EXITOSO: pantalla de espera ──
+    if (authMode === 'registered') {
+      const copy = (txt) => navigator.clipboard.writeText(txt);
+      const waMsg = encodeURIComponent(`Hola Agustin! Me acabo de registrar en AE Personal Training y quiero empezar un plan. Te mando el comprobante del pago (${PAGO.precio}). 🏋️`);
+      return (
+        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>🎉</div>
+          <h1 style={{ color: '#FAFAFA', fontSize: '1.5rem', fontWeight: 800 }}>¡Cuenta creada!</h1>
+          <p style={{ color: '#A1A1AA', marginTop: '10px', maxWidth: '320px', lineHeight: 1.6, fontSize: '0.92rem' }}>
+            Tu solicitud fue enviada. Agustín va a revisar tu información y cuando apruebe tu ingreso te avisa por WhatsApp.
+          </p>
+
+          {/* Datos bancarios */}
+          <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '16px', padding: '20px 24px', width: '100%', maxWidth: '340px', marginTop: '24px', textAlign: 'left' }}>
+            <div style={{ color: '#A78BFA', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '14px' }}>Datos para el pago</div>
+            <div style={{ color: '#71717A', fontSize: '0.75rem', marginBottom: '8px' }}>Cuota mensual</div>
+            <div style={{ color: '#FAFAFA', fontSize: '1.8rem', fontWeight: 900, marginBottom: '16px' }}>{PAGO.precio}</div>
+            {[
+              { label: 'Alias', value: PAGO.alias },
+              { label: 'CBU', value: PAGO.cbu },
+              { label: 'Titular', value: PAGO.titular },
+              { label: 'Banco', value: PAGO.banco },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #27272A' }}>
+                <div>
+                  <div style={{ color: '#71717A', fontSize: '0.72rem', fontWeight: 600 }}>{label}</div>
+                  <div style={{ color: '#FAFAFA', fontSize: '0.88rem', fontWeight: 600, marginTop: '2px' }}>{value}</div>
+                </div>
+                <button onClick={() => copy(value)} style={{ background: '#27272A', border: 'none', color: '#A1A1AA', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', fontSize: '0.75rem' }}>
+                  Copiar
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Botón WA */}
+          <a
+            href={`https://wa.me/${PAGO.waNro}?text=${waMsg}`}
+            target="_blank" rel="noopener"
+            style={{ display: 'block', marginTop: '20px', background: '#25D366', color: '#fff', padding: '14px 28px', borderRadius: '12px', fontWeight: 700, textDecoration: 'none', fontSize: '0.95rem', width: '100%', maxWidth: '340px', textAlign: 'center' }}
+          >
+            Enviar comprobante por WhatsApp
+          </a>
+          <button onClick={() => setAuthMode('login')} style={{ marginTop: '14px', background: 'transparent', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.82rem' }}>
+            Ya tengo cuenta — Iniciar sesión
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="login-page">
         <div className="login-card">
@@ -623,20 +702,53 @@ export default function App() {
             <h1>AE Personal Training</h1>
             <p>Plataforma de Entrenamiento Inteligente</p>
           </div>
-          <div className="login-form">
-            <div className="input-group">
-              <label>Email</label>
-              <input type="email" placeholder="tu@email.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+
+          {authMode === 'login' ? (
+            <div className="login-form">
+              <div className="input-group">
+                <label>Email</label>
+                <input type="email" placeholder="tu@email.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+              </div>
+              <div className="input-group">
+                <label>Contraseña</label>
+                <input type="password" placeholder="••••••••" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+              </div>
+              {loginError && <div className="login-error">{loginError}</div>}
+              <button className="btn-primary w-full" onClick={handleLogin} disabled={loginLoading} style={{ marginTop: '8px' }}>
+                {loginLoading ? <Loader2 size={20} className="spin-icon" /> : <><LogOut size={18} /> <span>Ingresar</span></>}
+              </button>
+              <button onClick={() => { setAuthMode('register'); setLoginError(''); }} style={{ marginTop: '14px', background: 'transparent', border: 'none', color: '#A78BFA', cursor: 'pointer', fontSize: '0.85rem', width: '100%' }}>
+                ¿Sos nuevo? Crear mi cuenta
+              </button>
             </div>
-            <div className="input-group">
-              <label>Contraseña</label>
-              <input type="password" placeholder="••••••••" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+          ) : (
+            <div className="login-form">
+              <div className="input-group">
+                <label>Nombre completo</label>
+                <input type="text" placeholder="Juan Pérez" value={regName} onChange={e => setRegName(e.target.value)} />
+              </div>
+              <div className="input-group">
+                <label>Email</label>
+                <input type="email" placeholder="tu@email.com" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
+              </div>
+              <div className="input-group">
+                <label>Contraseña</label>
+                <input type="password" placeholder="Mínimo 6 caracteres" value={regPassword} onChange={e => setRegPassword(e.target.value)} />
+              </div>
+              <div className="input-group">
+                <label>WhatsApp <span style={{ color: '#52525B', fontWeight: 400 }}>(opcional)</span></label>
+                <input type="tel" placeholder="+54 9 379 000 0000" value={regWhatsapp} onChange={e => setRegWhatsapp(e.target.value)} />
+              </div>
+              {regError && <div className="login-error">{regError}</div>}
+              <button className="btn-primary w-full" onClick={handleRegister} disabled={regLoading} style={{ marginTop: '8px' }}>
+                {regLoading ? <Loader2 size={20} className="spin-icon" /> : 'Crear mi cuenta'}
+              </button>
+              <button onClick={() => { setAuthMode('login'); setRegError(''); }} style={{ marginTop: '14px', background: 'transparent', border: 'none', color: '#52525B', cursor: 'pointer', fontSize: '0.85rem', width: '100%' }}>
+                ← Volver al inicio de sesión
+              </button>
             </div>
-            {loginError && <div className="login-error">{loginError}</div>}
-            <button className="btn-primary w-full" onClick={handleLogin} disabled={loginLoading} style={{ marginTop: '8px' }}>
-              {loginLoading ? <Loader2 size={20} className="spin-icon" /> : <><LogOut size={18} /> <span>Ingresar</span></>}
-            </button>
-          </div>
+          )}
+
           <p className="login-footer">Agustin Elizondo Team © 2026</p>
         </div>
       </div>
