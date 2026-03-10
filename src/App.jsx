@@ -1640,7 +1640,7 @@ export default function App() {
                       <div key={ex.id} style={{ background: '#0f0d18', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
                         {/* Nombre */}
                         <div style={{ flex: 1, minWidth: '180px' }}>
-                          <p style={{ fontWeight: 700, fontSize: '0.95rem', color: '#FAFAFA' }}>{ex.nombre}</p>
+                          <p style={{ fontWeight: 700, fontSize: '0.95rem', color: '#FAFAFA' }}>{ex.nombre || ex.name}</p>
                           {ex.nombre_alternativo && <p style={{ fontSize: '0.78rem', color: '#71717A', marginTop: '2px' }}>{ex.nombre_alternativo}</p>}
                         </div>
                         {/* Chips */}
