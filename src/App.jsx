@@ -274,7 +274,7 @@ export default function App() {
 
   const createExercise = (exId) => {
     const ex = exerciseLibrary.find(e => e.id === exId);
-    return { id: crypto.randomUUID(), exerciseId: ex?.id || '', exerciseName: ex?.name || '?', muscleGroup: ex?.muscle_group || '', sets: 3, progressionModel: 'autoregulation', targetRir: 'rir2', repMin: 8, repMax: 12, repsPerSet: '' };
+    return { id: crypto.randomUUID(), exerciseId: ex?.id || '', exerciseName: ex?.nombre || ex?.name || '?', muscleGroup: ex?.grupo_muscular || ex?.muscle_group || '', sets: 3, progressionModel: 'autoregulation', targetRir: 'rir2', repMin: 8, repMax: 12, repsPerSet: '' };
   };
 
   const handleStudentClick = (s) => { setSelectedStudent(s); fetchPerformance(s.id); fetchPhotos(s.id); fetchActiveRoutine(s.id); fetchNutritionPlan(s.id); setCurrentView('PerfilAlumno'); setShowAllExercises(false); setSelectedExerciseChart(null); setSelectedPlanDay(null); };
@@ -2229,74 +2229,187 @@ export default function App() {
 
         {/* CREATE ROUTINE */}
         {currentView === 'CrearRutina' && selectedStudent && (
-          <div className="view-fade-in builder-view">
-            <div className="flex-between mb-6">
-              <button className="btn-back no-margin" onClick={() => setCurrentView('PerfilAlumno')}><ChevronLeft size={20} /> Atrás</button>
-              <button className="btn-primary" onClick={handleSaveRoutine}><Save size={18} /><span>Guardar</span></button>
-            </div>
-            <header className="builder-header mb-6">
-              <h1>Rutina de <span className="text-accent">{selectedStudent.name}</span></h1>
-              <input className="routine-title-input w-full" placeholder="Nombre de la Rutina" value={routineName} onChange={e => setRoutineName(e.target.value)} />
-            </header>
-            <div className="card add-exercise-card mb-6">
-              <div className="flex-col gap-sm">
-                <label>Biblioteca de Ejercicios</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <select style={{ flex: 1 }} value={selectedExerciseId} onChange={e => setSelectedExerciseId(e.target.value)}>
-                    {exerciseLibrary.map(ex => <option key={ex.id} value={ex.id}>{ex.name} — {ex.muscle_group}</option>)}
-                  </select>
+          <div className="view-fade-in" style={{ maxWidth: '780px', margin: '0 auto', paddingBottom: '80px' }}>
+
+            {/* STITCH-STYLE HEADER */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                <button
+                  onClick={() => setCurrentView('PerfilAlumno')}
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, color: '#A1A1AA' }}
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: '0.68rem', fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Editor de Rutina</p>
+                  <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FAFAFA', margin: 0, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Asignar Rutina a {selectedStudent.name}</h1>
                 </div>
               </div>
+              <button className="btn-primary" onClick={handleSaveRoutine} style={{ flexShrink: 0, padding: '0.6rem 1.25rem', borderRadius: '0.625rem' }}>
+                <Save size={16} /><span>Guardar Todo</span>
+              </button>
             </div>
-            {days.map(day => (
-              <div key={day.id} className="card mb-6" style={{ padding: '20px' }}>
-                <div className="flex-between mb-4">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                    <h2 style={{ minWidth: 'fit-content' }}>Día {day.dayNumber}</h2>
+
+            {/* ROUTINE NAME INPUT */}
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{ display: 'block', fontSize: '0.68rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Nombre de la Rutina</label>
+              <input
+                className="form-input"
+                placeholder="Ej: Rutina Fuerza Empuje/Tirón"
+                value={routineName}
+                onChange={e => setRoutineName(e.target.value)}
+                style={{ fontSize: '1rem', fontWeight: 600, background: 'rgba(18,18,26,0.8)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 14px' }}
+              />
+            </div>
+
+            {/* EXERCISE SELECTOR */}
+            <div style={{ background: 'rgba(18,18,26,0.6)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px 16px', marginBottom: '28px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Seleccionar Ejercicio</p>
+                <select
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.875rem', padding: '8px 10px' }}
+                  value={selectedExerciseId}
+                  onChange={e => setSelectedExerciseId(e.target.value)}
+                >
+                  {exerciseLibrary.map(ex => (
+                    <option key={ex.id} value={ex.id}>
+                      {ex.nombre || ex.name} {ex.grupo_muscular || ex.muscle_group ? `— ${ex.grupo_muscular || ex.muscle_group}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: '#52525B', flexShrink: 0, paddingTop: '18px' }}>↓ Usá el botón de cada día</p>
+            </div>
+
+            {/* DAYS */}
+            {days.map((day, dayIdx) => (
+              <section key={day.id} style={{ marginBottom: '28px' }}>
+                {/* Day header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', color: '#A78BFA', flexShrink: 0 }}>
+                    {day.dayNumber}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Nombre del Día</label>
                     <input
-                      className="form-input"
-                      style={{ fontSize: '0.85rem', padding: '6px 10px' }}
-                      placeholder="Nombre del día (ej: Pecho + Hombros + Bíceps)"
+                      style={{ width: '100%', background: 'rgba(18,18,26,0.8)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.9rem', fontWeight: 600, padding: '7px 12px' }}
+                      placeholder={`Ej: Pecho y Tríceps`}
                       value={day.dayName || ''}
                       onChange={e => handleDayNameChange(day.id, e.target.value)}
                     />
                   </div>
-                  <button className="btn-secondary" style={{ marginLeft: '8px' }} onClick={() => handleAddExerciseToDay(day.id)}><Plus size={18} /> Agregar</button>
+                  {days.length > 1 && (
+                    <button
+                      onClick={() => setDays(days.filter(d => d.id !== day.id))}
+                      style={{ background: 'none', border: 'none', color: '#52525B', cursor: 'pointer', padding: '6px', borderRadius: '8px', transition: 'color 0.2s', flexShrink: 0 }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#F87171'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#52525B'}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
                 </div>
-                {day.exercises.map((ex, i) => (
-                  <div key={ex.id} className="exercise-row" style={{ marginTop: '10px' }}>
-                    <div className="exercise-row-header">
-                      <div className="exercise-number">{i + 1}</div>
-                      <h3 className="exercise-name-display">{ex.exerciseName}</h3>
-                      <button className="btn-icon-danger" style={{ marginLeft: 'auto' }} onClick={() => handleRemoveExercise(day.id, ex.id)}><Trash2 size={20} /></button>
-                    </div>
-                    <div className="exercise-inputs-grid">
-                      <div className="input-group"><label>Progresión</label><select value={ex.progressionModel} onChange={e => handleExerciseChange(day.id, ex.id, 'progressionModel', e.target.value)}><option value="autoregulation">Auto-regulación</option><option value="linear">Lineal</option><option value="maintenance">Mantenimiento</option></select></div>
-                      <div className="input-group"><label>Series</label><input type="number" value={ex.sets} onChange={e => handleExerciseChange(day.id, ex.id, 'sets', e.target.value)} /></div>
-                      <div className="input-group">
-                        <label>Reps por serie <span style={{ color: '#52525B', fontWeight: 400, fontSize: '0.75rem' }}>(o rango)</span></label>
-                        <input
-                          type="text"
-                          placeholder={`${ex.repMin}-${ex.repMax} o 20,15,10,8`}
-                          value={ex.repsPerSet}
-                          onChange={e => handleExerciseChange(day.id, ex.id, 'repsPerSet', e.target.value)}
-                          style={{ fontFamily: 'monospace', fontSize: '0.88rem' }}
-                        />
-                        {!ex.repsPerSet && (
-                          <div className="input-double" style={{ marginTop: '6px' }}>
-                            <input type="number" value={ex.repMin} onChange={e => handleExerciseChange(day.id, ex.id, 'repMin', e.target.value)} />
-                            <span className="separator">-</span>
-                            <input type="number" value={ex.repMax} onChange={e => handleExerciseChange(day.id, ex.id, 'repMax', e.target.value)} />
-                          </div>
-                        )}
+
+                {/* Exercise cards */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {day.exercises.map((ex, i) => (
+                    <div key={ex.id} style={{ background: 'rgba(18,18,26,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden' }}>
+                      {/* Exercise name row */}
+                      <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                        <div>
+                          <h3 style={{ fontWeight: 800, fontSize: '1rem', color: '#FAFAFA', margin: 0, lineHeight: 1.2 }}>{ex.exerciseName}</h3>
+                          <p style={{ fontSize: '0.78rem', color: '#71717A', marginTop: '3px' }}>{ex.muscleGroup || ''}</p>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveExercise(day.id, ex.id)}
+                          style={{ background: 'none', border: 'none', color: '#52525B', cursor: 'pointer', padding: '4px', borderRadius: '6px', flexShrink: 0 }}
+                          onMouseEnter={e => e.currentTarget.style.color = '#F87171'}
+                          onMouseLeave={e => e.currentTarget.style.color = '#52525B'}
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
-                      <div className="input-group"><label>RIR</label><select value={ex.targetRir} onChange={e => handleExerciseChange(day.id, ex.id, 'targetRir', e.target.value)}><option value="rir3">RIR 3 — Fácil</option><option value="rir2">RIR 2 — Moderado</option><option value="rir1">RIR 1 — Exigente</option><option value="rir0">RIR 0 — Al fallo</option></select></div>
+
+                      {/* Config fields */}
+                      <div style={{ padding: '0 16px 14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+                        {/* Series */}
+                        <div>
+                          <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Series</p>
+                          <input
+                            type="number"
+                            value={ex.sets}
+                            onChange={e => handleExerciseChange(day.id, ex.id, 'sets', e.target.value)}
+                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.9rem', fontWeight: 600, padding: '7px 10px', textAlign: 'center' }}
+                          />
+                        </div>
+                        {/* Reps */}
+                        <div>
+                          <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Reps <span style={{ color: '#3F3F46', fontWeight: 400 }}>(rango o lista)</span></p>
+                          <input
+                            type="text"
+                            placeholder={`${ex.repMin}-${ex.repMax} ó 20,15,10`}
+                            value={ex.repsPerSet}
+                            onChange={e => handleExerciseChange(day.id, ex.id, 'repsPerSet', e.target.value)}
+                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', fontFamily: 'monospace', padding: '7px 10px' }}
+                          />
+                        </div>
+                        {/* RIR */}
+                        <div>
+                          <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>RIR objetivo</p>
+                          <select
+                            value={ex.targetRir}
+                            onChange={e => handleExerciseChange(day.id, ex.id, 'targetRir', e.target.value)}
+                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', padding: '7px 10px' }}
+                          >
+                            <option value="rir3">RIR 3 — Fácil</option>
+                            <option value="rir2">RIR 2 — Moderado</option>
+                            <option value="rir1">RIR 1 — Exigente</option>
+                            <option value="rir0">RIR 0 — Al fallo</option>
+                          </select>
+                        </div>
+                        {/* Progresión */}
+                        <div>
+                          <p style={{ fontSize: '0.6rem', fontWeight: 700, color: '#52525B', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '5px' }}>Progresión</p>
+                          <select
+                            value={ex.progressionModel}
+                            onChange={e => handleExerciseChange(day.id, ex.id, 'progressionModel', e.target.value)}
+                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#FAFAFA', fontSize: '0.85rem', padding: '7px 10px' }}
+                          >
+                            <option value="autoregulation">Auto-regulación</option>
+                            <option value="linear">Lineal</option>
+                            <option value="maintenance">Mantenimiento</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+
+                  {/* Add exercise to this day */}
+                  <button
+                    onClick={() => handleAddExerciseToDay(day.id)}
+                    style={{ width: '100%', padding: '16px', background: 'transparent', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: '14px', color: '#71717A', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)'; e.currentTarget.style.color = '#A78BFA'; e.currentTarget.style.background = 'rgba(124,58,237,0.05)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#71717A'; e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <Plus size={18} color="#7C3AED" />
+                    Añadir Ejercicio al Día {day.dayNumber}
+                  </button>
+                </div>
+              </section>
             ))}
-            <button className="btn-secondary w-full" onClick={handleAddDay} style={{ padding: '15px' }}><Plus size={20} /> + Nuevo Día</button>
+
+            {/* Add new day */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+              <button
+                onClick={handleAddDay}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(18,18,26,0.8)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '12px', color: '#FAFAFA', fontWeight: 700, fontSize: '0.9rem', padding: '12px 24px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.4)'; e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.background = 'rgba(18,18,26,0.8)'; }}
+              >
+                <Plus size={18} color="#7C3AED" />
+                Añadir Nuevo Día
+              </button>
+            </div>
           </div>
         )}
       </main>
