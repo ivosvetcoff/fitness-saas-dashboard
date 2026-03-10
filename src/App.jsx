@@ -131,6 +131,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    if (!window.confirm('¿Estás seguro que querés cerrar sesión?')) return;
     setLoggedInUser(null);
     localStorage.removeItem('fitpro_user');
     window.location.href = '/elizondo-fitness.html';
