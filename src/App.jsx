@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, LogOut, Home, Utensils, Loader2, Flame, Trophy, CheckCircle2, TrendingUp, TrendingDown, Minus, User, ChevronDown, ChevronUp, BarChart2, X, Settings, Bell, Edit3 } from 'lucide-react';
+import { Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, LogOut, Home, Utensils, Loader2, Flame, Trophy, CheckCircle2, TrendingUp, TrendingDown, Minus, User, ChevronDown, ChevronUp, BarChart2, X, Settings, Bell, Edit3, CreditCard } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 import axios from 'axios';
 import SeriesInput from './components/SeriesInput';
@@ -1005,26 +1005,6 @@ export default function App() {
                 );
               })()}
 
-              {/* AVISO PAGO */}
-              {(() => {
-                const now = new Date();
-                const day = now.getDate();
-                if (day <= 5) return null; // solo mostrar si está fuera del período
-                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                const daysLeft = lastDay - day;
-                const propPct = Math.round((daysLeft / lastDay) * 100);
-                const totalPct = Math.round(propPct * 1.1);
-                return (
-                  <div style={{ marginBottom: '20px', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '14px', padding: '12px 14px', fontSize: '0.82rem', lineHeight: 1.6 }}>
-                    <div style={{ fontWeight: 700, marginBottom: '4px', color: '#FDE68A' }}>⚠️ Cuota mensual</div>
-                    <div style={{ color: '#FCA5A5' }}>
-                      Hoy es día {day} — te quedan <strong>{daysLeft} días</strong> ({propPct}% + 10% recargo).<br />
-                      <strong>Total a pagar: ~{totalPct}% de tu cuota mensual.</strong>
-                    </div>
-                  </div>
-                );
-              })()}
-
               {/* TODAY'S WORKOUT CARD */}
               <div style={{ marginBottom: '28px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
@@ -1499,6 +1479,46 @@ export default function App() {
                     <button style={{ background: 'rgba(124,58,237,0.1)', border: 'none', color: '#A78BFA', borderRadius: '10px', padding: '8px 16px', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
                       Gestionar
                     </button>
+                  </div>
+                </div>
+
+                {/* Mi Cuota */}
+                <div style={{ marginBottom: '32px' }}>
+                  <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '12px', marginLeft: '4px' }}>Mi Cuota</h3>
+                  <div style={{
+                    background: subStatus === 'blocked' ? 'rgba(127,29,29,0.25)' : subStatus === 'grace' ? 'rgba(120,53,15,0.25)' : 'rgba(5,46,22,0.25)',
+                    border: `1px solid ${subStatus === 'blocked' ? '#7F1D1D' : subStatus === 'grace' ? '#92400E' : '#166534'}`,
+                    borderRadius: '14px', padding: '16px 18px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <CreditCard size={20} color={subStatus === 'blocked' ? '#F87171' : subStatus === 'grace' ? '#FBBF24' : '#4ADE80'} />
+                        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#FAFAFA' }}>Cuota mensual</span>
+                      </div>
+                      <span style={{
+                        fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px',
+                        background: subStatus === 'blocked' ? 'rgba(239,68,68,0.15)' : subStatus === 'grace' ? 'rgba(251,191,36,0.15)' : 'rgba(74,222,128,0.15)',
+                        color: subStatus === 'blocked' ? '#F87171' : subStatus === 'grace' ? '#FBBF24' : '#4ADE80',
+                      }}>
+                        {subStatus === 'blocked' ? 'Vencida' : subStatus === 'grace' ? 'Por vencer' : 'Al día'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: '#A1A1AA', lineHeight: 1.6 }}>
+                      {subStatus === 'blocked'
+                        ? 'Tu suscripción venció. Contactá a tu entrenador para renovar.'
+                        : subStatus === 'grace'
+                        ? `Te quedan ${subDays} día${subDays !== 1 ? 's' : ''} antes de quedar bloqueado.`
+                        : `Próximo vencimiento en ${subDays} día${subDays !== 1 ? 's' : ''}.`}
+                    </div>
+                    {(subStatus === 'blocked' || subStatus === 'grace') && (
+                      <a
+                        href={`https://wa.me/${PAGO.waNro}?text=${encodeURIComponent(`Hola Agustin! Soy ${loggedInUser.name}. Te mando el comprobante de mi cuota (${PAGO.precio}).`)}`}
+                        target="_blank" rel="noreferrer"
+                        style={{ display: 'inline-block', marginTop: '12px', background: '#25D366', color: '#fff', fontWeight: 700, fontSize: '0.82rem', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none' }}
+                      >
+                        Enviar comprobante por WhatsApp
+                      </a>
+                    )}
                   </div>
                 </div>
 
