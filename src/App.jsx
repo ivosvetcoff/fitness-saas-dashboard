@@ -30,6 +30,16 @@ export default function App() {
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regWhatsapp, setRegWhatsapp] = useState('');
+  const [regObjetivo, setRegObjetivo] = useState('');
+  const [regNivel, setRegNivel] = useState('');
+  const [regDias, setRegDias] = useState('');
+  const [regLugar, setRegLugar] = useState('');
+  const [regPeso, setRegPeso] = useState('');
+  const [regAltura, setRegAltura] = useState('');
+  const [regLesion, setRegLesion] = useState(false);
+  const [regDescLesion, setRegDescLesion] = useState('');
+  const [regAlimentacion, setRegAlimentacion] = useState('');
+  const [regRestricciones, setRegRestricciones] = useState('');
   const [regError, setRegError] = useState('');
   const [regLoading, setRegLoading] = useState(false);
 
@@ -161,6 +171,16 @@ export default function App() {
         email: regEmail.trim(),
         password: regPassword,
         whatsapp: regWhatsapp.trim() || null,
+        objetivo: regObjetivo || null,
+        nivel_experiencia: regNivel || null,
+        dias_disponibles: regDias ? parseInt(regDias) : null,
+        lugar_entrenamiento: regLugar || null,
+        weight_kg: regPeso ? parseFloat(regPeso) : null,
+        height_cm: regAltura ? parseFloat(regAltura) : null,
+        tiene_lesion: regLesion,
+        descripcion_lesion: regLesion ? regDescLesion.trim() || null : null,
+        alimentacion_actual: regAlimentacion.trim() || null,
+        restricciones_alimentarias: regRestricciones.trim() || null,
       });
       setAuthMode('registered');
     } catch (err) {
@@ -738,6 +758,74 @@ export default function App() {
               <div className="input-group">
                 <label>WhatsApp <span style={{ color: '#52525B', fontWeight: 400 }}>(opcional)</span></label>
                 <input type="tel" placeholder="+54 9 379 000 0000" value={regWhatsapp} onChange={e => setRegWhatsapp(e.target.value)} />
+              </div>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '16px', marginTop: '4px' }}>
+                <p style={{ fontSize: '0.75rem', color: '#71717A', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>Info para tu plan</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                    <label>Objetivo</label>
+                    <select value={regObjetivo} onChange={e => setRegObjetivo(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: regObjetivo ? '#FAFAFA' : '#52525B', padding: '10px 14px', fontSize: '0.9rem', fontFamily: 'inherit' }}>
+                      <option value="">Seleccioná tu objetivo</option>
+                      <option value="Hipertrofia">Hipertrofia (ganar músculo)</option>
+                      <option value="Fuerza">Fuerza</option>
+                      <option value="Pérdida de grasa">Pérdida de grasa</option>
+                      <option value="Resistencia">Resistencia</option>
+                      <option value="Bienestar general">Bienestar general</option>
+                    </select>
+                  </div>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                    <label>Nivel de experiencia</label>
+                    <select value={regNivel} onChange={e => setRegNivel(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: regNivel ? '#FAFAFA' : '#52525B', padding: '10px 14px', fontSize: '0.9rem', fontFamily: 'inherit' }}>
+                      <option value="">Seleccioná tu nivel</option>
+                      <option value="Principiante">Principiante (menos de 1 año)</option>
+                      <option value="Intermedio">Intermedio (1–3 años)</option>
+                      <option value="Avanzado">Avanzado (más de 3 años)</option>
+                    </select>
+                  </div>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                    <label>Lugar de entrenamiento</label>
+                    <select value={regLugar} onChange={e => setRegLugar(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: regLugar ? '#FAFAFA' : '#52525B', padding: '10px 14px', fontSize: '0.9rem', fontFamily: 'inherit' }}>
+                      <option value="">¿Dónde entrenás?</option>
+                      <option value="Gimnasio">Gimnasio</option>
+                      <option value="Casa">Casa</option>
+                      <option value="Al aire libre">Al aire libre</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <div className="input-group" style={{ marginBottom: 0, flex: 1 }}>
+                      <label>Días/semana</label>
+                      <input type="number" min="1" max="7" placeholder="3" value={regDias} onChange={e => setRegDias(e.target.value)} />
+                    </div>
+                    <div className="input-group" style={{ marginBottom: 0, flex: 1 }}>
+                      <label>Peso (kg)</label>
+                      <input type="number" placeholder="75" value={regPeso} onChange={e => setRegPeso(e.target.value)} />
+                    </div>
+                    <div className="input-group" style={{ marginBottom: 0, flex: 1 }}>
+                      <label>Altura (cm)</label>
+                      <input type="number" placeholder="175" value={regAltura} onChange={e => setRegAltura(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                    <label>Alimentación actual <span style={{ color: '#52525B', fontWeight: 400 }}>(opcional)</span></label>
+                    <input type="text" placeholder="Ej: como bastante proteína, poca grasa..." value={regAlimentacion} onChange={e => setRegAlimentacion(e.target.value)} />
+                  </div>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                    <label>Restricciones alimentarias <span style={{ color: '#52525B', fontWeight: 400 }}>(opcional)</span></label>
+                    <input type="text" placeholder="Ej: sin gluten, vegetariano..." value={regRestricciones} onChange={e => setRegRestricciones(e.target.value)} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }} onClick={() => setRegLesion(v => !v)}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: `2px solid ${regLesion ? '#7C3AED' : '#3F3F46'}`, background: regLesion ? '#7C3AED' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
+                      {regLesion && <span style={{ color: '#fff', fontSize: '12px', fontWeight: 800 }}>✓</span>}
+                    </div>
+                    <span style={{ fontSize: '0.88rem', color: '#FAFAFA' }}>Tengo una lesión o limitación física</span>
+                  </div>
+                  {regLesion && (
+                    <div className="input-group" style={{ marginBottom: 0 }}>
+                      <label>Describí tu lesión</label>
+                      <input type="text" placeholder="Ej: dolor lumbar crónico, lesión de rodilla..." value={regDescLesion} onChange={e => setRegDescLesion(e.target.value)} />
+                    </div>
+                  )}
+                </div>
               </div>
               {regError && <div className="login-error">{regError}</div>}
               <button className="btn-primary w-full" onClick={handleRegister} disabled={regLoading} style={{ marginTop: '8px' }}>
@@ -2222,6 +2310,34 @@ export default function App() {
               </div>
             </header>
             <div className="profile-grid">
+              <section className="card flex-col" style={{ gridColumn: '1 / -1' }}>
+                <div className="card-header" style={{ marginBottom: '16px' }}>
+                  <User size={20} className="icon-accent" /><h2>Información del alumno</h2>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
+                  {[
+                    { label: 'Email', value: selectedStudent.email },
+                    { label: 'WhatsApp', value: selectedStudent.whatsapp, link: selectedStudent.whatsapp ? `https://wa.me/${selectedStudent.whatsapp.replace(/\D/g,'')}` : null },
+                    { label: 'Objetivo', value: selectedStudent.goal || selectedStudent.objetivo },
+                    { label: 'Nivel', value: selectedStudent.nivel_experiencia },
+                    { label: 'Días/semana', value: selectedStudent.dias_disponibles ? `${selectedStudent.dias_disponibles} días` : null },
+                    { label: 'Lugar', value: selectedStudent.lugar_entrenamiento },
+                    { label: 'Peso', value: selectedStudent.weight_kg ? `${selectedStudent.weight_kg} kg` : null },
+                    { label: 'Altura', value: selectedStudent.height_cm ? `${selectedStudent.height_cm} cm` : null },
+                    { label: 'Lesión', value: selectedStudent.tiene_lesion ? (selectedStudent.descripcion_lesion || 'Sí') : 'No' },
+                    { label: 'Alimentación', value: selectedStudent.alimentacion_actual },
+                    { label: 'Restricciones', value: selectedStudent.restricciones_alimentarias },
+                  ].filter(f => f.value).map(f => (
+                    <div key={f.label} style={{ background: '#0D0B14', borderRadius: '10px', padding: '10px 14px', border: '1px solid #2a2640' }}>
+                      <p style={{ fontSize: '0.7rem', color: '#52525B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{f.label}</p>
+                      {f.link
+                        ? <a href={f.link} target="_blank" rel="noreferrer" style={{ fontSize: '0.88rem', color: '#25D366', fontWeight: 600, textDecoration: 'none' }}>{f.value}</a>
+                        : <p style={{ fontSize: '0.88rem', color: '#FAFAFA', fontWeight: 600 }}>{f.value}</p>
+                      }
+                    </div>
+                  ))}
+                </div>
+              </section>
               <section className="card">
                 <div className="card-header" style={{ marginBottom: '16px' }}>
                   <BarChart2 size={20} className="icon-accent" /><h2>Progreso por ejercicio</h2>
