@@ -939,6 +939,8 @@ export default function App() {
                 const sorted = [...stMetrics].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
                 const latest = sorted[0];
                 const prev = sorted[1];
+                // Peso: usar el último registro de métricas, o el peso de registro si no hay historial
+                const displayPeso = latest?.peso || stStudentData?.weight_kg;
                 const pesoDelta = latest?.peso && prev?.peso ? (latest.peso - prev.peso).toFixed(1) : null;
                 const pesoTrend = pesoDelta > 0 ? 'up' : pesoDelta < 0 ? 'down' : null;
                 const grasaDeltaHome = latest?.masa_grasa != null && prev?.masa_grasa != null ? parseFloat((latest.masa_grasa - prev.masa_grasa).toFixed(1)) : null;
@@ -956,14 +958,15 @@ export default function App() {
                     <div style={{ gridColumn: '1 / -1', background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
                       <div style={{ position: 'absolute', top: 0, right: 0, padding: '14px', opacity: 0.08, fontSize: '3.5rem', lineHeight: 1 }}>⚖️</div>
                       <p style={{ color: '#71717A', fontSize: '0.82rem', fontWeight: 500, marginBottom: '6px' }}>Peso Corporal</p>
-                      {latest?.peso ? (
+                      {displayPeso ? (
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-                          <p style={{ fontSize: '1.8rem', fontWeight: 800, color: '#FAFAFA' }}>{latest.peso} <span style={{ fontSize: '0.85rem', fontWeight: 400, color: '#71717A' }}>kg</span></p>
+                          <p style={{ fontSize: '1.8rem', fontWeight: 800, color: '#FAFAFA' }}>{displayPeso} <span style={{ fontSize: '0.85rem', fontWeight: 400, color: '#71717A' }}>kg</span></p>
                           {pesoDelta !== null && (
                             <span style={{ fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '2px', background: pesoTrend === 'down' ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', color: pesoTrend === 'down' ? '#F87171' : '#4ADE80', padding: '2px 8px', borderRadius: '6px' }}>
                               {pesoTrend === 'down' ? '↘' : '↗'} {Math.abs(pesoDelta)}kg
                             </span>
                           )}
+                          {!latest?.peso && <span style={{ fontSize: '0.72rem', color: '#52525B' }}>al registrarse</span>}
                         </div>
                       ) : (
                         <p style={{ fontSize: '1.4rem', fontWeight: 800, color: '#52525B' }}>Sin datos</p>
@@ -1534,7 +1537,7 @@ export default function App() {
                     <div style={{ background: 'rgba(24,24,27,0.5)', border: '1px solid #27272A', borderRadius: '14px', padding: '16px' }}>
                       <p style={{ fontSize: '0.75rem', color: '#71717A', marginBottom: '6px', marginTop: 0 }}>Peso Actual</p>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                        <span style={{ fontSize: '1.6rem', fontWeight: 700 }}>{latestM?.peso ?? '--'}</span>
+                        <span style={{ fontSize: '1.6rem', fontWeight: 700 }}>{latestM?.peso ?? stStudentData?.weight_kg ?? '--'}</span>
                         <span style={{ fontSize: '0.75rem', color: '#71717A' }}>kg</span>
                       </div>
                       {pesoDelta != null && (
