@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, LogOut, Home, Utensils, Loader2, Flame, Trophy, CheckCircle2, TrendingUp, TrendingDown, Minus, User, ChevronDown, ChevronUp, BarChart2, X, Settings, Bell, Edit3, CreditCard } from 'lucide-react';
+import { Users, FileText, Dumbbell, Save, ChevronLeft, UserPlus, Activity, Target, Plus, Trash2, LogOut, Home, Utensils, Loader2, Flame, Trophy, CheckCircle2, TrendingUp, TrendingDown, Minus, User, ChevronDown, ChevronUp, BarChart2, X, Settings, Bell, Edit3, CreditCard, Camera } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 import axios from 'axios';
 import SeriesInput from './components/SeriesInput';
@@ -2511,6 +2511,27 @@ export default function App() {
                     {profNutritionSaving ? 'Guardando...' : profNutritionSaved ? '✓ Plan guardado' : 'Guardar Plan Nutricional'}
                   </button>
                 </div>
+              </section>
+              <section className="card flex-col" style={{ gridColumn: '1 / -1' }}>
+                <div className="card-header"><Camera size={20} className="icon-accent" /><h2>Fotos de Progreso</h2></div>
+                {studentPhotos && studentPhotos.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '16px' }}>
+                    {studentPhotos.map(photo => (
+                      <div key={photo.id} style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #2a2640', background: '#0D0B14' }}>
+                        <img src={photo.photo_url} alt="Progreso" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
+                        <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.75rem', color: '#A1A1AA', fontWeight: 'bold' }}>
+                          {new Date(photo.created_at).toLocaleDateString('es-AR')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state" style={{ marginTop: '16px' }}>
+                    <Camera size={40} className="empty-icon" />
+                    <h3>Sin fotos de progreso</h3>
+                    <p style={{ color: '#52525B', fontSize: '0.85rem', marginTop: '8px' }}>El alumno aún no subió fotos.</p>
+                  </div>
+                )}
               </section>
             </div>
           </div>
