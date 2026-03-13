@@ -653,11 +653,9 @@ export default function App() {
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Buenos días' : h < 18 ? 'Buenas tardes' : 'Buenas noches'; };
 
-  // Returns the name of a day: prefers day_name from DB, falls back to hardcoded map
-  const defaultDayNames = { 1: 'Pecho + Hombros + Bíceps', 2: 'Piernas (isquios) + Pantorrillas', 3: 'Espalda + Deltoides + Tríceps', 4: 'Piernas (cuádriceps) + Pantorrillas', 5: 'Hombros + Pectorales + Brazos' };
   const getDayName = (dayNum) => {
     const ex = stExercises.find(e => e.day_number === dayNum && e.day_name);
-    return ex?.day_name || defaultDayNames[dayNum] || `Día ${dayNum}`;
+    return ex?.day_name || `Día ${dayNum}`;
   };
 
   // ======================================================================
