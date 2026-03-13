@@ -2246,6 +2246,7 @@ export default function App() {
                   {[
                     { label: 'Email', value: selectedStudent.email },
                     { label: 'WhatsApp', value: selectedStudent.whatsapp, link: selectedStudent.whatsapp ? `https://wa.me/${selectedStudent.whatsapp.replace(/\D/g,'')}` : null },
+                    { label: 'Edad', value: selectedStudent.age ? `${selectedStudent.age} años` : null },
                     { label: 'Objetivo', value: selectedStudent.goal || selectedStudent.objetivo },
                     { label: 'Nivel', value: selectedStudent.nivel_experiencia },
                     { label: 'Días/semana', value: selectedStudent.dias_disponibles ? `${selectedStudent.dias_disponibles} días` : null },
