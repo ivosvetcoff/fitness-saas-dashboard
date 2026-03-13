@@ -60,6 +60,7 @@ export default function App() {
   const [selectedExerciseId, setSelectedExerciseId] = useState('');
   const [performanceData, setPerformanceData] = useState(null);
   const [studentPhotos, setStudentPhotos] = useState([]);
+  const [selectedPhotoUrl, setSelectedPhotoUrl] = useState(null);
   const [activeRoutine, setActiveRoutine] = useState(null);
   const [routineExercises, setRoutineExercises] = useState([]);
   const [nutritionPlan, setNutritionPlan] = useState(null);
@@ -2517,8 +2518,8 @@ export default function App() {
                 {studentPhotos && studentPhotos.length > 0 ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '16px' }}>
                     {studentPhotos.map(photo => (
-                      <div key={photo.id} style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #2a2640', background: '#0D0B14' }}>
-                        <img src={photo.photo_url} alt="Progreso" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
+                      <div key={photo.id} style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #2a2640', background: '#0D0B14', cursor: 'pointer' }} onClick={() => setSelectedPhotoUrl(photo.photo_url)}>
+                        <img src={photo.photo_url} alt="Progreso" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
                         <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.75rem', color: '#A1A1AA', fontWeight: 'bold' }}>
                           {new Date(photo.created_at).toLocaleDateString('es-AR')}
                         </div>
@@ -2534,6 +2535,16 @@ export default function App() {
                 )}
               </section>
             </div>
+          </div>
+        )}
+
+        {/* PHOTO LIGHTBOX MODAL */}
+        {selectedPhotoUrl && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSelectedPhotoUrl(null)}>
+            <button style={{ position: 'absolute', top: 20, right: 20, background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', color: '#FAFAFA', padding: '10px', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setSelectedPhotoUrl(null); }}>
+              <X size={24} />
+            </button>
+            <img src={selectedPhotoUrl} alt="Progreso" style={{ maxWidth: '90%', maxHeight: '90vh', objectFit: 'contain', borderRadius: '12px' }} onClick={e => e.stopPropagation()} />
           </div>
         )}
 
