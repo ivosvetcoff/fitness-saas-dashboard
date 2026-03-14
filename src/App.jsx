@@ -2580,8 +2580,10 @@ export default function App() {
           const filteredExs = exerciseLibrary.filter(ex => {
             const n = (ex.nombre || ex.name || '').toLowerCase();
             const g = (ex.grupo_muscular || ex.muscle_group || '').toLowerCase();
-            return (!exSearch || n.includes(exSearch.toLowerCase())) &&
-              (exFilterGrupo === 'Todos' || g.includes(exFilterGrupo.toLowerCase()));
+            // Normalize accents for comparison
+            const normalize = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return (!exSearch || normalize(n).includes(normalize(exSearch.toLowerCase()))) &&
+              (exFilterGrupo === 'Todos' || normalize(g).includes(normalize(exFilterGrupo.toLowerCase())));
           });
 
           const openAddSheet = (dayId, libEx) => {
@@ -2790,8 +2792,14 @@ export default function App() {
                   <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '14px' }}>
                     {GRUPOS.map(g => <button key={g} onClick={() => setExFilterGrupo(g)} style={sChip(exFilterGrupo === g)}>{g}</button>)}
                   </div>
+                  {exerciseLibrary.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '20px 0', marginBottom: '10px' }}>
+                      <p style={{ color: '#52525B', fontSize: '0.875rem', marginBottom: '10px' }}>No se cargaron los ejercicios.</p>
+                      <button onClick={async () => { try { const r = await axios.get(`${API_URL}/exercises`); setExerciseLibrary(r.data || []); } catch (e) { console.error(e); } }} style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '8px', color: '#A78BFA', fontWeight: 700, fontSize: '0.85rem', padding: '8px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>Reintentar carga</button>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px', maxHeight: '280px', overflowY: 'auto' }}>
-                    {filteredExs.length === 0 && <p style={{ color: '#52525B', textAlign: 'center', padding: '20px 0', fontSize: '0.875rem' }}>No se encontraron ejercicios</p>}
+                    {filteredExs.length === 0 && exerciseLibrary.length > 0 && <p style={{ color: '#52525B', textAlign: 'center', padding: '20px 0', fontSize: '0.875rem' }}>No se encontraron ejercicios</p>}
                     {filteredExs.map(ex => {
                       const nombre = ex.nombre || ex.name || '?';
                       const grupo = ex.grupo_muscular || ex.muscle_group || '';
