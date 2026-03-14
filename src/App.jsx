@@ -2085,7 +2085,9 @@ export default function App() {
                   {pendingStudents.map(p => (
                     <div key={p.id} style={{ background: '#0f0d18', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '16px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1a1726', border: '2px solid #EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 800, flexShrink: 0 }}>{p.name?.charAt(0).toUpperCase()}</div>
+                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1a1726', border: '2px solid #EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 800, flexShrink: 0, overflow: 'hidden' }}>
+                          {p.profile_photo_url ? <img src={p.profile_photo_url} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.name?.charAt(0).toUpperCase()}
+                        </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontWeight: 800, fontSize: '1rem' }}>{p.name}</p>
                           <p style={{ color: '#A1A1AA', fontSize: '0.82rem', marginTop: '1px' }}>{p.email}</p>
