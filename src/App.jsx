@@ -592,7 +592,7 @@ export default function App() {
   const stFetchMetrics = async () => {
     if (!studentId) return;
     setStMetricsLoading(true);
-    try { const r = await axios.get(`${API_URL}/student/${studentId}/metrics`); setStMetrics(r.data || []); } catch { }
+    try { const r = await axios.get(`${API_URL}/student/${studentId}/body-metrics`); setStMetrics(r.data || []); } catch { }
     finally { setStMetricsLoading(false); }
   };
 
@@ -637,7 +637,7 @@ export default function App() {
       if (stMetricForm.masa_grasa !== '') payload.masa_grasa = parseFloat(stMetricForm.masa_grasa) || null;
       if (stMetricForm.cintura !== '') payload.cintura = parseFloat(stMetricForm.cintura) || null;
       if (stMetricForm.cadera !== '') payload.cadera = parseFloat(stMetricForm.cadera) || null;
-      await axios.post(`${API_URL}/student/${studentId}/metrics`, payload);
+      await axios.post(`${API_URL}/student/${studentId}/body-metrics`, payload);
       await stFetchMetrics();
       setStMetricForm({ fecha: '', peso: '', masa_muscular: '', masa_grasa: '', cintura: '', cadera: '' });
     } catch { alert('Error al guardar las métricas.'); }
