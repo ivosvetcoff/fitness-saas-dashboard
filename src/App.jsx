@@ -876,11 +876,12 @@ export default function App() {
           </div>
           <div className="student-topbar-right">
             <div className="student-streak-badge"><Flame size={14} color="#F59E0B" /> {stStreak.streak} días</div>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', background: '#27272A', border: '2px solid #7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 800, color: '#A78BFA', flexShrink: 0, cursor: 'pointer' }} onClick={() => setStudentScreen('profile')}>
-              {(stStudentData?.profile_photo_url || loggedInUser?.avatar_url)
-                ? <img src={stStudentData?.profile_photo_url || loggedInUser?.avatar_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex'); }} />
-                : null}
-              {!(stStudentData?.profile_photo_url || loggedInUser?.avatar_url) && (loggedInUser?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?')}
+            <div className="avatar-ring" style={{ width: '36px', height: '36px', flexShrink: 0, cursor: 'pointer' }} onClick={() => setStudentScreen('profile')}>
+              <div className="avatar-ring-inner" style={{ fontSize: '0.85rem', fontWeight: 800, color: '#A78BFA' }}>
+                {stStudentData?.foto_perfil_url
+                  ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : loggedInUser?.name?.charAt(0)?.toUpperCase()}
+              </div>
             </div>
             <button className="btn-icon-sm" onClick={handleLogout} title="Cerrar sesión"><LogOut size={18} /></button>
           </div>
@@ -922,10 +923,12 @@ export default function App() {
               {/* GREETING HEADER */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0 20px 0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: 'rgba(124,58,237,0.2)', border: '2px solid rgba(124,58,237,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 800, color: '#A78BFA', flexShrink: 0 }}>
-                    {(stStudentData?.profile_photo_url || loggedInUser?.avatar_url)
-                      ? <img src={stStudentData?.profile_photo_url || loggedInUser?.avatar_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }}/>
-                      : (loggedInUser?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?')}
+                  <div className="avatar-ring" style={{ width: '52px', height: '52px', flexShrink: 0 }}>
+                    <div className="avatar-ring-inner" style={{ fontSize: '1.2rem', fontWeight: 800, color: '#A78BFA' }}>
+                      {stStudentData?.foto_perfil_url
+                        ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : loggedInUser?.name?.charAt(0)?.toUpperCase()}
+                    </div>
                   </div>
                   <div>
                     <p style={{ color: '#71717A', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px' }}>Bienvenido</p>
