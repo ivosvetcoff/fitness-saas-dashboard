@@ -1121,7 +1121,7 @@ export default function App() {
             <div className="view-fade-in">
               <h2 className="st-section-title">{stSession?.routine_name || 'Rutina'}</h2>
               <p style={{ color: '#A1A1AA', marginBottom: '16px' }}>Seleccioná el día para comenzar</p>
-              {[1, 2, 3, 4, 5].map(day => {
+              {[...new Set(stExercises.map(e => e.day_number))].sort((a, b) => a - b).map(day => {
                 const count = stExercises.filter(e => e.day_number === day).length;
                 return (
                   <button key={day} className="st-main-card" onClick={() => setStSelectedDay(day)}>
