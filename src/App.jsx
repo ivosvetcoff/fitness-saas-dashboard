@@ -1459,8 +1459,8 @@ export default function App() {
                   <div style={{ position: 'relative' }}>
                     <div style={{ width: '112px', height: '112px', borderRadius: '50%', border: '2px solid #7C3AED', padding: '3px', boxSizing: 'border-box' }}>
                       <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: 'rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {stStudentData?.foto_perfil_url
-                          ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {(stStudentData?.profile_photo_url || loggedInUser?.avatar_url)
+                          ? <img src={stStudentData?.profile_photo_url || loggedInUser?.avatar_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#A78BFA' }}>{loggedInUser.name?.charAt(0).toUpperCase()}</span>}
                       </div>
                     </div>
@@ -1621,17 +1621,14 @@ export default function App() {
                       <div style={{ padding: '20px', color: '#71717A', fontSize: '0.85rem' }}>Cargando...</div>
                     ) : (
                       <>
-                        {stPhotos.map(month => {
-                          const url = month.frente || month.perfil || month.espalda;
-                          return url ? (
-                            <div key={month.fecha} style={{ flexShrink: 0, width: '128px' }}>
-                              <div style={{ height: '160px', borderRadius: '14px', overflow: 'hidden', background: '#18181B' }}>
-                                <img src={url} alt={month.fecha} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              </div>
-                              <p style={{ fontSize: '0.65rem', textAlign: 'center', color: '#71717A', marginTop: '6px', fontWeight: 500 }}>{month.fecha}</p>
+                        {stPhotos.map(photo => (
+                          <div key={photo.id} style={{ flexShrink: 0, width: '128px' }}>
+                            <div style={{ height: '160px', borderRadius: '14px', overflow: 'hidden', background: '#18181B' }}>
+                              <img src={photo.photo_url} alt="progreso" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
-                          ) : null;
-                        })}
+                            <p style={{ fontSize: '0.65rem', textAlign: 'center', color: '#71717A', marginTop: '6px', fontWeight: 500 }}>{new Date(photo.created_at).toLocaleDateString('es-AR')}</p>
+                          </div>
+                        ))}
                         <div style={{ flexShrink: 0, width: '128px' }}>
                           <label style={{ cursor: 'pointer' }}>
                             <div style={{ height: '160px', borderRadius: '14px', border: '2px dashed #27272A', background: 'rgba(24,24,27,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
