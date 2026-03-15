@@ -2207,7 +2207,10 @@ export default function App() {
           <div className="view-fade-in">
             <button className="btn-back" onClick={() => setCurrentView('ListaAlumnos')}><ChevronLeft size={20} /> Volver</button>
             <header className="profile-header">
-              <div className="avatar avatar-student" style={{ width: 64, height: 64, backgroundColor: '#7C3AED', color: '#fff', fontSize: '28px', fontWeight: 700, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{selectedStudent.name?.charAt(0).toUpperCase()}</div>
+              {selectedStudent.profile_photo_url
+                ? <img src={selectedStudent.profile_photo_url} alt="perfil" style={{ width: 64, height: 64, borderRadius: '20px', objectFit: 'cover', border: '2px solid #7C3AED' }} />
+                : <div className="avatar avatar-student" style={{ width: 64, height: 64, backgroundColor: '#7C3AED', color: '#fff', fontSize: '28px', fontWeight: 700, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{selectedStudent.name?.charAt(0).toUpperCase()}</div>
+              }
               <div>
                 <h1>{selectedStudent.name}</h1>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
@@ -2258,7 +2261,7 @@ export default function App() {
                   {[
                     { label: 'Email', value: selectedStudent.email },
                     { label: 'WhatsApp', value: selectedStudent.whatsapp, link: selectedStudent.whatsapp ? `https://wa.me/${selectedStudent.whatsapp.replace(/\D/g, '')}` : null },
-                    { label: 'Edad', value: selectedStudent.age ? `${selectedStudent.age} años` : null },
+                    { label: 'Edad', value: selectedStudent.age ? `${selectedStudent.age} años` : selectedStudent.fecha_nacimiento ? `${Math.floor((Date.now() - new Date(selectedStudent.fecha_nacimiento)) / (365.25 * 24 * 3600 * 1000))} años` : null },
                     { label: 'Objetivo', value: selectedStudent.goal || selectedStudent.objetivo },
                     { label: 'Nivel', value: selectedStudent.nivel_experiencia },
                     { label: 'Días/semana', value: selectedStudent.dias_disponibles ? `${selectedStudent.dias_disponibles} días` : null },
@@ -2266,8 +2269,14 @@ export default function App() {
                     { label: 'Peso', value: selectedStudent.weight_kg ? `${selectedStudent.weight_kg} kg` : null },
                     { label: 'Altura', value: selectedStudent.height_cm ? `${selectedStudent.height_cm} cm` : null },
                     { label: 'Lesión', value: selectedStudent.tiene_lesion ? (selectedStudent.descripcion_lesion || 'Sí') : 'No' },
-                    { label: 'Alimentación', value: selectedStudent.alimentacion_actual },
+                    { label: 'Alimentación actual', value: selectedStudent.alimentacion_actual },
                     { label: 'Restricciones', value: selectedStudent.restricciones_alimentarias },
+                    { label: 'Comidas por día', value: selectedStudent.comidas_por_dia ? `${selectedStudent.comidas_por_dia} comidas` : null },
+                    { label: 'Entrenamiento actual', value: selectedStudent.entrenamientos_actuales },
+                    { label: 'Frecuencia actual', value: selectedStudent.frecuencia_actual ? `${selectedStudent.frecuencia_actual} días/semana` : null },
+                    { label: 'Horario trabajo', value: selectedStudent.horario_trabajo },
+                    { label: 'Horario entrenamiento', value: selectedStudent.horario_entrenamiento },
+                    { label: 'Dificultad principal', value: selectedStudent.dificultad_principal },
                   ].filter(f => f.value).map(f => (
                     <div key={f.label} style={{ background: '#0D0B14', borderRadius: '10px', padding: '10px 14px', border: '1px solid #2a2640' }}>
                       <p style={{ fontSize: '0.7rem', color: '#52525B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{f.label}</p>
