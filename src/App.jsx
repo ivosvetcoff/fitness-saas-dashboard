@@ -543,7 +543,7 @@ export default function App() {
     } catch (e) { console.error(e); }
   };
   const stFetchRankings = async () => { setStLoadingRankings(true); try { const r = await axios.get(`${API_URL}/rankings`); setStRankings(r.data?.rankings || []); } catch { } finally { setStLoadingRankings(false); } };
-  const stFetchNutrition = async () => { setStLoadingNutrition(true); try { const r = await axios.get(`${API_URL}/nutrition/${studentId}`); setStNutrition(r.data); } catch { } finally { setStLoadingNutrition(false); } };
+  const stFetchNutrition = async () => { if (!studentId) return; setStLoadingNutrition(true); try { const r = await axios.get(`${API_URL}/nutrition/${studentId}`); setStNutrition(r.data); } catch { } finally { setStLoadingNutrition(false); } };
 
   // ===== STUDENT DATA =====
   const [stStudentData, setStStudentData] = useState(null);
@@ -962,7 +962,7 @@ export default function App() {
 
                 // Comidas cargadas en el plan nutricional
                 const mealKeys = ['ayuno', 'desayuno', 'media_manana', 'almuerzo', 'merienda', 'pre_entrenamiento', 'post_entrenamiento', 'cena', 'antes_de_dormir'];
-                const comidasCount = nutritionPlan ? mealKeys.filter(k => nutritionPlan[k]?.trim()).length : 0;
+                const comidasCount = stNutrition?.meals?.length || 0;
 
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '28px' }}>
