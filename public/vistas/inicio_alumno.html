@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fitness Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7C3AED",
+                        "accent": "#A78BFA",
+                        "background-dark": "#0D0B14",
+                        "card-dark": "#14112A",
+                        "border-dark": "#1E1B30",
+                        "background-light": "#f7f6f8",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.02) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(167,139,250,0.15);
+        }
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .glass-panel {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 28px rgba(124,58,237,0.5);
+            transform: translateY(-1px);
+        }
+        .avatar-gradient-ring {
+            background: linear-gradient(135deg, #7C3AED, #A78BFA);
+            padding: 2px;
+            border-radius: 50%;
+        }
+        .sidebar-item-active {
+            background: linear-gradient(90deg, rgba(124,57,239,0.25) 0%, rgba(124,57,239,0) 100%);
+            border-left: 3px solid #7C3AED;
+        }
+        .nav-active-dot::after {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            background: #7C3AED;
+            border-radius: 50%;
+            margin: 2px auto 0;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-display">
+<!-- Header Section -->
+<header class="flex items-center justify-between px-6 pt-8 pb-4 sticky top-0 bg-background-dark/80 backdrop-blur-md z-50 border-b border-border-dark">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="size-10 rounded-full border-2 border-primary overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="Profile picture of a fitness athlete" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVMNbRvmTY_8kr9Z-ZOy9s6Mi9ahZw1ZkMSlvsQQvFe6V0tqZUzvdNRrj27NtcAJ8TQXTjpIRu6QpaJiX9fxeZTe_J3UJIrJWFX3bKhVrdnnvJ_sZscUzlTCd2Q7WlK70L2DSD1Uv9HVMVBOjjwWEbiMwrVCJ1_GGpvwMxbEMDbk_D2ZwpFKUgUk88g-gligYLwlVPHO0g8Irgnz4txZS97kgevts-suGOn16lqq8UffeGqtC6eiYLijSOro4TGxpkKhSANqD3Yzed"/>
+</div>
+<div class="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-background-dark rounded-full"></div>
+</div>
+<div>
+<p class="text-xs text-slate-400 font-medium">BIENVENIDO</p>
+<h1 class="text-base font-bold tracking-tight">¡Hola, Alejandro!</h1>
+</div>
+</div>
+<button class="relative p-2 rounded-xl bg-card-dark border border-border-dark text-slate-300">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-primary rounded-full border border-card-dark"></span>
+</button>
+</header>
+<main class="flex-1 px-6 pb-24 space-y-6">
+<!-- Streak Card -->
+<section class="glass rounded-2xl p-6 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 size-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all"></div>
+<div class="flex items-center justify-between">
+<div>
+<p class="text-slate-400 text-sm font-medium mb-1">Racha actual</p>
+<div class="flex items-baseline gap-2">
+<span class="text-5xl font-extrabold tracking-tighter text-white">15</span>
+<span class="text-slate-400 font-semibold">DÍAS</span>
+</div>
+</div>
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-primary text-[56px] drop-shadow-[0_0_25px_rgba(124,58,237,0.7)]" style="font-variation-settings: 'FILL' 1; filter: drop-shadow(0 0 20px rgba(239,68,68,0.4))">local_fire_department</span>
+<p class="text-[10px] text-primary font-bold mt-1 tracking-widest uppercase italic">On Fire</p>
+</div>
+</div>
+</section>
+<!-- Today's Training -->
+<section class="space-y-3">
+<div class="flex justify-between items-center">
+<h2 class="text-xs font-black text-slate-500 tracking-[0.2em] uppercase">Entrenamiento de hoy</h2>
+<span class="text-[10px] text-primary font-bold px-2 py-0.5 rounded bg-primary/10 border border-primary/20">FUERZA</span>
+</div>
+<div class="bg-card-dark border border-border-dark rounded-2xl p-5 space-y-4">
+<div>
+<h3 class="text-xl font-bold text-white mb-1">Día 2: Espalda + Tríceps</h3>
+<p class="text-slate-400 text-sm">Rutina de hipertrofia y definición • 65 min</p>
+</div>
+<button class="btn-primary w-full transition-colors py-4 rounded-xl font-black text-sm tracking-widest uppercase text-white flex items-center justify-center gap-2">
+                    Empezar Entrenamiento
+                    <span class="material-symbols-outlined text-sm">play_arrow</span>
+</button>
+</div>
+</section>
+<!-- Weekly Consistency -->
+<section class="space-y-3">
+<h2 class="text-xs font-black text-slate-500 tracking-[0.2em] uppercase">Consistencia Semanal</h2>
+<div class="bg-card-dark border border-border-dark rounded-2xl p-5">
+<div class="flex justify-between items-center">
+<div class="flex flex-col items-center gap-2">
+<div class="size-8 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm" style="font-variation-settings: 'wght' 700">check</span>
+</div>
+<span class="text-[10px] text-slate-500 font-bold">LU</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="size-8 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm" style="font-variation-settings: 'wght' 700">check</span>
+</div>
+<span class="text-[10px] text-slate-500 font-bold">MA</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="size-8 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm" style="font-variation-settings: 'wght' 700">check</span>
+</div>
+<span class="text-[10px] text-slate-500 font-bold">MI</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="size-8 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center">
+<div class="size-2 rounded-full bg-primary animate-pulse"></div>
+</div>
+<span class="text-[10px] text-primary font-black">JU</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="size-8 rounded-full bg-border-dark border border-slate-800 flex items-center justify-center"></div>
+<span class="text-[10px] text-slate-500 font-bold">VI</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="size-8 rounded-full bg-border-dark border border-slate-800 flex items-center justify-center"></div>
+<span class="text-[10px] text-slate-500 font-bold">SA</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="size-8 rounded-full bg-border-dark border border-slate-800 flex items-center justify-center"></div>
+<span class="text-[10px] text-slate-500 font-bold">DO</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Nutrition Quick Access -->
+<section class="glass-card rounded-2xl p-5 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">restaurant</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-white">TU PLAN NUTRICIONAL</h3>
+<p class="text-xs text-slate-400">Objetivo: Volumen Limpio</p>
+</div>
+</div>
+<a class="text-primary text-xs font-bold uppercase tracking-wider flex items-center gap-1" href="#">
+                Ver plan
+                <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</a>
+</section>
+<!-- Plan Status Footer -->
+<section class="pt-2">
+<div class="bg-gradient-to-r from-primary/10 to-transparent rounded-xl border border-primary/10 px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">verified_user</span>
+<p class="text-[11px] text-slate-400 font-medium">Plan Activo: <span class="text-slate-200 font-bold">Élite Pro Hybrid</span></p>
+</div>
+<div class="px-2 py-0.5 rounded-full bg-primary/20">
+<p class="text-[10px] text-primary font-black uppercase italic">Vence en 12 días</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-background-dark/90 backdrop-blur-xl border-t border-border-dark px-6 py-4 z-[100]">
+<div class="flex items-center justify-between max-w-md mx-auto">
+<a class="flex flex-col items-center gap-1 text-primary nav-active-dot" href="#">
+<span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1">home</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Inicio</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[26px]">fitness_center</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Entreno</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[26px]">nutrition</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Nutrición</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[26px]">person</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Perfil</span>
+</a>
+</div>
+<!-- iPhone indicator gap if needed -->
+<div class="h-4"></div>
+</nav>
+</body></html>

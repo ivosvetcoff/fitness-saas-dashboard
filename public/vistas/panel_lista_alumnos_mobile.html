@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Panel del Profesor - Alumnos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7C3AED",
+                        "accent": "#A78BFA",
+                        "background-dark": "#0D0B14",
+                        "card-dark": "#14112A",
+                        "border-dark": "#1E1B30",
+                        "background-light": "#f7f6f8",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.02) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(167,139,250,0.15);
+        }
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .glass-panel {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 28px rgba(124,58,237,0.5);
+            transform: translateY(-1px);
+        }
+        .avatar-gradient-ring {
+            background: linear-gradient(135deg, #7C3AED, #A78BFA);
+            padding: 2px;
+            border-radius: 50%;
+        }
+        .sidebar-item-active {
+            background: linear-gradient(90deg, rgba(124,57,239,0.25) 0%, rgba(124,57,239,0) 100%);
+            border-left: 3px solid #7C3AED;
+        }
+        .nav-active-dot::after {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            background: #7C3AED;
+            border-radius: 50%;
+            margin: 2px auto 0;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-24">
+<!-- Header Section -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-primary/20 px-4 py-4">
+<div class="flex items-center justify-between max-w-5xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="bg-primary/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary">dashboard</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Panel de Control</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full border-2 border-primary bg-cover bg-center" data-alt="Profile picture of the teacher" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDbUbzlPsht-eKO6q0l5W5g54JS6NBsYymV7jb0lANEwJvSn4Zfw7jmNv70tI1ZTMo_OZ7ZYIeAPZoBbP8W8LoQ-P1sU6z-YNolU1YljT9ebY9TRgaQFV05YsyzqRnEbISJl_eblQfZDdoxdoysWXs5nQJi8zuuwOSzwlW35Rt1cby83Zrqbue1l-WWB41SGiYkOiu8BxQgXXBhyc65hI6tw6eZjyBg8ypLz4dJxDOoCOQI3DfewuEtPAVb5tQE82gJHqaWeTA0YQ_S')"></div>
+</div>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-4 pt-6 space-y-8">
+<!-- Search Bar -->
+<section>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-card-dark border border-border-dark rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary text-slate-900 dark:text-slate-100 placeholder-slate-500 transition-all" placeholder="Buscar alumnos por nombre o meta..." type="text"/>
+</div>
+</section>
+<!-- Pendientes de Activación Section -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-500">pending_actions</span>
+                    Pendientes de Activación
+                </h2>
+<span class="bg-amber-500/10 text-amber-500 text-xs font-bold px-2 py-1 rounded-full">3 nuevos</span>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
+<!-- Card 1 -->
+<div class="min-w-[280px] glass-card rounded-xl overflow-hidden flex flex-col shadow-sm">
+<div class="relative h-40 bg-cover bg-center" data-alt="Portrait of student Juan Perez in gym" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB2RU-EH7_bfykudT9ycAB6XbcrGyQSW4yLsnwMWp3sLXw3vqtoTjrbzCiQPOVAgaKqCY7TiWv7drxMJiaur1P-PFj5EiftGee7JHhPWruFTKhYOzatvOtQMq7px9cMmbpNaIJ3JKGKqd4EbZm9Dr-32sXiJYVRWKka_4GL5OFVNFlviOv1bIP2MKnXd4-28mzgGtrfbA0jat4bTFJ3s0iZdlGkA0llFcUvYdgLb0a3Q4e7ZIRlVuua_6QbXwBh-xHD__AmOd-aVSfA')">
+<div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background-dark/80 to-transparent pointer-events-none"></div>
+</div>
+<div class="p-4 flex-1 flex flex-col justify-between gap-4">
+<div>
+<h3 class="font-bold text-lg">Juan Pérez</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">fitness_center</span>
+                                Hipertrofia Muscular
+                            </p>
+</div>
+<button class="btn-primary w-full text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">assignment_add</span>
+                            Asignar Planes
+                        </button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="min-w-[280px] glass-card rounded-xl overflow-hidden flex flex-col shadow-sm">
+<div class="relative h-40 bg-cover bg-center" data-alt="Portrait of student Elena Gomez during workout" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB0Wdq2j3Hk38CJaR1_197HJQHhwghw-FOMmZIQksu1GX4OestiLwibRlbgObdXQ2MyjF52jV3c_YeCdpjEX9-xdBH8bveOoiLIAYmAMt2xNn_Ofw-N4muiC6jz5-GgKIcPIGSHpBoIoS_PpRr9pFNFoAzDM-GP6WCDxCVqvvbmEPuWDhYJ-7oWGvsq-bTvwf_DF5BHQ6qSqAWEwCKjJ8NoyD5cbWt-gcjGtfkFJJl6faU6xgHPA-VwK0rbrKkaWvORH0IUyPqXamAq')">
+<div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background-dark/80 to-transparent pointer-events-none"></div>
+</div>
+<div class="p-4 flex-1 flex flex-col justify-between gap-4">
+<div>
+<h3 class="font-bold text-lg">Elena Gómez</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">monitor_weight</span>
+                                Pérdida de grasa
+                            </p>
+</div>
+<button class="btn-primary w-full text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">assignment_add</span>
+                            Asignar Planes
+                        </button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="min-w-[280px] glass-card rounded-xl overflow-hidden flex flex-col shadow-sm">
+<div class="relative h-40 bg-cover bg-center" data-alt="Portrait of student Roberto Diaz outdoors" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtLXyZGdEAajppDCMSsQRXPpu1GperTplVpt79RC92_gU-80iBq2QnhAKLMP6kASPJzw57OrLJ5peHspbtC1wPjOfFZ1K-P45OVBXD4haR4la8GLfv8oNerTHDfOC6S7HS6yx7OqfkzmFgZPUcN-A8d41XkYe1dHHfJ0AfAFM2kA_SsdzSq-R--UtDG9gPzM4hC5aN43Mr6T7W2EsmpcnwDDYF2esBEnRtJNPRhxAuAyvtsCgr94GkP95dfUv57Yird5BgmHK28Mjm')">
+<div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background-dark/80 to-transparent pointer-events-none"></div>
+</div>
+<div class="p-4 flex-1 flex flex-col justify-between gap-4">
+<div>
+<h3 class="font-bold text-lg">Roberto Díaz</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">bolt</span>
+                                Resistencia / Cardio
+                            </p>
+</div>
+<button class="btn-primary w-full text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">assignment_add</span>
+                            Asignar Planes
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Mis Alumnos Section -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<div class="border-l-2 border-primary pl-3">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">groups</span>
+                    Mis Alumnos Activos
+                </h2>
+</div>
+<button class="text-primary text-sm font-semibold hover:underline">Ver todos</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Alumno Activo 1 -->
+<div class="glass-card rounded-xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-primary/20 bg-cover bg-center" data-alt="Student profile Maria Rodriguez" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAcpZnNAPyK2ehFsVYGtxRjsmti94R8OXqZ-SWkZJYcdleuYfesG2ughSHIdKTOhSOo_vdp_roDKS3Eo8uZgcl27gtXIWhHHNIK4tkgGHiFHmQ6GojhTVwfniOa_Ekk2SxZyPJCBq5J1BzdxLd-3sGZ9UghCY_iTs8zoSydNEubre3D4XjQRa4fS_w_7lwLbS06Qqd9aNgGkOxF5LI2LLM7Tc0Qwkl7x9UhZAvlIUbEPLBsUNd4F7FS8Fi6Bv6LWWof7079LBbYqBbq')"></div>
+<div>
+<h3 class="font-semibold">Maria Rodriguez</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="bg-emerald-500/10 text-emerald-500 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Al día</span>
+<span class="text-xs text-slate-500">14 días restantes</span>
+</div>
+</div>
+</div>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-primary/20 rounded-full transition-colors">
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+</div>
+<!-- Alumno Activo 2 -->
+<div class="glass-card rounded-xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-primary/20 bg-cover bg-center" data-alt="Student profile Carlos Sosa" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDlqcb2NWRTustduh_2f2BAYQkicBlWvhLCpmkLXd23v3VtKyJhe9QdY33s2OSdnCD5BJb6VIRAoJ9OPi98FyzyTfQwjb967gHBQurhr6VxKcHXOmVRyGYUQ0gULXjTA-PqEkkqLNFqhqgfYlIKJr9WMC2L1Rtah7oqFl3Ge4Yi8542aIrqAlHUE_xMLL8jt-hrneys5ft0Nz0t2wrakARNyda1V5Riqelj_v7GmvUtrGiq7fJNfHtqtUvWbE4HIcFqaJrM_0M0LBS1')"></div>
+<div>
+<h3 class="font-semibold">Carlos Sosa</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="bg-rose-500/10 text-rose-500 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Pendiente</span>
+<span class="text-xs text-slate-500">Vencido</span>
+</div>
+</div>
+</div>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-primary/20 rounded-full transition-colors">
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+</div>
+<!-- Alumno Activo 3 -->
+<div class="glass-card rounded-xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-primary/20 bg-cover bg-center" data-alt="Student profile Lucía Mendez" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAPv2mEy5SOiONAqV9HzlLBnrnYD4f_xQsDK_N_s9ZfPJcLaDiawaIsWcV6t1PbMkspFBxsHIEp5Wcf79SoKUhWSQTzSJ9Q7VAKpzR7wmfgG7bx0WRczKdtNptIpXa86qL2zBkWoLL1EfCqUwynDCd7Z_q61_a-bkMAQ3X3B291gondUB6WXSRq2Semyb5qjo9f8d4qSPEofSfFoWhR8KjGrQHFm7VX0rQ6vqv5WYewDwKmPtt1p-N7AwXC8akpfatV1piHK4PTmnwA')"></div>
+<div>
+<h3 class="font-semibold">Lucía Mendez</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="bg-emerald-500/10 text-emerald-500 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Al día</span>
+<span class="text-xs text-slate-500">28 días restantes</span>
+</div>
+</div>
+</div>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-primary/20 rounded-full transition-colors">
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+</div>
+<!-- Alumno Activo 4 -->
+<div class="glass-card rounded-xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full border-2 border-primary/20 bg-cover bg-center" data-alt="Student profile Fernando Ruiz" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBPImVD4F6L5JwRH1CqZo21JH0sMU0J1OZhZyb0PxCdu4WMf_99b1G55bJxXS2esyMk33D4-MYm5cUxGHqd3AeR244lNosH7yr_xlF6LtNJ2Uap5sPbOsG9jH3C2mMmHjszGiDY64Gs-Jp9bBA8EtiRbE9emvD01mgRcZCd8y9g6H52ys5CFNKutEl2G-7-jVg3w_7RoZm_OgtNdg7qWuWQ1TYV0pm8hcMp3DjaaDtwSYD9nQhVfB4fV0azQ3lI7JVaTzTAW46Q8RO9')"></div>
+<div>
+<h3 class="font-semibold">Fernando Ruiz</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="bg-emerald-500/10 text-emerald-500 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Al día</span>
+<span class="text-xs text-slate-500">5 días restantes</span>
+</div>
+</div>
+</div>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-primary/20 rounded-full transition-colors">
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-background-dark/80 backdrop-blur-xl border-t border-slate-200 dark:border-primary/20 pb-safe">
+<div class="max-w-5xl mx-auto flex justify-around items-center py-3">
+<a class="flex flex-col items-center gap-1 text-primary nav-active-dot" href="#">
+<span class="material-symbols-outlined font-fill text-2xl">group</span>
+<span class="text-[10px] font-medium">Alumnos</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">menu_book</span>
+<span class="text-[10px] font-medium">Biblioteca</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">trophy</span>
+<span class="text-[10px] font-medium">Retos</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-rose-500 transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">logout</span>
+<span class="text-[10px] font-medium">Salir</span>
+</a>
+</div>
+</nav>
+</body></html>

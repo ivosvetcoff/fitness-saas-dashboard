@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Perfil del Alumno - Fitness Premium</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7C3AED",
+                        "accent": "#A78BFA",
+                        "background-dark": "#0D0B14",
+                        "card-dark": "#14112A",
+                        "border-dark": "#1E1B30",
+                        "background-light": "#f7f6f8",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.02) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(167,139,250,0.15);
+        }
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .glass-panel {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 28px rgba(124,58,237,0.5);
+            transform: translateY(-1px);
+        }
+        .avatar-gradient-ring {
+            background: linear-gradient(135deg, #7C3AED, #A78BFA);
+            padding: 2px;
+            border-radius: 50%;
+        }
+        .sidebar-item-active {
+            background: linear-gradient(90deg, rgba(124,57,239,0.25) 0%, rgba(124,57,239,0) 100%);
+            border-left: 3px solid #7C3AED;
+        }
+        .nav-active-dot::after {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            background: #7C3AED;
+            border-radius: 50%;
+            margin: 2px auto 0;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col">
+<!-- Header Section -->
+<header class="pt-10 pb-6 px-6 flex flex-col items-center border-b border-primary/10">
+<div class="relative">
+<div class="avatar-gradient-ring p-[3px]">
+<div class="size-28 rounded-full overflow-hidden">
+<div class="w-full h-full rounded-full bg-center bg-cover" data-alt="Retrato de primer plano de un hombre atlético sonriendo" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD7qw8ttAT6wnU-kMPmZuvFrG1jMeo1PSDLZqDpSCB3jwjYp41pzMangxboei0xJoezYpKlq-aqK9Ybbx_mYhjil0AvS2hkvI8IEjQ2itvuJdJj4y6uqbzenw_dX65YhJqtUPcQxB0-KB7TqMTMYOHqhCdt_ndK-B9xV0zOu3QyQI8WZSGfO0HyfGqxy-MVV--5aBv3koeQcB7IokIENIVQxGe9Ch3J14C_KUDMUMatYj5zbzg4YLAwo-3Et-konOzFQIoSignaqigc')"></div>
+</div>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full border-2 border-background-dark shadow-lg">
+<span class="material-symbols-outlined text-sm block">verified</span>
+</div>
+</div>
+<div class="mt-4 text-center">
+<h1 class="text-2xl font-bold tracking-tight text-slate-50">Juan Pérez</h1>
+<div class="flex items-center justify-center gap-2 mt-1">
+<span class="text-accent text-sm font-medium px-2.5 py-0.5 rounded-full bg-primary/10">Principiante</span>
+<span class="text-slate-500 text-xs font-mono uppercase tracking-wider">ID: #82931</span>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 py-6 space-y-6 pb-24 overflow-y-auto">
+<!-- Sección Mi Plan -->
+<section>
+<h2 class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-3 px-1">Mi Plan Actual</h2>
+<div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">fitness_center</span>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-100">Ganar Músculo</h3>
+<p class="text-slate-400 text-sm">Hipertrofia - 4 días/semana</p>
+</div>
+</div>
+<button class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                    Gestionar
+                </button>
+</div>
+</section>
+<!-- Sección Mi Cuota -->
+<section>
+<h2 class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-3 px-1">Estado de Suscripción</h2>
+<div class="bg-card-dark border border-slate-800 border-t-2 border-t-primary/40 rounded-2xl p-5 flex items-center justify-between">
+<div class="space-y-1">
+<p class="text-slate-400 text-xs font-medium">Próximo Vencimiento</p>
+<p class="text-slate-100 font-semibold italic">15 de Noviembre, 2024</p>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="bg-emerald-500/10 text-emerald-500 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-tighter border border-emerald-500/20">Al día</span>
+<button class="text-accent text-xs hover:underline">Ver facturas</button>
+</div>
+</div>
+</section>
+<!-- Sección Mis Métricas -->
+<section>
+<h2 class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-3 px-1">Mis Métricas</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-card-dark border border-slate-800 border-t-2 border-t-primary/40 rounded-2xl p-4 flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="text-slate-500 text-xs font-medium">Peso Actual</span>
+<span class="material-symbols-outlined text-accent text-lg">monitor_weight</span>
+</div>
+<div>
+<div class="flex items-baseline gap-1">
+<span class="text-3xl font-bold text-slate-100">78.5</span>
+<span class="text-slate-500 text-sm">kg</span>
+</div>
+<a class="text-accent text-xs mt-2 inline-block font-medium" href="#">Ver historial</a>
+</div>
+</div>
+<div class="bg-card-dark border border-slate-800 border-t-2 border-t-primary/40 rounded-2xl p-4 flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="text-slate-500 text-xs font-medium">% Grasa</span>
+<span class="material-symbols-outlined text-accent text-lg">percent</span>
+</div>
+<div>
+<div class="flex items-baseline gap-1">
+<span class="text-3xl font-bold text-slate-100">14.2</span>
+<span class="text-slate-500 text-sm">%</span>
+</div>
+<a class="text-accent text-xs mt-2 inline-block font-medium" href="#">Ver historial</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Sección Fotos de Progreso -->
+<section>
+<div class="flex justify-between items-center mb-3 px-1">
+<h2 class="text-slate-500 text-xs font-bold uppercase tracking-widest">Fotos de Progreso</h2>
+<button class="text-accent text-xs font-medium">Ver todas</button>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-4">
+<div class="aspect-square rounded-lg bg-slate-800 overflow-hidden">
+<img class="w-full h-full object-cover opacity-60" data-alt="Foto de progreso fitness en el espejo de perfil" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD4KxJ8aZSBefKkL2AzzFsiQcpdTT2xZfHJL771dVyRK-ke-3AQGFnter09LTRavKmbf1fIpV1BDbBOSjxfoAUe5cJ1OC5mt6mKcZHGvGpr5iesfUPdTlmCUX_NVELqHfl2NYcHaTCEd6yYtPVOFmLpI3voLrBSnzH5M4V4lGLXve3qrGGImU7pcAa-Jw1UqaumqA_7x9h9tmS8DcgySru1iVm-AL8zSx7bWLmIYnZaMr5vi1KHgMURqmHZZSLJjmAvW1F-LKlDQz4"/>
+</div>
+<div class="aspect-square rounded-lg bg-slate-800 overflow-hidden border border-primary/30">
+<img class="w-full h-full object-cover opacity-80" data-alt="Foto de progreso fitness frente al gimnasio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPhzK_zhGlayxVWfyglOx6YRbhpJQPGjJADq_StgUy_8d5oRGsBFZsRPiNXzGgHkb_K81ImA75JU3_ZRJVdBWSnSPUgztw4uVIvwJDTegyvQc06QgG_wchXhcxYJCmqHUTFerafEVbECE_61bMI6y0Bp1MlAqhQYL0HtOOPQ0IVX5GUY7jIljEUtcVHNcSSEHIim8x1BG_tnupT_s7fcnUdJ3wSeBl7qKuRWMly9JpkUvkerY6gFw5iVdczyTWQiZeBcv4Ur5SWSYG"/>
+</div>
+<div class="aspect-square rounded-lg bg-slate-800 overflow-hidden">
+<img class="w-full h-full object-cover opacity-60" data-alt="Detalle de músculos de la espalda de un atleta" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBsJo4dUj4TTRhJp3HNzN1PJnjNCsmmj1VsGmA0ion4pwrd-eWLoUy81HKbi4fNsyHHB1OZT1aqgznh1tGUToV7YBenUidcP1LhHsEtefLcpsAwEh11eZ46cXYsjvUzpZbMmds3nkM49QQzqstLL49LtR4JKuYk8Oy39v5BqmjdVBKCOZ8SvvBgMsdiFrMJZntOoATVaUOjQPSG8URk8AB1Mb_y0I9Mz-C4VYjsAfPDP_caGGsYeWsAgLSyXIm1sysLQUt2Ca3qf_Y"/>
+</div>
+<div class="aspect-square rounded-lg bg-slate-900 border border-dashed border-slate-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-600">more_horiz</span>
+</div>
+</div>
+<button class="btn-primary w-full py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm tracking-wider text-white">
+<span class="material-symbols-outlined">photo_camera</span>
+                SUBIR FOTO
+            </button>
+</section>
+<!-- Sección Mis Datos -->
+<section class="space-y-3">
+<h2 class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-3 px-1">Configuración</h2>
+<button class="w-full flex items-center justify-between p-4 bg-card-dark border border-slate-800 rounded-xl hover:bg-slate-800/50 transition-colors group">
+<div class="flex items-center gap-3 text-slate-300">
+<span class="material-symbols-outlined text-accent group-hover:scale-110 transition-transform">person</span>
+<span class="font-medium">Información Personal</span>
+</div>
+<span class="material-symbols-outlined text-slate-600">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 bg-card-dark border border-slate-800 rounded-xl hover:bg-slate-800/50 transition-colors group">
+<div class="flex items-center gap-3 text-slate-300">
+<span class="material-symbols-outlined text-accent group-hover:scale-110 transition-transform">alternate_email</span>
+<span class="font-medium">Email / Contacto</span>
+</div>
+<span class="material-symbols-outlined text-slate-600">chevron_right</span>
+</button>
+</section>
+<!-- Cerrar Sesión -->
+<section class="pt-4">
+<button class="w-full py-4 text-red-400/80 font-semibold flex items-center justify-center gap-2 border border-red-900/20 rounded-xl hover:bg-red-500/5 transition-colors">
+<span class="material-symbols-outlined text-xl">logout</span>
+                Cerrar Sesión
+            </button>
+<p class="text-center text-slate-600 text-[10px] mt-6 uppercase tracking-widest">Versión 2.4.1 Premium Edition</p>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-background-dark/80 backdrop-blur-xl border-t border-slate-800/50 px-6 py-3 flex justify-between items-center z-50">
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-accent transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Inicio</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-accent transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">fitness_center</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Entreno</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 hover:text-accent transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">restaurant</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Nutrición</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary nav-active-dot" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1">person</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Perfil</span>
+</a>
+</nav>
+</body></html>

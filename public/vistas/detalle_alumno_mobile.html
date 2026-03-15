@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7C3AED",
+                        "accent": "#A78BFA",
+                        "background-dark": "#0D0B14",
+                        "card-dark": "#14112A",
+                        "border-dark": "#1E1B30",
+                        "background-light": "#f7f6f8",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.02) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(167,139,250,0.15);
+        }
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .glass-panel {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 28px rgba(124,58,237,0.5);
+            transform: translateY(-1px);
+        }
+        .avatar-gradient-ring {
+            background: linear-gradient(135deg, #7C3AED, #A78BFA);
+            padding: 2px;
+            border-radius: 50%;
+        }
+        .sidebar-item-active {
+            background: linear-gradient(90deg, rgba(124,57,239,0.25) 0%, rgba(124,57,239,0) 100%);
+            border-left: 3px solid #7C3AED;
+        }
+        .nav-active-dot::after {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            background: #7C3AED;
+            border-radius: 50%;
+            margin: 2px auto 0;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto border-x border-primary/10">
+<header class="sticky top-0 z-50 flex items-center bg-background-dark/80 backdrop-blur-md p-4 justify-between border-b border-primary/20">
+<div class="flex items-center gap-3">
+<a class="text-slate-100 flex items-center justify-center hover:bg-primary/20 rounded-full p-2 transition-colors" href="#">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+<div>
+<h2 class="text-slate-100 text-lg font-bold leading-tight tracking-tight">Juan Pérez</h2>
+<p class="text-primary text-xs font-medium uppercase tracking-wider">Alumno Premium</p>
+</div>
+</div>
+<div class="flex items-center">
+<button class="flex items-center justify-center rounded-full p-2 text-slate-100 hover:bg-primary/20">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<main class="flex-1 pb-24">
+<section class="flex p-6">
+<div class="flex w-full flex-col gap-4 items-center">
+<div class="relative">
+<div class="avatar-gradient-ring">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-24 w-24" data-alt="Retrato primer plano de atleta masculino joven" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBbRDIS5Xjrb2TlmwoiiMsBs4wZuqKn2itaB0bWGtRf4vCyyT9g7sHj8kLDvc5xGvFagbojAu625lD4m04RI4B2bjgsmbMPD6Ac7KtG5iP5qQyOSC8HSkSqqtjetG1hWgEt0dmcSph08MrtLzALaT68BaHzTBbpbH4lnk_aox0tLOE2rkUYuhNiQxJiCw6J_CKSnZqsd0l3VjezYt6EH5MlmP99Kt5sBKNXY8R0bATToGqwS-sBnK8czdqFQMfohF0bJWwTZCxneUsj");'></div>
+</div>
+<div class="absolute bottom-0 right-0 bg-green-500 w-5 h-5 rounded-full border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col items-center">
+<p class="text-slate-400 text-sm font-medium">Plan Mensual • Día 15/30</p>
+</div>
+</div>
+</section>
+<section class="px-4 mb-6">
+<div class="flex items-center justify-between mb-3 px-1">
+<h3 class="text-slate-100 text-base font-bold tracking-tight">Información de Registro</h3>
+<span class="material-symbols-outlined text-primary text-xl">info</span>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+<div class="flex flex-col gap-2 rounded-xl glass-card p-3">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+<div>
+<p class="text-slate-100 text-sm font-bold">28 años</p>
+<p class="text-slate-400 text-[10px] uppercase font-semibold">Edad</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl glass-card p-3">
+<span class="material-symbols-outlined text-primary">fitness_center</span>
+<div>
+<p class="text-slate-100 text-sm font-bold">75 kg</p>
+<p class="text-slate-400 text-[10px] uppercase font-semibold">Peso Inicial</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl glass-card p-3">
+<span class="material-symbols-outlined text-primary">straighten</span>
+<div>
+<p class="text-slate-100 text-sm font-bold">178 cm</p>
+<p class="text-slate-400 text-[10px] uppercase font-semibold">Altura</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl glass-card p-3">
+<span class="material-symbols-outlined text-primary">target</span>
+<div>
+<p class="text-slate-100 text-sm font-bold leading-none">Hipertrofia</p>
+<p class="text-slate-400 text-[10px] uppercase font-semibold">Objetivo</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl glass-card p-3">
+<span class="material-symbols-outlined text-primary">schedule</span>
+<div>
+<p class="text-slate-100 text-sm font-bold">L-M-V</p>
+<p class="text-slate-400 text-[10px] uppercase font-semibold">Horario</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl glass-card p-3">
+<span class="material-symbols-outlined text-primary">healing</span>
+<div>
+<p class="text-slate-100 text-sm font-bold">Ninguna</p>
+<p class="text-slate-400 text-[10px] uppercase font-semibold">Lesiones</p>
+</div>
+</div>
+</div>
+</section>
+<section class="px-4 mb-6">
+<div class="glass-card border-primary/30 rounded-2xl p-4 flex items-center justify-between" style="background: linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(124,58,237,0.04) 100%)">
+<div class="flex items-center gap-3">
+<div class="bg-primary/30 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+</div>
+<div>
+<p class="text-slate-100 text-sm font-bold">Estado de Pago</p>
+<p class="text-slate-400 text-xs">Vence el 15 Mayo, 2024</p>
+</div>
+</div>
+<button class="btn-primary text-white text-xs font-bold py-2 px-4 rounded-lg transition-all active:scale-95">
+                        Registrar Pago
+                    </button>
+</div>
+</section>
+<section class="px-4 mb-6">
+<div class="grid grid-cols-2 gap-4">
+<button class="group relative overflow-hidden flex flex-col items-center justify-center gap-2 aspect-square rounded-2xl glass-card hover:border-primary/40 transition-all">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-3xl text-primary mb-1">list_alt</span>
+<p class="text-slate-100 font-bold text-sm">Gestionar Rutina</p>
+</button>
+<button class="group relative overflow-hidden flex flex-col items-center justify-center gap-2 aspect-square rounded-2xl glass-card hover:border-primary/40 transition-all">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-3xl text-primary mb-1">restaurant_menu</span>
+<p class="text-slate-100 font-bold text-sm">Gestionar Dieta</p>
+</button>
+</div>
+</section>
+<section class="px-4 mb-6">
+<h3 class="text-slate-100 text-base font-bold mb-3 px-1">Métricas y Progreso</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl">
+<div class="flex justify-between items-start mb-1">
+<p class="text-slate-400 text-xs font-medium">Peso Actual</p>
+<span class="text-green-400 text-[10px] font-bold flex items-center">-1.2kg <span class="material-symbols-outlined text-xs">arrow_downward</span></span>
+</div>
+<p class="text-xl font-black text-slate-100">73.8 <span class="text-xs font-normal text-slate-400">kg</span></p>
+<div class="w-full h-1 bg-slate-700 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary h-full w-[65%]"></div>
+</div>
+</div>
+<div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl">
+<div class="flex justify-between items-start mb-1">
+<p class="text-slate-400 text-xs font-medium">% Grasa</p>
+<span class="text-green-400 text-[10px] font-bold flex items-center">-0.5% <span class="material-symbols-outlined text-xs">arrow_downward</span></span>
+</div>
+<p class="text-xl font-black text-slate-100">14.2 <span class="text-xs font-normal text-slate-400">%</span></p>
+<div class="w-full h-1 bg-slate-700 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary h-full w-[40%]"></div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-4 mb-10">
+<div class="flex items-center justify-between mb-3 px-1">
+<h3 class="text-slate-100 text-base font-bold">Fotos de Progreso</h3>
+<a class="text-primary text-xs font-bold flex items-center" href="#">Ver todas <span class="material-symbols-outlined text-xs ml-1">chevron_right</span></a>
+</div>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+<div class="flex-shrink-0 w-40">
+<div class="relative h-56 rounded-xl overflow-hidden bg-slate-800 border border-slate-700">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Foto de progreso torso atleta antes" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB1PTpMIEUxtiuRN-bZitH2Q_zLF28DIRf5yFiWxdqqksfro4Zr0Kjht1zyx-Z4dWHjtBpkMfeREHl-GjbDFaL5ybpCzp5ZCWSkhhQRvrloEBIaX8SNstwd3bivndL9wZOtlHl9iTMSgU5Uba0ULLJNxSOl6QEgITlNIgJu8lsQ8XCkXObZc74AzFVQDUIxJOu2OP3Za_pRXrGFpDk709sXXJHuanAvDlQoRUfQ-a0ff7WYOcQJrvIgq19YOdBPAUj4MvQKTECTSMbN')"></div>
+<div class="absolute bottom-2 left-2 bg-background-dark/80 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-wider">Enero 2024</div>
+<div class="absolute top-2 right-2 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-slate-300 uppercase tracking-wider">Antes</div>
+</div>
+</div>
+<div class="flex-shrink-0 w-40">
+<div class="relative h-56 rounded-xl overflow-hidden bg-slate-800 border border-slate-700">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Foto de progreso torso atleta después" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAyhEcZeJghh_-yuUuF8y8_3IHGtxowFwY_u9mmKM3Zd592RgvMZMb2ubgIJutChVgf2tJf8xNGTjx34YCblDYONf0Byhx_W2uok46PCB-y1Kk9P1e6R9zZ5TZdBLNvbbhZOV_lDkjW3aPsrVwLzzBSmvs-HjJpFaQvJPKplGabu_BwuxKaLpJptfkcEsOUa6DvOVQPrsJl0MkLDU8ZRxbauvK1TBoD5ezUuewZNmc91exOQGusmE2ER63pwU1fLmTs1kvLBRd4Og0y')"></div>
+<div class="absolute bottom-2 left-2 bg-background-dark/80 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-wider">Marzo 2024</div>
+<div class="absolute top-2 right-2 bg-green-500/80 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-wider">Actual</div>
+</div>
+</div>
+<div class="flex-shrink-0 w-40 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-700 bg-slate-800/20 group hover:border-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary mb-2">add_a_photo</span>
+<p class="text-slate-500 group-hover:text-primary text-xs font-bold">Nueva Foto</p>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/90 backdrop-blur-lg border-t border-slate-800 px-6 py-3 flex items-center justify-between z-50">
+<a class="flex flex-col items-center gap-1 text-slate-400 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Panel</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary nav-active-dot transition-colors" href="#">
+<span class="material-symbols-outlined font-fill">group</span>
+<span class="text-[10px] font-medium">Alumnos</span>
+</a>
+<div class="relative -top-6">
+<button class="bg-primary text-white p-4 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transform active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center gap-1 text-slate-400 transition-colors" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-[10px] font-medium">Chat</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Perfil</span>
+</a>
+</nav>
+</div>
+</body></html>

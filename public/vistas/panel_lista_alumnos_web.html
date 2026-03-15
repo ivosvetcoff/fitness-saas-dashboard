@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Panel del Profesor - Academia Premium</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7C3AED",
+                        "accent": "#A78BFA",
+                        "background-dark": "#0D0B14",
+                        "card-dark": "#14112A",
+                        "border-dark": "#1E1B30",
+                        "background-light": "#f7f6f8",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.02) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(167,139,250,0.15);
+        }
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .glass-panel {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 28px rgba(124,58,237,0.5);
+            transform: translateY(-1px);
+        }
+        .avatar-gradient-ring {
+            background: linear-gradient(135deg, #7C3AED, #A78BFA);
+            padding: 2px;
+            border-radius: 50%;
+        }
+        .sidebar-item-active {
+            background: linear-gradient(90deg, rgba(124,57,239,0.25) 0%, rgba(124,57,239,0) 100%);
+            border-left: 3px solid #7C3AED;
+        }
+        .nav-active-dot::after {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            background: #7C3AED;
+            border-radius: 50%;
+            margin: 2px auto 0;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="relative w-64 border-r border-slate-200 dark:border-primary/20 flex flex-col h-screen sticky top-0 bg-background-light dark:bg-background-dark">
+<div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 rounded-lg flex items-center justify-center text-white" style="background: linear-gradient(135deg, #7C3AED, #6D28D9)">
+<span class="material-symbols-outlined">school</span>
+</div>
+<div>
+<h1 class="font-bold text-sm tracking-tight">Academia Premium</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400">Panel del Profesor</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Panel</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 sidebar-item-active text-primary rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Alumnos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">library_books</span>
+<span class="text-sm font-medium">Biblioteca</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-sm font-medium">Finanzas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Configuración</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-primary/10">
+<button class="btn-primary w-full text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+<span class="text-sm">Nueva Clase</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto">
+<!-- Header -->
+<header class="p-8 flex flex-wrap justify-between items-center gap-6">
+<div>
+<h2 class="text-3xl font-black tracking-tight mb-1">Gestión de Alumnos</h2>
+<p class="text-slate-500 dark:text-slate-400">Administra y supervisa el progreso de tus estudiantes en tiempo real.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="glass-panel px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+                    Exportar
+                </button>
+<button class="btn-primary text-white px-6 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">person_add</span>
+                    Añadir Alumno
+                </button>
+</div>
+</header>
+<!-- Stats Dashboard -->
+<section class="px-8 pb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">groups</span>
+</div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Total Alumnos</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold">128</span>
+<span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+5%</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">payments</span>
+</div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Ingresos Mes</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold">€4,250</span>
+<span class="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+12%</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl relative overflow-hidden group border-orange-500/20">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">pending_actions</span>
+</div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Pagos Pendientes</p>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold">12</span>
+<span class="text-xs font-bold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">-2%</span>
+</div>
+</div>
+</section>
+<!-- Search and Filters -->
+<section class="px-8 pb-6 flex flex-wrap gap-4 items-center">
+<div class="flex-1 min-w-[300px] relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-card-dark border border-border-dark rounded-lg pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-primary text-sm" placeholder="Buscar por nombre, plan o estado..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="glass-panel px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
+                    Estado: Todos <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="glass-panel px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
+                    Plan: Pro <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+</section>
+<!-- Students Table -->
+<section class="px-8 pb-12">
+<div class="glass-panel rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-card-dark border-b border-slate-200 dark:border-white/10">
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Nombre</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Objetivo</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Plan</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Estado Pago</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Última Sesión</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-white/5">
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-gradient-to-tr from-primary to-purple-400 flex items-center justify-center text-white font-bold text-xs" data-alt="Perfil del estudiante Carlos Ruiz" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBhYhZAPYCR3lAdoCHM_pFOSray6yJ0qiRcJ_pJjRDD-4uu0mjVBz2OuxSHg-sjqACuiZNN_2jetiCOwrt3hfUcjiCZoeka5DAPn3gT4TIBHqyq2kei57rGW5pRI2CK-4ZvcVnnYfY_1hEepTisHNd_ITI4TSN3zdzsZX49xpgtUbt2H3rQTHyHOeeRp4iP4q-VB8dhx0mErKS3tNWPn3NayRSCtd6E_W1jGy9-eDyYVizCjzqVmebUlQTQztSI8CYoc9bM0b7tIBT-'); background-size: cover;">CR</div>
+<div>
+<p class="text-sm font-semibold">Carlos Ruiz</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">carlos.r@gmail.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Data Science</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase">Anual Premium</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-bold">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> AL DÍA
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Hoy, 10:30 AM</td>
+<td class="px-6 py-4">
+<button class="p-1 hover:bg-primary/20 rounded transition-colors text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-gradient-to-tr from-primary/80 to-accent/80 flex items-center justify-center text-white font-bold text-xs" data-alt="Perfil de la estudiante Ana Beltrán" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC7FnRCru9z0rDXMWI53KinH1eQ3lgA9HjJc-ZuBdh7jI21cRRZKbgBogEC78fh4pGxbO2xEso9gbn5bAgHFDyHaagFjKG5DUkGyTEXSj1srxtNdOdsSO181E1hMBPuJIH06dVPld4TAxxGgq2ETYwzL6EVW10IcWfO09bMFFMDhFtOsejOh3_5j-aGRrm0hfH1sPIhBynpRo8WyNp7xU0Yic6Fs65e9MxGN0peoVSWIH2iOo0lb6E8PUA-hScOFr9kc-Qs79_7KBZf'); background-size: cover;">AB</div>
+<div>
+<p class="text-sm font-semibold">Ana Beltrán</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">ana.b@outlook.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Fullstack Dev</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase">Mensual</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold">
+<span class="size-1.5 rounded-full bg-red-500"></span> PENDIENTE
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">Ayer, 04:15 PM</td>
+<td class="px-6 py-4">
+<button class="p-1 hover:bg-primary/20 rounded transition-colors text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-gradient-to-tr from-primary/80 to-accent/80 flex items-center justify-center text-white font-bold text-xs" data-alt="Perfil del estudiante Lucas Méndez" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBqJgPa60bh-EIv5FRgkiOMPh4I4XcGvKJO03xP0gc9tUBE2Fimv0ei8dAdjEYIh_fW7h2ZuOxkQKhTWECHaf0vtQ2LaNQp4c4rZO9HXyP-lejEPGnm_4Die9tEc_t4mITuUtH8I5SWfxfG0J-zzjsY0cjRSP6F3Uk54vXJI08a_m1OEeFgICN9rQTcwx7YHRrdOyNMiKwzeleyFHJ4UKEAZ_6H3Svj2Y7UJs_ETEQiw8V98cFFvzxQD8Jf_1g1qpjqzQIjvD7mFlBR'); background-size: cover;">LM</div>
+<div>
+<p class="text-sm font-semibold">Lucas Méndez</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">lucas.m@hey.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">UI/UX Design</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase">Anual Premium</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-bold">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> AL DÍA
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">22 May, 09:00 AM</td>
+<td class="px-6 py-4">
+<button class="p-1 hover:bg-primary/20 rounded transition-colors text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-gradient-to-tr from-primary/80 to-accent/80 flex items-center justify-center text-white font-bold text-xs" data-alt="Perfil de la estudiante Sofia Gomez" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAaoovRGJMzFAGcmN123BALM4qiWuc3sI-hb4juCJQGHBPI2zE3gosuqCS6IV_97okkSqY3z2rUxzUfLr981eWLKDAdxxiH4NWxdvOd8CkJxlKaw9WE8a8CIl78ZYOJn5cVIB3Pi-36UpbyypHabBJleQH_HyPy5QWDAEJ4TH9ILMSE38RhXzgliBwrXQXlmq6q51Pf-cNjanZBcPNsuoERMeMO0lrfYEPrJTVTOCYHEfEvikScHdggAKhUuO2djsp_DKiSNmabO4oQ'); background-size: cover;">SG</div>
+<div>
+<p class="text-sm font-semibold">Sofia Gomez</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">sofi.g@gmail.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">Marketing Digital</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase">Mensual</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-bold">
+<span class="size-1.5 rounded-full bg-emerald-500"></span> AL DÍA
+                                </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">20 May, 11:30 AM</td>
+<td class="px-6 py-4">
+<button class="p-1 hover:bg-primary/20 rounded transition-colors text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-between">
+<p class="text-xs text-slate-500 dark:text-slate-400">Mostrando 4 de 128 alumnos</p>
+<div class="flex gap-2">
+<button class="glass-panel p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="glass-panel p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>
