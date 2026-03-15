@@ -8,12 +8,12 @@
 
   --bg-main: #0D0B14;
   --bg-app: #0D0B14;
-  --bg-sidebar: #080610;
-  --bg-card: rgba(20, 17, 42, 0.75);
-  --bg-card-hover: rgba(28, 24, 50, 0.9);
+  --bg-sidebar: #0A0816;
+  --bg-card: #14112A;
+  --bg-card-hover: #1E1B30;
   --bg-input: rgba(255, 255, 255, 0.05);
 
-  --border-color: rgba(255, 255, 255, 0.07);
+  --border-color: #1E1B30;
   --border-subtle: rgba(255, 255, 255, 0.04);
   --border-focus: #7C3AED;
 

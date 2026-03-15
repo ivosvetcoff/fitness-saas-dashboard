@@ -689,7 +689,7 @@ export default function App() {
           </p>
 
           {/* Datos bancarios */}
-          <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '16px', padding: '20px 24px', width: '100%', maxWidth: '340px', marginTop: '24px', textAlign: 'left' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '20px 24px', width: '100%', maxWidth: '340px', marginTop: '24px', textAlign: 'left' }}>
             <div style={{ color: '#A78BFA', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '14px' }}>Datos para el pago</div>
             <div style={{ color: '#71717A', fontSize: '0.75rem', marginBottom: '8px' }}>Cuota mensual</div>
             <div style={{ color: '#FAFAFA', fontSize: '1.8rem', fontWeight: 900, marginBottom: '16px' }}>{PAGO.precio}</div>
@@ -820,13 +820,13 @@ export default function App() {
           </p>
 
           {/* Monto */}
-          <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '18px 24px', width: '100%', maxWidth: '320px', marginBottom: '12px' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '18px 24px', width: '100%', maxWidth: '320px', marginBottom: '12px' }}>
             <div style={{ color: '#71717A', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Cuota mensual</div>
             <div style={{ color: '#A78BFA', fontSize: '2rem', fontWeight: 900 }}>{PAGO.precio}</div>
           </div>
 
           {/* Datos bancarios */}
-          <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px 20px', width: '100%', maxWidth: '320px', marginBottom: '20px', textAlign: 'left' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '16px 20px', width: '100%', maxWidth: '320px', marginBottom: '20px', textAlign: 'left' }}>
             <div style={{ color: '#71717A', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Datos de transferencia</div>
 
             {[
@@ -1397,7 +1397,7 @@ export default function App() {
                       {ch.description && <p style={{ color: '#71717A', fontSize: '0.82rem', marginBottom: '12px' }}>{ch.description}</p>}
                       {!isEnrolled ? (
                         stEnrolling === ch.id ? (
-                          <div style={{ background: '#18181B', borderRadius: '10px', padding: '12px', marginTop: '8px' }}>
+                          <div style={{ background: 'var(--bg-card)', borderRadius: '10px', padding: '12px', marginTop: '8px' }}>
                             <p style={{ fontSize: '0.82rem', color: '#A1A1AA', marginBottom: '8px' }}>¿Qué versión del reto querés?</p>
                             <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                               {['hombre', 'mujer'].map(g => (
@@ -1424,7 +1424,7 @@ export default function App() {
                           </button>
                         )
                       ) : (
-                        <div style={{ background: '#18181B', borderRadius: '10px', padding: '12px', marginTop: '8px' }}>
+                        <div style={{ background: 'var(--bg-card)', borderRadius: '10px', padding: '12px', marginTop: '8px' }}>
                           {(myEnrollment.gender === 'hombre' ? ch.routine_hombre : ch.routine_mujer) ? (
                             <>
                               <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '6px' }}>Tu rutina:</p>
@@ -1579,7 +1579,7 @@ export default function App() {
                   </div>
                   {stShowMetricHistory && (
                     <div>
-                      <div style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
                         <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A1A1AA', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Registrar nueva medición</p>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
                           <div><label style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginBottom: '4px', fontWeight: 700 }}>Fecha</label><input type="date" value={stMetricForm.fecha} onChange={e => setStMetricForm(f => ({ ...f, fecha: e.target.value }))} style={{ width: '100%', background: '#27272A', border: '1px solid #3F3F46', borderRadius: '8px', color: '#fff', padding: '8px 10px', fontSize: '0.88rem' }} /></div>
@@ -1596,7 +1596,7 @@ export default function App() {
                       ) : stMetrics.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '24px 20px', color: '#52525B' }}><p style={{ fontSize: '0.88rem' }}>Todavía no registraste métricas.</p></div>
                       ) : [...stMetrics].reverse().map((m, i) => (
-                        <div key={m.id || i} style={{ background: '#18181B', border: '1px solid #3F3F46', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
+                        <div key={m.id || i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
                           <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#A78BFA', marginBottom: '10px' }}>{m.fecha}</p>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                             {m.peso != null && <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff' }}>{m.peso}</div><div style={{ fontSize: '0.65rem', color: '#71717A', textTransform: 'uppercase' }}>Peso kg</div></div>}
@@ -1617,7 +1617,7 @@ export default function App() {
                   {/* 3 upload areas */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
                     {[{ tipo: 'frente', label: 'Frente', emoji: '⬆️' }, { tipo: 'espalda', label: 'Espalda', emoji: '⬇️' }, { tipo: 'lateral', label: 'Lateral', emoji: '➡️' }].map(({ tipo, label, emoji }) => (
-                      <label key={tipo} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', background: '#18181B', border: '2px dashed #27272A', borderRadius: '12px', padding: '14px 8px', cursor: stPhotoUploading ? 'default' : 'pointer', opacity: stPhotoUploading ? 0.6 : 1, textAlign: 'center' }}>
+                      <label key={tipo} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', background: 'var(--bg-card)', border: '2px dashed var(--border-color)', borderRadius: '12px', padding: '14px 8px', cursor: stPhotoUploading ? 'default' : 'pointer', opacity: stPhotoUploading ? 0.6 : 1, textAlign: 'center' }}>
                         <span style={{ fontSize: '20px' }}>{emoji}</span>
                         <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#A1A1AA' }}>{label}</span>
                         <span style={{ fontSize: '0.62rem', color: '#52525B' }}>{stPhotoUploading ? 'Subiendo...' : 'Subir foto'}</span>
@@ -1654,7 +1654,7 @@ export default function App() {
                               const tipo = getTipo(photo);
                               return (
                                 <div key={photo.id} style={{ flexShrink: 0, width: '100px' }}>
-                                  <div style={{ height: '130px', borderRadius: '10px', overflow: 'hidden', background: '#18181B' }}>
+                                  <div style={{ height: '130px', borderRadius: '10px', overflow: 'hidden', background: 'var(--bg-card)' }}>
                                     <img src={photo.photo_url} alt={tipo || 'progreso'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                   </div>
                                   {tipo && <p style={{ fontSize: '0.65rem', textAlign: 'center', color: '#A78BFA', marginTop: '4px', fontWeight: 700 }}>{TIPO_LABELS[tipo]}</p>}
@@ -1683,7 +1683,7 @@ export default function App() {
                         {stProfileEditing ? <ChevronUp size={16} color="#71717A" /> : <ChevronDown size={16} color="#71717A" />}
                       </button>
                       {stProfileEditing && (
-                        <div style={{ background: '#18181B', border: '1px solid #27272A', borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '16px' }}>
+                        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '16px' }}>
                           {[{ label: 'Peso actual (kg)', key: 'weight_kg', type: 'number', ph: 'Ej: 75' }, { label: 'Altura (cm)', key: 'height_cm', type: 'number', ph: 'Ej: 175' }, { label: 'WhatsApp', key: 'whatsapp', type: 'tel', ph: '+54 9 11 0000 0000' }, { label: 'Días disponibles por semana', key: 'dias_disponibles', type: 'number', ph: '3' }].map(f => (
                             <div key={f.key} style={{ marginBottom: '12px' }}>
                               <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{f.label}</label>
