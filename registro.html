@@ -910,7 +910,7 @@
         try {
           const formData = new FormData();
           formData.append('file', fotoFile);
-          await fetch(`${BACKEND_URL}/student/${data.student_id}/profile-photo`, {
+          await fetch(`${BACKEND_URL}/student/${data.student.id}/profile-photo`, {
             method: 'POST',
             body: formData,
           });

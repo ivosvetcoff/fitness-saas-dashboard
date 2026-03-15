@@ -877,9 +877,10 @@ export default function App() {
           <div className="student-topbar-right">
             <div className="student-streak-badge"><Flame size={14} color="#F59E0B" /> {stStreak.streak} días</div>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', background: '#27272A', border: '2px solid #7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 800, color: '#A78BFA', flexShrink: 0, cursor: 'pointer' }} onClick={() => setStudentScreen('profile')}>
-              {stStudentData?.foto_perfil_url
-                ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                : loggedInUser?.name?.charAt(0)?.toUpperCase()}
+              {(stStudentData?.profile_photo_url || loggedInUser?.avatar_url)
+                ? <img src={stStudentData?.profile_photo_url || loggedInUser?.avatar_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex'); }} />
+                : null}
+              {!(stStudentData?.profile_photo_url || loggedInUser?.avatar_url) && (loggedInUser?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?')}
             </div>
             <button className="btn-icon-sm" onClick={handleLogout} title="Cerrar sesión"><LogOut size={18} /></button>
           </div>
@@ -922,9 +923,9 @@ export default function App() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0 20px 0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: 'rgba(124,58,237,0.2)', border: '2px solid rgba(124,58,237,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 800, color: '#A78BFA', flexShrink: 0 }}>
-                    {stStudentData?.foto_perfil_url
-                      ? <img src={stStudentData.foto_perfil_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : loggedInUser?.name?.charAt(0)?.toUpperCase()}
+                    {(stStudentData?.profile_photo_url || loggedInUser?.avatar_url)
+                      ? <img src={stStudentData?.profile_photo_url || loggedInUser?.avatar_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }}/>
+                      : (loggedInUser?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?')}
                   </div>
                   <div>
                     <p style={{ color: '#71717A', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px' }}>Bienvenido</p>
@@ -1460,8 +1461,8 @@ export default function App() {
                     <div style={{ width: '112px', height: '112px', borderRadius: '50%', border: '2px solid #7C3AED', padding: '3px', boxSizing: 'border-box' }}>
                       <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: 'rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {(stStudentData?.profile_photo_url || loggedInUser?.avatar_url)
-                          ? <img src={stStudentData?.profile_photo_url || loggedInUser?.avatar_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#A78BFA' }}>{loggedInUser.name?.charAt(0).toUpperCase()}</span>}
+                          ? <img src={stStudentData?.profile_photo_url || loggedInUser?.avatar_url} alt="perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
+                          : <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#A78BFA' }}>{loggedInUser.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'}</span>}
                       </div>
                     </div>
                     <button
@@ -2104,7 +2105,7 @@ export default function App() {
                     <div key={p.id} style={{ background: '#0f0d18', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '16px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                         <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#1a1726', border: '2px solid #EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 800, flexShrink: 0, overflow: 'hidden' }}>
-                          {p.profile_photo_url ? <img src={p.profile_photo_url} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.name?.charAt(0).toUpperCase()}
+                          {p.profile_photo_url ? <img src={p.profile_photo_url} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} /> : (p.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?')}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontWeight: 800, fontSize: '1rem' }}>{p.name}</p>
@@ -2185,7 +2186,11 @@ export default function App() {
                 return (
                   <div key={s.id} className="card student-card interactive" onClick={() => handleStudentClick(s)}>
                     <div className="student-card-header">
-                      <div className="avatar avatar-student" style={{ backgroundColor: '#7C3AED', color: '#fff', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 700 }}>{s.name?.charAt(0).toUpperCase()}</div>
+                      <div className="avatar avatar-student" style={{ backgroundColor: '#7C3AED', color: '#fff', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700, overflow: 'hidden', flexShrink: 0 }}>
+                        {s.profile_photo_url
+                          ? <img src={s.profile_photo_url} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
+                          : (s.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?')}
+                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 className="student-name">{s.name}</h3>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginTop: '2px' }}>
@@ -2229,9 +2234,9 @@ export default function App() {
             <button className="btn-back" onClick={() => setCurrentView('ListaAlumnos')}><ChevronLeft size={20} /> Volver</button>
             <header className="profile-header">
               {selectedStudent.profile_photo_url
-                ? <img src={selectedStudent.profile_photo_url} alt="perfil" style={{ width: 64, height: 64, borderRadius: '20px', objectFit: 'cover', border: '2px solid #7C3AED' }} />
-                : <div className="avatar avatar-student" style={{ width: 64, height: 64, backgroundColor: '#7C3AED', color: '#fff', fontSize: '28px', fontWeight: 700, borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{selectedStudent.name?.charAt(0).toUpperCase()}</div>
-              }
+                ? <img src={selectedStudent.profile_photo_url} alt="perfil" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '2px solid #7C3AED' }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                : null}
+              <div className="avatar avatar-student" style={{ width: 64, height: 64, backgroundColor: '#7C3AED', color: '#fff', fontSize: '24px', fontWeight: 700, borderRadius: '50%', display: selectedStudent.profile_photo_url ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center' }}>{selectedStudent.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'}</div>
               <div>
                 <h1>{selectedStudent.name}</h1>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
