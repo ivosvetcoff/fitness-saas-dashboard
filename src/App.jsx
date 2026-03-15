@@ -613,14 +613,14 @@ export default function App() {
     finally { setStProfileSaving(false); }
   };
 
-  const stUploadPhoto = async (e) => {
+  const stUploadPhoto = async (e, tipo = 'frente') => {
     const file = e.target.files?.[0];
     if (!file) return;
     setStPhotoUploading(true);
     try {
       const form = new FormData();
       form.append('file', file);
-      form.append('tipo', stPhotoTipo);
+      form.append('tipo', tipo);
       await axios.post(`${API_URL}/student/${studentId}/photos`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
       await stFetchPhotos();
     } catch { alert('Error al subir la foto. Verificá que el bucket esté configurado en Supabase.'); }
@@ -1609,38 +1609,59 @@ export default function App() {
 
                 {/* Fotos de Progreso */}
                 <div style={{ marginBottom: '32px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', marginLeft: '4px' }}>
-                    <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0 }}>Fotos de Progreso</h3>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#7C3AED', color: '#fff', borderRadius: '8px', padding: '6px 12px', fontSize: '0.78rem', fontWeight: 700, cursor: stPhotoUploading ? 'default' : 'pointer', opacity: stPhotoUploading ? 0.6 : 1 }}>
-                      <span style={{ fontSize: '14px' }}>📷</span> {stPhotoUploading ? 'Subiendo...' : 'Subir'}
-                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
-                    </label>
+                  <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 12px 4px' }}>Fotos de Progreso</h3>
+                  {/* 3 upload areas */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                    {[{ tipo: 'frente', label: 'Frente', emoji: '⬆️' }, { tipo: 'espalda', label: 'Espalda', emoji: '⬇️' }, { tipo: 'lateral', label: 'Lateral', emoji: '➡️' }].map(({ tipo, label, emoji }) => (
+                      <label key={tipo} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', background: '#18181B', border: '2px dashed #27272A', borderRadius: '12px', padding: '14px 8px', cursor: stPhotoUploading ? 'default' : 'pointer', opacity: stPhotoUploading ? 0.6 : 1, textAlign: 'center' }}>
+                        <span style={{ fontSize: '20px' }}>{emoji}</span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#A1A1AA' }}>{label}</span>
+                        <span style={{ fontSize: '0.62rem', color: '#52525B' }}>{stPhotoUploading ? 'Subiendo...' : 'Subir foto'}</span>
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => stUploadPhoto(e, tipo)} disabled={stPhotoUploading} />
+                      </label>
+                    ))}
                   </div>
-                  <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
-                    {stPhotosLoading ? (
-                      <div style={{ padding: '20px', color: '#71717A', fontSize: '0.85rem' }}>Cargando...</div>
-                    ) : (
-                      <>
-                        {stPhotos.map(photo => (
-                          <div key={photo.id} style={{ flexShrink: 0, width: '128px' }}>
-                            <div style={{ height: '160px', borderRadius: '14px', overflow: 'hidden', background: '#18181B' }}>
-                              <img src={photo.photo_url} alt="progreso" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            </div>
-                            <p style={{ fontSize: '0.65rem', textAlign: 'center', color: '#71717A', marginTop: '6px', fontWeight: 500 }}>{new Date(photo.created_at).toLocaleDateString('es-AR')}</p>
+                  {/* Photo history grouped by date */}
+                  {stPhotosLoading ? (
+                    <div style={{ padding: '20px', color: '#71717A', fontSize: '0.85rem' }}>Cargando...</div>
+                  ) : stPhotos.length === 0 ? (
+                    <p style={{ fontSize: '0.8rem', color: '#52525B', textAlign: 'center', padding: '12px 0' }}>Aún no subiste fotos de progreso</p>
+                  ) : (
+                    (() => {
+                      const getTipo = (photo) => {
+                        const part = (photo.file_name || '').split('/').pop() || '';
+                        const prefix = part.split('_')[0];
+                        return ['frente', 'espalda', 'lateral'].includes(prefix) ? prefix : '';
+                      };
+                      const TIPO_LABELS = { frente: 'Frente', espalda: 'Espalda', lateral: 'Lateral' };
+                      const byDate = stPhotos.reduce((acc, p) => {
+                        const day = p.created_at?.substring(0, 10) || 'unknown';
+                        if (!acc[day]) acc[day] = [];
+                        acc[day].push(p);
+                        return acc;
+                      }, {});
+                      return Object.keys(byDate).sort((a, b) => b.localeCompare(a)).map(day => (
+                        <div key={day} style={{ marginBottom: '16px' }}>
+                          <p style={{ fontSize: '0.68rem', fontWeight: 700, color: '#71717A', marginBottom: '8px' }}>
+                            {new Date(day + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                          </p>
+                          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                            {byDate[day].map(photo => {
+                              const tipo = getTipo(photo);
+                              return (
+                                <div key={photo.id} style={{ flexShrink: 0, width: '100px' }}>
+                                  <div style={{ height: '130px', borderRadius: '10px', overflow: 'hidden', background: '#18181B' }}>
+                                    <img src={photo.photo_url} alt={tipo || 'progreso'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  </div>
+                                  {tipo && <p style={{ fontSize: '0.65rem', textAlign: 'center', color: '#A78BFA', marginTop: '4px', fontWeight: 700 }}>{TIPO_LABELS[tipo]}</p>}
+                                </div>
+                              );
+                            })}
                           </div>
-                        ))}
-                        <div style={{ flexShrink: 0, width: '128px' }}>
-                          <label style={{ cursor: 'pointer' }}>
-                            <div style={{ height: '160px', borderRadius: '14px', border: '2px dashed #27272A', background: 'rgba(24,24,27,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <Plus size={28} color="#3F3F46" />
-                            </div>
-                            <p style={{ fontSize: '0.65rem', textAlign: 'center', color: '#52525B', marginTop: '6px' }}>Nueva Foto</p>
-                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={stUploadPhoto} disabled={stPhotoUploading} />
-                          </label>
                         </div>
-                      </>
-                    )}
-                  </div>
+                      ));
+                    })()
+                  )}
                 </div>
 
                 {/* Mis Datos */}
@@ -2538,16 +2559,44 @@ export default function App() {
               <section className="card flex-col" style={{ gridColumn: '1 / -1' }}>
                 <div className="card-header"><Camera size={20} className="icon-accent" /><h2>Fotos de Progreso</h2></div>
                 {studentPhotos && studentPhotos.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', marginTop: '16px' }}>
-                    {studentPhotos.map(photo => (
-                      <div key={photo.id} style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #2a2640', background: '#0D0B14', cursor: 'pointer' }} onClick={() => setSelectedPhotoUrl(photo.photo_url)}>
-                        <img src={photo.photo_url} alt="Progreso" style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
-                        <div style={{ padding: '8px', textAlign: 'center', fontSize: '0.75rem', color: '#A1A1AA', fontWeight: 'bold' }}>
-                          {new Date(photo.created_at).toLocaleDateString('es-AR')}
-                        </div>
+                  (() => {
+                    const getTipo = (photo) => {
+                      const part = (photo.file_name || '').split('/').pop() || '';
+                      const prefix = part.split('_')[0];
+                      return ['frente', 'espalda', 'lateral'].includes(prefix) ? prefix : '';
+                    };
+                    const TIPO_LABELS = { frente: 'Frente', espalda: 'Espalda', lateral: 'Lateral' };
+                    const byDate = studentPhotos.reduce((acc, p) => {
+                      const day = p.created_at?.substring(0, 10) || 'unknown';
+                      if (!acc[day]) acc[day] = [];
+                      acc[day].push(p);
+                      return acc;
+                    }, {});
+                    return (
+                      <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {Object.keys(byDate).sort((a, b) => b.localeCompare(a)).map(day => (
+                          <div key={day}>
+                            <p style={{ fontSize: '0.72rem', fontWeight: 700, color: '#71717A', marginBottom: '10px' }}>
+                              {new Date(day + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                            </p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' }}>
+                              {byDate[day].map(photo => {
+                                const tipo = getTipo(photo);
+                                return (
+                                  <div key={photo.id} style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #2a2640', background: '#0D0B14', cursor: 'pointer' }} onClick={() => setSelectedPhotoUrl(photo.photo_url)}>
+                                    <img src={photo.photo_url} alt={tipo || 'Progreso'} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
+                                    <div style={{ padding: '6px 8px', textAlign: 'center' }}>
+                                      {tipo && <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#A78BFA', margin: 0 }}>{TIPO_LABELS[tipo]}</p>}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()
                 ) : (
                   <div className="empty-state" style={{ marginTop: '16px' }}>
                     <Camera size={40} className="empty-icon" />
