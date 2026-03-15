@@ -769,7 +769,7 @@ export default function App() {
     // Esperar datos de suscripción antes de mostrar cualquier pantalla
     if (stStudentDataLoading || (!stStudentData && studentId)) {
       return (
-        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ minHeight: '100vh', background: 'var(--bg-app)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Loader2 size={40} color="#7C3AED" className="spin-icon" />
         </div>
       );
@@ -782,7 +782,7 @@ export default function App() {
     // PENDIENTE: el alumno se registró pero Agustin todavía no lo activó
     if (stStudentData && studentStatus === 'PENDIENTE') {
       return (
-        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
+        <div style={{ minHeight: '100vh', background: 'var(--bg-app)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
           <div style={{ fontSize: '4rem', marginBottom: '20px', animation: 'spin 3s linear infinite' }}>🔥</div>
           <h1 style={{ color: '#FAFAFA', fontSize: '1.5rem', fontWeight: 800 }}>Tu plan esta siendo preparado</h1>
           <p style={{ color: '#A1A1AA', marginTop: '12px', maxWidth: '300px', lineHeight: 1.6, fontSize: '0.95rem' }}>
@@ -812,7 +812,7 @@ export default function App() {
       );
       const copy = (txt) => navigator.clipboard.writeText(txt);
       return (
-        <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', textAlign: 'center' }}>
+        <div style={{ minHeight: '100vh', background: 'var(--bg-app)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', textAlign: 'center' }}>
           <Dumbbell size={44} color="#7C3AED" style={{ marginBottom: '14px' }} />
           <h1 style={{ color: '#FAFAFA', fontSize: '1.4rem', fontWeight: 800, marginBottom: '6px' }}>Renovar suscripción</h1>
           <p style={{ color: '#A1A1AA', fontSize: '0.88rem', maxWidth: '300px', lineHeight: 1.5, marginBottom: '20px' }}>
@@ -935,7 +935,7 @@ export default function App() {
                     <h2 style={{ color: '#FAFAFA', fontSize: '1.3rem', fontWeight: 800, lineHeight: 1 }}>Hola, {loggedInUser.name.split(' ')[0]}</h2>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#121217', border: '1px solid rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '999px' }}>
+                <div className="st-streak-pill">
                   <Flame size={16} color="#F97316" style={{ fill: '#F97316' }} />
                   <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#FAFAFA' }}>{stStreak.streak} días</span>
                 </div>
@@ -971,7 +971,7 @@ export default function App() {
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '28px' }}>
                     {/* Peso corporal - full width */}
-                    <div style={{ gridColumn: '1 / -1', background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
+                    <div className="st-dark-card" style={{ gridColumn: '1 / -1', padding: '18px 20px', position: 'relative', overflow: 'hidden' }}>
                       <div style={{ position: 'absolute', top: 0, right: 0, padding: '14px', opacity: 0.08, fontSize: '3.5rem', lineHeight: 1 }}>⚖️</div>
                       <p style={{ color: '#71717A', fontSize: '0.82rem', fontWeight: 500, marginBottom: '6px' }}>Peso Corporal</p>
                       {displayPeso ? (
@@ -989,7 +989,7 @@ export default function App() {
                       )}
                     </div>
                     {/* Racha */}
-                    <div style={{ background: '#121217', border: `1px solid ${stStreak.at_risk ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.05)'}`, borderRadius: '16px', padding: '16px' }}>
+                    <div className="st-dark-card" style={{ padding: '16px', borderColor: stStreak.at_risk ? 'rgba(239,68,68,0.3)' : undefined }}>
                       <p style={{ color: '#71717A', fontSize: '0.75rem', fontWeight: 500, marginBottom: '6px' }}>Racha Actual</p>
                       <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FAFAFA' }}>{stStreak.streak} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#71717A' }}>días</span></p>
                       <span style={{ fontSize: '0.72rem', fontWeight: 600, color: stStreak.at_risk ? '#F87171' : '#A78BFA', marginTop: '4px', display: 'block' }}>
@@ -997,7 +997,7 @@ export default function App() {
                       </span>
                     </div>
                     {/* Plan nutricional */}
-                    <div style={{ background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }}>
+                    <div className="st-dark-card" style={{ padding: '16px' }}>
                       <p style={{ color: '#71717A', fontSize: '0.75rem', fontWeight: 500, marginBottom: '6px' }}>Comidas del Plan</p>
                       <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FAFAFA' }}>{comidasCount} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#71717A' }}>/ 9</span></p>
                       <span style={{ fontSize: '0.72rem', fontWeight: 600, color: comidasCount > 0 ? '#4ADE80' : '#52525B', marginTop: '4px', display: 'block' }}>
@@ -1005,7 +1005,7 @@ export default function App() {
                       </span>
                     </div>
                     {/* Grasa Corporal */}
-                    <div style={{ background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '16px' }}>
+                    <div className="st-dark-card" style={{ padding: '16px' }}>
                       <p style={{ color: '#71717A', fontSize: '0.75rem', fontWeight: 500, marginBottom: '6px' }}>Grasa Corporal</p>
                       {latest?.masa_grasa != null ? (
                         <>
@@ -1034,7 +1034,7 @@ export default function App() {
                   const todayExs = stExercises.filter(e => e.day_number === stSession.current_day);
                   const dayName = getDayName(stSession.current_day);
                   return (
-                    <div style={{ borderRadius: '16px', overflow: 'hidden', background: '#121217', border: '1px solid rgba(124,58,237,0.2)' }}>
+                    <div className="st-workout-card">
                       {/* image/gradient banner */}
                       <div style={{ height: '140px', background: 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 40%, #1a1030 100%)', position: 'relative', display: 'flex', alignItems: 'flex-end' }}>
                         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 60%, rgba(124,58,237,0.3) 0%, transparent 70%)' }} />
@@ -1066,7 +1066,7 @@ export default function App() {
                     </div>
                   );
                 })() : (
-                  <div style={{ borderRadius: '16px', background: '#121217', border: '1px solid rgba(255,255,255,0.05)', padding: '28px 20px', textAlign: 'center' }}>
+                  <div className="st-dark-card" style={{ padding: '28px 20px', textAlign: 'center' }}>
                     <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>⏳</div>
                     <h4 style={{ color: '#FAFAFA', fontSize: '1rem', fontWeight: 700, marginBottom: '6px' }}>Tu plan está siendo preparado</h4>
                     <p style={{ color: '#71717A', fontSize: '0.85rem', lineHeight: 1.5 }}>Agustín está revisando tu información y en breve te asigna tu plan personalizado.</p>
@@ -1085,7 +1085,7 @@ export default function App() {
                 return (
                   <div>
                     <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#FAFAFA', marginBottom: '14px' }}>Actividad semanal</h3>
-                    <div style={{ background: '#121217', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '18px 16px' }}>
+                    <div className="st-dark-card" style={{ padding: '18px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '6px', height: '80px', marginBottom: '10px' }}>
                         {days.map((d, i) => {
                           const isToday = i === todayIdx;
@@ -1306,7 +1306,7 @@ export default function App() {
                       const iconBg = isSupp ? 'rgba(124,58,237,0.15)' : 'rgba(16,185,129,0.1)';
                       const borderColor = isSupp ? 'rgba(124,58,237,0.3)' : 'rgba(16,185,129,0.2)';
                       return (
-                        <div key={meal.key} style={{ background: '#0D0B14', border: `1px solid ${borderColor}`, borderRadius: '14px', padding: '14px 16px' }}>
+                        <div key={meal.key} className="st-meal-card" style={{ border: `1px solid ${borderColor}` }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                             <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>{meal.emoji}</div>
                             <strong style={{ fontSize: '0.92rem', color: accentColor }}>{meal.name}</strong>
@@ -1452,7 +1452,7 @@ export default function App() {
               <div className="view-fade-in" style={{ paddingBottom: '100px' }}>
 
                 {/* Top bar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0 20px', position: 'sticky', top: 0, background: 'rgba(6,6,8,0.88)', backdropFilter: 'blur(10px)', zIndex: 10 }}>
+                <div className="st-profile-topbar">
                   <button style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: '4px', display: 'flex' }}><Settings size={22} /></button>
                   <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>Mi Perfil</h2>
                   <button style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', padding: '4px', display: 'flex' }}><Bell size={22} /></button>
@@ -1485,7 +1485,7 @@ export default function App() {
                 {/* Mi Plan */}
                 <div style={{ marginBottom: '32px' }}>
                   <h3 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '12px', marginLeft: '4px' }}>Mi Plan</h3>
-                  <div style={{ background: 'rgba(24,24,27,0.5)', border: '1px solid #27272A', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div className="st-profile-section-card">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                       <div style={{ background: 'rgba(124,58,237,0.2)', borderRadius: '10px', padding: '12px', display: 'flex' }}>
                         <Trophy size={22} color="#A78BFA" />

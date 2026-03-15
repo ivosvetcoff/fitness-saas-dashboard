@@ -2204,6 +2204,89 @@ button {
 }
 
 /* ========================================= */
+/* STUDENT DARK CARD UTILITIES               */
+/* ========================================= */
+
+/* Reemplaza inline: background:'#121217', border:'1px solid rgba(255,255,255,0.05)', borderRadius:'16px' */
+.st-dark-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+}
+
+.st-dark-card--purple-border {
+  background: var(--bg-card);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 16px;
+}
+
+.st-dark-card--14 {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+}
+
+/* Workout hero card */
+.st-workout-card {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+/* Workout banner gradient */
+.st-workout-banner {
+  height: 140px;
+  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 40%, #1a1030 100%);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Profile sticky bar */
+.st-profile-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 20px;
+  position: sticky;
+  top: 0;
+  background: rgba(13, 11, 20, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+/* Streak pill (home greeting) */
+.st-streak-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+/* Nutrition meal card */
+.st-meal-card {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+/* Profile section card */
+.st-profile-section-card {
+  background: rgba(20, 17, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ========================================= */
 /* PREMIUM ANIMATIONS                        */
 /* ========================================= */
 
